@@ -1,0 +1,5 @@
+Model,Total Fraud Rings,Detected Fraud Rings,Ring Detection Rate,Cluster Purity,Cluster Completeness,V-Measure
+Baseline,27,27,1.0,1.0,0.0238,0.0464
+Model 1 (Node2Vec),27,27,1.0,1.0,0.0238,0.0464
+Model 2 (Structural GraphX),27,27,1.0,1.0,0.0238,0.0464
+Model 3 (Community / Rings),27,27,1.0,1.0,0.0238,0.0464

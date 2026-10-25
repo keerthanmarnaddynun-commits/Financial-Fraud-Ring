@@ -1,0 +1,4 @@
+Graph Scale,Nodes,Edges,PageRank Time (s),Connected Comp Time (s),Triangle Count Time (s),LPA Time (s),Total Time (s),JVM Used Mem (MB),JVM Max Mem (MB)
+30%,3039,3025,2.582,10.007,0.401,1.206,16.261,914.41,4096.0
+60%,3767,6085,2.69,5.065,0.356,1.281,10.919,1099.39,4096.0
+100%,3967,10000,2.596,3.544,0.254,1.202,8.754,1530.54,4096.0
