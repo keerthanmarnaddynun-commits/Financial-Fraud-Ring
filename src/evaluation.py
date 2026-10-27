@@ -9,6 +9,7 @@ Evaluates models at:
 
 import os
 import json
+import re
 import numpy as np
 import pandas as pd
 from typing import Dict, List, Any, Tuple
@@ -191,6 +192,17 @@ def run_full_evaluation(
     txn_csv = os.path.join(output_dir, "transaction_level_metrics.csv")
     df_txn_metrics.to_csv(txn_csv, index=False)
 
+    prediction_columns = [
+        "step", "relationship", "src", "dst", "amount", "isFraud"
+    ]
+    df_predictions = test_df[prediction_columns].copy()
+    for name in predictions:
+        column_name = re.sub(r"[^a-z0-9]+", "_", name.lower()).strip("_")
+        df_predictions[f"{column_name}_prediction"] = predictions[name]
+        df_predictions[f"{column_name}_probability"] = probabilities[name]
+    predictions_csv = os.path.join(output_dir, "transaction_predictions.csv")
+    df_predictions.to_csv(predictions_csv, index=False)
+
     # 2. Ring-level metrics
     df_ring_metrics = evaluate_ring_level(test_df, predictions)
     ring_csv = os.path.join(output_dir, "ring_level_metrics.csv")
@@ -202,6 +214,10 @@ def run_full_evaluation(
         df_scaling = benchmark_spark_systems_scaling(spark, clean_parquet_path, scale_fractions=[0.3, 0.6, 1.0])
         scaling_csv = os.path.join(output_dir, "spark_systems_scaling.csv")
         df_scaling.to_csv(scaling_csv, index=False)
+    else:
+        scaling_csv = os.path.join(output_dir, "spark_systems_scaling.csv")
+        if os.path.exists(scaling_csv):
+            os.remove(scaling_csv)
 
     # Compile comprehensive report
     report = {

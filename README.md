@@ -97,6 +97,14 @@ python run_pipeline.py --num-records 35000 --model-type xgboost
 - `--model-type <xgboost|random_forest>`: Classifier model architecture (default: `xgboost`).
 - `--force-synthetic`: Force generate fresh synthetic PaySim data with ground-truth fraud rings.
 - `--skip-scaling`: Skip the multi-point Spark system scaling benchmark for quicker execution.
+- `--input-csv <path>`: Run against a PaySim-compatible CSV file.
+
+### 3. Web Dashboard
+Start the local dashboard:
+```bash
+python app.py
+```
+Open `http://127.0.0.1:5000` in a browser. The dashboard can generate synthetic transactions, run a CSV from `data/raw/`, or accept an uploaded PaySim CSV (up to 20 MB). Select XGBoost or Random Forest, optionally run the Spark scaling benchmark, and download transaction metrics, ring metrics, predictions, and the JSON evaluation report. The dashboard runs locally and is not exposed to the network.
 
 ---
 

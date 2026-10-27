@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0b1220">
+  <title>Fraud Analytics | Financial Intelligence</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+  <script src="{{ url_for('static', filename='app.js') }}" defer></script>
+</head>
+<body>
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="/" aria-label="Fraud Analytics home">
+        <span class="brand-mark">F</span>
+        <span>Fraud<span class="brand-light">Lens</span></span>
+      </a>
+      <span class="local-badge"><span class="live-dot"></span> LOCAL ANALYTICS</span>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">FINANCIAL INTELLIGENCE PLATFORM</p>
+        <h1>Find the patterns<br><span>hidden in transactions.</span></h1>
+        <p class="hero-copy">Run graph analytics and compare four fraud classifiers in one place. Explore transaction risk, communities, and system performance.</p>
+      </section>
+
+      <section class="workspace" aria-label="Pipeline workspace">
+        <aside class="control-panel">
+          <div class="panel-heading">
+            <div>
+              <p class="eyebrow">ANALYSIS SETUP</p>
+              <h2>Configure a run</h2>
+            </div>
+            <span class="step-number">01</span>
+          </div>
+
+          <form id="run-form">
+            <label for="source">Transaction data</label>
+            <select id="source" name="source">
+              <option value="synthetic">Generate synthetic PaySim data</option>
+              <option value="existing">Use a project CSV</option>
+              <option value="upload">Upload a PaySim CSV</option>
+            </select>
+
+            <div id="existing-dataset" class="conditional-field" hidden>
+              <label for="dataset">Project dataset</label>
+              <select id="dataset" name="dataset"></select>
+            </div>
+            <div id="upload-dataset" class="conditional-field" hidden>
+              <label for="dataset-file">CSV file</label>
+              <input id="dataset-file" name="dataset_file" type="file" accept=".csv,text/csv">
+              <p class="field-help">PaySim columns required. Maximum upload: 20 MB.</p>
+            </div>
+
+            <div id="record-count-field">
+              <label for="num-records">Synthetic transaction count</label>
+              <input id="num-records" name="num_records" type="number" min="100" max="100000" value="10000" step="100">
+              <p class="field-help">Used only when generating synthetic data.</p>
+            </div>
+
+            <label for="model-type">Classifier</label>
+            <select id="model-type" name="model_type">
+              <option value="xgboost">XGBoost</option>
+              <option value="random_forest">Random Forest</option>
+            </select>
+
+            <label class="check-row" for="scaling">
+              <input id="scaling" name="run_scaling_benchmark" type="checkbox" checked>
+              <span>
+                <strong>Run Spark scaling benchmark</strong>
+                <small>Compare graph performance at three data scales.</small>
+              </span>
+            </label>
+
+            <button id="run-button" class="primary-button" type="submit">
+              <span>Run fraud analysis</span><span aria-hidden="true">↗</span>
+            </button>
+            <p class="run-note">Graph analysis can take several minutes. Keep this page open to follow the run.</p>
+            <div id="form-error" class="notice error-notice" role="alert" hidden></div>
+          </form>
+
+          <div class="model-legend">
+            <p class="eyebrow">FOUR MODELS, ONE COMPARISON</p>
+            <div><span class="legend-index">00</span><span><strong>Baseline</strong><small>Transaction attributes</small></span></div>
+            <div><span class="legend-index">01</span><span><strong>Node2Vec</strong><small>Account relationship embeddings</small></span></div>
+            <div><span class="legend-index">02</span><span><strong>Structural GraphX</strong><small>Centrality and graph structure</small></span></div>
+            <div><span class="legend-index">03</span><span><strong>Community / Rings</strong><small>Labels and community features</small></span></div>
+          </div>
+        </aside>
+
+        <section class="results-panel" aria-live="polite">
+          <div id="empty-state" class="empty-state">
+            <div class="network-art" aria-hidden="true">
+              <span class="edge edge-a"></span><span class="edge edge-b"></span><span class="edge edge-c"></span>
+              <span class="node node-a"></span><span class="node node-b"></span><span class="node node-c"></span>
+              <span class="node node-d"></span><span class="node node-e"></span>
+            </div>
+            <p class="eyebrow">YOUR ANALYSIS WORKSPACE</p>
+            <h2>Results will appear here.</h2>
+            <p>Choose your data and run the pipeline to see fraud metrics, detected rings, and transaction-level predictions.</p>
+            <div class="feature-pills"><span>PageRank</span><span>Node2Vec</span><span>Label propagation</span><span>Model evaluation</span></div>
+          </div>
+
+          <div id="running-state" class="running-state" hidden>
+            <span class="spinner" aria-hidden="true"></span>
+            <p class="eyebrow">PIPELINE IN PROGRESS</p>
+            <h2>Running full fraud analysis…</h2>
+            <p>Data ingestion, graph construction, feature engineering, model training, and evaluation are running on this machine.</p>
+            <div class="progress-track"><span></span></div>
+            <p class="run-id">Run ID <code id="run-id"></code></p>
+          </div>
+
+          <div id="results" class="results-content" hidden>
+            <div class="results-heading">
+              <div>
+                <p class="eyebrow">ANALYSIS COMPLETE</p>
+                <h2>Fraud intelligence report</h2>
+              </div>
+              <span class="complete-badge"><span class="live-dot"></span> COMPLETED</span>
+            </div>
+            <div id="summary-cards" class="summary-grid"></div>
+            <section class="result-section">
+              <div class="section-heading"><div><p class="eyebrow">MODEL COMPARISON</p><h3>Transaction performance</h3></div><a id="transactions-download" class="download-link">Download CSV ↓</a></div>
+              <div class="table-wrap"><table id="transactions-table"></table></div>
+            </section>
+            <section class="result-section">
+              <div class="section-heading"><div><p class="eyebrow">COMMUNITY DETECTION</p><h3>Fraud ring metrics</h3></div><a id="rings-download" class="download-link">Download CSV ↓</a></div>
+              <div class="table-wrap"><table id="rings-table"></table></div>
+            </section>
+            <section id="scaling-section" class="result-section" hidden>
+              <div class="section-heading"><div><p class="eyebrow">SYSTEM PERFORMANCE</p><h3>Spark scaling benchmark</h3></div><a id="scaling-download" class="download-link">Download CSV ↓</a></div>
+              <div class="table-wrap"><table id="scaling-table"></table></div>
+            </section>
+            <section class="result-section">
+              <div class="section-heading"><div><p class="eyebrow">TRANSACTION-LEVEL OUTPUT</p><h3>Predictions and fraud probabilities</h3></div><a id="predictions-download" class="download-link">Download CSV ↓</a></div>
+              <p class="table-caption">Predictions are for the held-out evaluation split. The CSV includes all four model predictions and probabilities.</p>
+              <div class="table-wrap"><table id="predictions-table"></table></div>
+            </section>
+            <a id="report-download" class="report-download">Download full JSON report <span>↓</span></a>
+          </div>
+
+          <div id="failure-state" class="failure-state" hidden>
+            <span class="failure-mark">!</span>
+            <p class="eyebrow">RUN FAILED</p>
+            <h2>The analysis did not finish.</h2>
+            <p id="failure-message"></p>
+            <p class="field-help">Review the server console for the full error details. Your selected settings remain available to retry.</p>
+          </div>
+        </section>
+      </section>
+    </main>
+    <footer><span>FraudLens · Financial Fraud Analytics</span><span>Runs locally · Data stays on this machine</span></footer>
+  </div>
+</body>
+</html>
