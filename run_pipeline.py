@@ -10,10 +10,10 @@ import os
 import sys
 import time
 import argparse
-from typing import Dict, Any, Optional
+from typing import Dict, Any
 
 from src.utils import logger, get_spark_session, setup_environment
-from src.data_ingestion import load_and_clean_data, run_ingestion
+from src.data_ingestion import run_ingestion
 from src.graph_construction import construct_transaction_graph
 from src.feature_engineering import compute_structural_graph_features, enrich_transactions_dataset
 from src.model_training import train_comparative_models
@@ -44,18 +44,13 @@ def execute_pipeline(
     num_records: int = 35000,
     model_type: str = "xgboost",
     force_synthetic: bool = False,
-    run_scaling_benchmark: bool = True,
-    input_csv_path: Optional[str] = None
+    run_scaling_benchmark: bool = True
 ) -> Dict[str, Any]:
     """
     Executes the entire Financial Fraud Analytics workflow.
     """
     total_pipeline_start = time.perf_counter()
     setup_environment()
-    project_dir = os.path.dirname(os.path.abspath(__file__))
-    data_dir = os.path.join(project_dir, "data")
-    models_dir = os.path.join(project_dir, "output", "models")
-    metrics_dir = os.path.join(project_dir, "output", "metrics")
 
     # ---------------------------------------------------------
     # STAGE 1: Spark Session Initialization
@@ -75,18 +70,12 @@ def execute_pipeline(
         # STAGE 2: Data Ingestion & Cleaning
         # ---------------------------------------------------------
         print_banner(2, "Data Ingestion, Validation & Parquet Persistence")
-        if input_csv_path:
-            clean_parquet_path = os.path.join(
-                data_dir, "processed", "transactions_clean.parquet"
-            )
-            load_and_clean_data(spark, input_csv_path, clean_parquet_path)
-        else:
-            clean_parquet_path = run_ingestion(
-                spark=spark,
-                data_dir=data_dir,
-                num_synthetic_records=num_records,
-                force_synthetic=force_synthetic
-            )
+        clean_parquet_path = run_ingestion(
+            spark=spark,
+            data_dir="data",
+            num_synthetic_records=num_records,
+            force_synthetic=force_synthetic
+        )
         logger.info(f"Optimized Parquet dataset persisted at: {clean_parquet_path}")
 
         # ---------------------------------------------------------
@@ -131,7 +120,7 @@ def execute_pipeline(
             df=df_enriched,
             embedding_dim=16,
             model_type=model_type,
-            output_dir=models_dir
+            output_dir="output/models"
         )
 
         # ---------------------------------------------------------
@@ -142,7 +131,7 @@ def execute_pipeline(
             spark=spark,
             training_results=training_results,
             clean_parquet_path=clean_parquet_path,
-            output_dir=metrics_dir,
+            output_dir="output/metrics",
             run_scaling_benchmark=run_scaling_benchmark
         )
 
@@ -181,7 +170,6 @@ def main():
     parser.add_argument("--model-type", type=str, default="xgboost", choices=["xgboost", "random_forest"], help="ML classifier")
     parser.add_argument("--force-synthetic", action="store_true", help="Force synthetic dataset generation")
     parser.add_argument("--skip-scaling", action="store_true", help="Skip Spark scaling benchmark")
-    parser.add_argument("--input-csv", type=str, help="Use a PaySim-compatible CSV file")
 
     args = parser.parse_args()
 
@@ -189,8 +177,7 @@ def main():
         num_records=args.num_records,
         model_type=args.model_type,
         force_synthetic=args.force_synthetic,
-        run_scaling_benchmark=not args.skip_scaling,
-        input_csv_path=args.input_csv
+        run_scaling_benchmark=not args.skip_scaling
     )
 
 
