@@ -1,5 +1,0 @@
-Model,Precision,Recall,F1-Score,AUC-ROC,PR-AUC,True Positive,False Positive,False Negative,True Negative
-Baseline,1.0,1.0,1.0,1.0,1.0,75,0,0,2425
-Model 1 (Node2Vec),1.0,1.0,1.0,1.0,1.0,75,0,0,2425
-Model 2 (Structural GraphX),1.0,1.0,1.0,1.0,1.0,75,0,0,2425
-Model 3 (Community / Rings),1.0,1.0,1.0,1.0,1.0,75,0,0,2425
