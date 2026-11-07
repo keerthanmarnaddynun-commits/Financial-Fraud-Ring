@@ -23,9 +23,16 @@ from pyspark.sql.types import (
 
 DATASET_ID = "ealaxi/paysim1"
 DATA_DIR = Path(__file__).resolve().parent / "data"
-GRAPHFRAMES_PACKAGE = os.getenv(
-    "GRAPHFRAMES_PACKAGE", "io.graphframes:graphframes-spark3_2.12:0.9.3"
+
+import pyspark
+_spark_major = int(pyspark.__version__.split(".")[0])
+_scala_version = "s_2.13" if _spark_major >= 4 else "s_2.12"
+_default_gf_pkg = (
+    f"graphframes:graphframes:0.8.3-spark3.5-{_scala_version}"
+    if _spark_major >= 4
+    else "io.graphframes:graphframes-spark3_2.12:0.9.3"
 )
+GRAPHFRAMES_PACKAGE = os.getenv("GRAPHFRAMES_PACKAGE", _default_gf_pkg)
 
 PAYMENTS_SCHEMA = StructType(
     [
