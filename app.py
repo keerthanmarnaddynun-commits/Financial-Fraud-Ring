@@ -1,588 +1,292 @@
-"""
-app.py
-Streamlit Multi-Tab Web Dashboard for Financial Fraud Ring Analytics Platform.
-Features:
-- Model Comparison: Evaluates Baseline vs. GraphX vs. Node2Vec vs. Community Models with live transaction inference.
-- Spark Systems Scaling: Visualizes distributed algorithm runtimes and JVM memory footprints.
-- Fraud Ring Inspector: Interactive NetworkX + Plotly topological graph visualizer of fraud syndicates and account clusters.
-"""
+"""Truthful dashboard for the PaySim fraud analytics project."""
 
-import os
+from __future__ import annotations
+
 import json
-import joblib
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 import pandas as pd
-import numpy as np
-import networkx as nx
-import plotly.express as px
-import plotly.graph_objects as go
 import streamlit as st
 
-# Configure Page
-st.set_page_config(
-    page_title="Financial Fraud Analytics | Graph & ML Platform",
-    page_icon="🛡️",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Custom CSS for modern styling
-st.markdown("""
-<style>
-    .metric-card {
-        background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-        border: 1px solid #334155;
-        border-radius: 10px;
-        padding: 16px;
-        color: #ffffff;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
-    }
-    .metric-val {
-        font-size: 26px;
-        font-weight: 700;
-        color: #38bdf8;
-    }
-    .metric-label {
-        font-size: 13px;
-        color: #94a3b8;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-    .badge-fraud {
-        background-color: #ef4444;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-weight: 600;
-        font-size: 12px;
-    }
-    .badge-normal {
-        background-color: #10b981;
-        color: white;
-        padding: 3px 8px;
-        border-radius: 4px;
-        font-weight: 600;
-        font-size: 12px;
-    }
-</style>
-""", unsafe_allow_html=True)
-
-METRICS_DIR = os.path.join("output", "metrics")
-MODELS_DIR = os.path.join("output", "models")
-RAW_DATA_PATH = os.path.join("data", "raw", "paysim_synthetic.csv")
-CLEAN_DATA_PATH = os.path.join("data", "processed", "transactions_clean.parquet")
+PAGE_TITLE = "Financial Fraud Analytics"
+OUTPUT_DIR = Path("outputs")
+MODEL_NAMES_PATH = Path("model_names.json")
 
 
 @st.cache_data
-def load_metrics():
-    """Loads transaction, ring, and scaling metrics from output/metrics/."""
-    txn_file = os.path.join(METRICS_DIR, "transaction_level_metrics.csv")
-    ring_file = os.path.join(METRICS_DIR, "ring_level_metrics.csv")
-    scaling_file = os.path.join(METRICS_DIR, "spark_systems_scaling.csv")
-    report_file = os.path.join(METRICS_DIR, "full_evaluation_report.json")
-
-    df_txn = pd.read_csv(txn_file) if os.path.exists(txn_file) else None
-    df_ring = pd.read_csv(ring_file) if os.path.exists(ring_file) else None
-    df_scaling = pd.read_csv(scaling_file) if os.path.exists(scaling_file) else None
-
-    full_report = {}
-    if os.path.exists(report_file):
-        with open(report_file, "r") as f:
-            full_report = json.load(f)
-
-    return df_txn, df_ring, df_scaling, full_report
+def read_json(path: str) -> Optional[Dict[str, Any]]:
+    file_path = Path(path)
+    if not file_path.exists():
+        return None
+    try:
+        with file_path.open("r", encoding="utf-8") as handle:
+            return json.load(handle)
+    except (json.JSONDecodeError, OSError):
+        return None
 
 
-@st.cache_resource
-def load_models():
-    """Loads pre-trained XGBoost classifiers from output/models/."""
-    models = {}
-    model_files = {
-        "Baseline": "baseline.joblib",
-        "Model 1 (Node2Vec)": "model_1_node2vec.joblib",
-        "Model 2 (Structural GraphX)": "model_2_structural_graphx.joblib",
-        "Model 3 (Community / Rings)": "model_3_community___rings.joblib"
+@st.cache_data
+def load_model_names() -> Dict[str, str]:
+    defaults = {
+        "m0_rule": "M0 Rule baseline",
+        "m1_tabular": "M1 Tabular",
+        "m2_graph": "M2 Graph + structural",
+        "m3_community_mule": "M3 Community + mule",
     }
-    for name, fname in model_files.items():
-        path = os.path.join(MODELS_DIR, fname)
-        if os.path.exists(path):
-            try:
-                models[name] = joblib.load(path)
-            except Exception as e:
-                st.sidebar.warning(f"Failed to load {name}: {e}")
-    return models
-
-
-@st.cache_data(max_entries=2)
-def load_sample_transactions(max_records=10000):
-    """Loads transactions from Parquet or CSV for graph inspection."""
-    if os.path.exists(CLEAN_DATA_PATH):
+    if MODEL_NAMES_PATH.exists():
         try:
-            return pd.read_parquet(CLEAN_DATA_PATH).head(max_records)
-        except Exception:
+            with MODEL_NAMES_PATH.open("r", encoding="utf-8") as handle:
+                loaded = json.load(handle)
+            if isinstance(loaded, dict):
+                defaults.update(loaded)
+        except (json.JSONDecodeError, OSError):
             pass
-    if os.path.exists(RAW_DATA_PATH):
-        return pd.read_csv(RAW_DATA_PATH, nrows=max_records)
-    return None
+    return defaults
 
 
-# Load cached data
-df_txn, df_ring, df_scaling, full_report = load_metrics()
-models_dict = load_models()
-df_txns = load_sample_transactions()
+st.set_page_config(page_title=PAGE_TITLE, layout="wide")
 
-# Sidebar
-with st.sidebar:
-    st.image("https://img.icons8.com/fluency/96/shield.png", width=64)
-    st.title("Fraud Ring Engine")
-    st.markdown("**Distributed PySpark GraphFrames & ML**")
-    st.divider()
-
-    st.subheader("System Status")
-    st.success("PySpark 4.2.0 Active")
-    st.info("GraphFrames Scala 2.13 Active")
-
-    if models_dict:
-        st.success(f"Models Online: {len(models_dict)} / 4")
-    else:
-        st.warning("No models loaded from output/models/")
-
-    if df_txns is not None:
-        fraud_count = int(df_txns["isFraud"].sum()) if "isFraud" in df_txns else 0
-        st.metric("Total Records Cached", f"{len(df_txns):,}")
-        st.metric("Fraudulent Incidents", f"{fraud_count:,}", f"{(fraud_count/len(df_txns))*100:.2f}%")
-
-    st.divider()
-    st.caption("Financial Fraud Analytics Platform v2.0")
-
-
-# Dashboard Header
-st.title("🛡️ Financial Fraud Analytics & Ring Detection Dashboard")
 st.markdown(
-    "Comprehensive distributed graph analytics, entity network topologies, and comparative machine learning "
-    "classifiers for detecting sophisticated laundering rings, smurfing funnels, and transaction fraud."
+    """
+    <style>
+        .main {
+            background: #071a17;
+            color: #edf7f4;
+        }
+        .stApp {
+            background: linear-gradient(180deg, #071a17 0%, #0d1d1b 100%);
+        }
+        .spark-card {
+            background: rgba(17, 26, 24, 0.9);
+            border: 1px solid rgba(121, 155, 133, 0.6);
+            border-radius: 12px;
+            padding: 18px 18px 14px 18px;
+            min-height: 170px;
+            box-shadow: inset 0 0 0 1px rgba(186, 255, 211, 0.06);
+        }
+        .spark-label {
+            font-size: 12px;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            color: #87a39b;
+            margin-bottom: 12px;
+            font-weight: 600;
+        }
+        .spark-value {
+            font-size: clamp(1.8rem, 2.3vw, 3rem);
+            font-weight: 700;
+            color: #edf7f4;
+            line-height: 1.1;
+        }
+        .spark-subtext {
+            color: #a6b8b3;
+            font-size: 0.92rem;
+            margin-top: 10px;
+            line-height: 1.5;
+        }
+        .spark-bar {
+            height: 3px;
+            width: 100%;
+            background: rgba(255,255,255,0.08);
+            border-radius: 999px;
+            margin-top: 12px;
+            overflow: hidden;
+        }
+        .spark-bar > span {
+            display: block;
+            height: 100%;
+            background: #d9f86f;
+            border-radius: 999px;
+        }
+        .spark-title {
+            color: #edf7f4;
+            font-size: 2.0rem;
+            font-weight: 700;
+            margin: 0 0 0.2rem 0;
+        }
+        .spark-appid {
+            color: #8dcab0;
+            font-size: 0.82rem;
+            font-weight: 500;
+            font-family: "SFMono-Regular", Consolas, monospace;
+        }
+    </style>
+    """,
+    unsafe_allow_html=True,
 )
 
-# Tabs
-tab_models, tab_scaling, tab_inspector = st.tabs([
-    "📊 Model Comparison",
-    "⚡ Spark Systems Scaling",
-    "🕸️ Fraud Ring Inspector"
-])
+
+def format_seconds(value: Optional[float]) -> str:
+    if value is None:
+        return "n/a"
+    return f"{value:.0f}s" if value >= 1 else f"{value:.2f}s"
 
 
-# =========================================================================
-# TAB 1: MODEL COMPARISON
-# =========================================================================
-with tab_models:
-    st.header("Comparative Model Performance")
-    st.markdown("Benchmarking 4 paradigms: **Baseline Tabular** vs. **Latent Node2Vec** vs. **Structural GraphX** vs. **LPA Fraud Rings**.")
+def format_bytes(value: Optional[int]) -> str:
+    if value is None:
+        return "n/a"
+    units = ["B", "KB", "MB", "GB", "TB"]
+    num = float(value)
+    for unit in units:
+        if num < 1024 or unit == units[-1]:
+            if unit == "B":
+                return f"{int(num)} {unit}"
+            return f"{num:.1f} {unit}"
+        num /= 1024
+    return "n/a"
 
-    if df_txn is not None and df_ring is not None:
-        # KPI Row
-        k1, k2, k3, k4 = st.columns(4)
-        best_f1 = df_txn["F1-Score"].max()
-        best_auc = df_txn["AUC-ROC"].max()
-        ring_det_rate = df_ring["Ring Detection Rate"].max() * 100
-        cluster_purity = df_ring["Cluster Purity"].max() * 100
 
-        k1.markdown(f"""<div class="metric-card"><div class="metric-label">Top F1-Score</div><div class="metric-val">{best_f1:.4f}</div></div>""", unsafe_allow_html=True)
-        k2.markdown(f"""<div class="metric-card"><div class="metric-label">Max AUC-ROC</div><div class="metric-val">{best_auc:.4f}</div></div>""", unsafe_allow_html=True)
-        k3.markdown(f"""<div class="metric-card"><div class="metric-label">Ring Detection Rate</div><div class="metric-val">{ring_det_rate:.1f}%</div></div>""", unsafe_allow_html=True)
-        k4.markdown(f"""<div class="metric-card"><div class="metric-label">Cluster Purity</div><div class="metric-val">{cluster_purity:.1f}%</div></div>""", unsafe_allow_html=True)
+@st.cache_data
+def read_metrics() -> Dict[str, Any]:
+    data: Dict[str, Any] = {
+        "run_info": read_json(str(OUTPUT_DIR / "run_info.json")),
+        "evaluation": read_json(str(OUTPUT_DIR / "evaluation.json")),
+        "scalability": read_json(str(OUTPUT_DIR / "scalability.json")),
+    }
+    return data
 
-        st.markdown("<br>", unsafe_allow_html=True)
 
-        col_c1, col_c2 = st.columns([3, 2])
+metrics = read_metrics()
+run_info = metrics.get("run_info")
+scalability = metrics.get("scalability") or {}
 
-        with col_c1:
-            st.subheader("Transaction Classification Metrics")
-            metrics_melted = df_txn.melt(
-                id_vars=["Model"],
-                value_vars=["Precision", "Recall", "F1-Score", "AUC-ROC", "PR-AUC"],
-                var_name="Metric",
-                value_name="Score"
-            )
-            fig_bar = px.bar(
-                metrics_melted,
-                x="Model",
-                y="Score",
-                color="Metric",
-                barmode="group",
-                text_auto=".2f",
-                height=380,
-                color_discrete_sequence=["#38bdf8", "#34d399", "#fbbf24", "#f87171", "#a78bfa"]
-            )
-            fig_bar.update_layout(
-                yaxis_range=[0, 1.15],
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                margin=dict(l=20, r=20, t=30, b=20)
-            )
-            st.plotly_chart(fig_bar, use_container_width=True)
+spark_application_id = scalability.get("spark_application_id") or "local[*]"
+if spark_application_id and spark_application_id != "local[*]":
+    app_label = f"local[*] | {spark_application_id}"
+else:
+    app_label = "local[*]"
 
-        with col_c2:
-            st.subheader("Confusion Matrix Breakdown")
-            selected_model = st.selectbox("Select Model for Confusion Matrix:", df_txn["Model"].tolist())
-            row = df_txn[df_txn["Model"] == selected_model].iloc[0]
-            cm = [[int(row["True Negative"]), int(row["False Positive"])],
-                  [int(row["False Negative"]), int(row["True Positive"])]]
+st.markdown(f'<div style="display:flex; justify-content:space-between; align-items:end; margin-bottom: 15px;">'
+            f'<div class="spark-title">Scalability & runtime</div>'
+            f'<div class="spark-appid">{app_label}</div>'
+            f'</div>', unsafe_allow_html=True)
 
-            fig_cm = px.imshow(
-                cm,
-                text_auto=True,
-                color_continuous_scale="Blues",
-                labels=dict(x="Predicted Label", y="Actual Label", color="Count"),
-                x=["Legitimate (0)", "Fraud (1)"],
-                y=["Legitimate (0)", "Fraud (1)"],
-                height=350
-            )
-            fig_cm.update_layout(margin=dict(l=20, r=20, t=30, b=20))
-            st.plotly_chart(fig_cm, use_container_width=True)
+rows = []
+if scalability:
+    timings = scalability.get("timings_seconds", {}) or {}
+    read_bytes = scalability.get("shuffle_read_bytes")
+    write_bytes = scalability.get("shuffle_write_bytes")
+    total_shuffle = (read_bytes or 0) + (write_bytes or 0)
+    read_pct = (read_bytes / total_shuffle * 100) if total_shuffle else 0
+    write_pct = (write_bytes / total_shuffle * 100) if total_shuffle else 0
+    rows = [
+        {
+            "label": "Graph feature engineering",
+            "value": format_seconds(timings.get("graph_feature_engineering")),
+            "subtitle": "Most expensive measured pipeline stage",
+            "width": min(100, max(10, (timings.get("graph_feature_engineering") or 0) / max(timings.get("pipeline_total") or 1, 1) * 100)),
+        },
+        {
+            "label": "Graph construction",
+            "value": format_seconds(timings.get("graph_construction")),
+            "subtitle": "Vertex and edge materialization",
+            "width": min(100, max(10, (timings.get("graph_construction") or 0) / max(timings.get("pipeline_total") or 1, 1) * 100)),
+        },
+        {
+            "label": "Executor memory",
+            "value": format_bytes(scalability.get("executor_storage_memory_used_bytes") or scalability.get("executor_memory_bytes")),
+            "subtitle": "Observed Spark UI memory usage",
+            "width": 70,
+        },
+        {
+            "label": "Shuffle read",
+            "value": f"{read_pct:.1f}%",
+            "subtitle": f"{format_bytes(read_bytes)} across Spark stages",
+            "width": read_pct,
+        },
+        {
+            "label": "Shuffle write",
+            "value": f"{write_pct:.1f}%",
+            "subtitle": f"{format_bytes(write_bytes)} written across Spark stages",
+            "width": write_pct,
+        },
+        {
+            "label": "Stages & training sample",
+            "value": f"{scalability.get('stage_count', 'n/a')} stages / {scalability.get('sampled_training_rows', 'n/a')} rows",
+            "subtitle": "Spark stage count and bounded model sample",
+            "width": 75,
+        },
+    ]
 
-        st.divider()
-
-        # Ring Detection Table
-        st.subheader("Syndicate / Community Clustering Metrics")
-        st.dataframe(
-            df_ring.style.format({
-                "Ring Detection Rate": "{:.2%}",
-                "Cluster Purity": "{:.4f}",
-                "Cluster Completeness": "{:.4f}",
-                "V-Measure": "{:.4f}"
-            }),
-            use_container_width=True
+cards = st.columns(3)
+for idx, row in enumerate(rows):
+    with cards[idx % 3]:
+        st.markdown(
+            f"""
+            <div class="spark-card">
+                <div class="spark-label">{row['label']}</div>
+                <div class="spark-value">{row['value']}</div>
+                <div class="spark-bar"><span style="width:{min(100, max(12, row['width']))}%;"></span></div>
+                <div class="spark-subtext">{row['subtitle']}</div>
+            </div>
+            """,
+            unsafe_allow_html=True,
         )
 
-        st.divider()
+st.write("\n")
 
-        # Interactive Fraud Scorer
-        st.subheader("Interactive Live Transaction Scorer")
-        st.markdown("Test the trained **Baseline XGBoost model** in real-time with arbitrary transaction inputs.")
+model_names = load_model_names()
+model_tab, pipeline_tab, sample_tab = st.tabs(["Model results", "Pipeline evidence", "Sample data"])
 
-        if "Baseline" in models_dict:
-            b_model = models_dict["Baseline"]
-            with st.form("live_score_form"):
-                sc1, sc2, sc3, sc4 = st.columns(4)
-                with sc1:
-                    in_type = st.selectbox("Transaction Type", ["TRANSFER", "CASH_OUT", "PAYMENT", "CASH_IN", "DEBIT"])
-                    in_step = st.number_input("Time Step (Hour)", min_value=1, max_value=744, value=45)
-                with sc2:
-                    in_amt = st.number_input("Amount ($)", min_value=1.0, max_value=10000000.0, value=250000.0, step=1000.0)
-                    in_flagged = st.selectbox("isFlaggedFraud (>200k)", [0, 1], index=1)
-                with sc3:
-                    in_old_orig = st.number_input("Sender Old Balance", min_value=0.0, value=250000.0, step=1000.0)
-                    in_new_orig = st.number_input("Sender New Balance", min_value=0.0, value=0.0, step=1000.0)
-                with sc4:
-                    in_old_dest = st.number_input("Receiver Old Balance", min_value=0.0, value=0.0, step=1000.0)
-                    in_new_dest = st.number_input("Receiver New Balance", min_value=0.0, value=250000.0, step=1000.0)
-
-                submit_btn = st.form_submit_button("⚡ Evaluate Transaction Risk")
-
-                if submit_btn:
-                    # Feature calculation
-                    err_orig = in_new_orig + in_amt - in_old_orig
-                    err_dest = in_old_dest + in_amt - in_new_dest
-
-                    type_cols = ["type_CASH_IN", "type_CASH_OUT", "type_DEBIT", "type_PAYMENT", "type_TRANSFER"]
-                    type_vec = [1 if in_type == col.replace("type_", "") else 0 for col in type_cols]
-
-                    feature_vals = [
-                        in_step, in_amt, in_old_orig, in_new_orig,
-                        in_old_dest, in_new_dest, err_orig, err_dest,
-                        in_flagged
-                    ] + type_vec
-
-                    feature_names = [
-                        "step", "amount", "oldbalanceOrg", "newbalanceOrig",
-                        "oldbalanceDest", "newbalanceDest", "errorBalanceOrig",
-                        "errorBalanceDest", "isFlaggedFraud"
-                    ] + type_cols
-
-                    X_input = pd.DataFrame([feature_vals], columns=feature_names)
-                    prob = b_model.predict_proba(X_input)[0, 1]
-                    pred = int(prob >= 0.5)
-
-                    res_col1, res_col2 = st.columns([1, 2])
-                    with res_col1:
-                        fig_gauge = go.Figure(go.Indicator(
-                            mode="gauge+number",
-                            value=prob * 100,
-                            title={'text': "Fraud Risk Probability"},
-                            gauge={
-                                'axis': {'range': [0, 100]},
-                                'bar': {'color': "#ef4444" if prob > 0.5 else "#10b981"},
-                                'steps': [
-                                    {'range': [0, 50], 'color': "rgba(16, 185, 129, 0.2)"},
-                                    {'range': [50, 100], 'color': "rgba(239, 68, 68, 0.2)"}
-                                ],
-                                'threshold': {
-                                    'line': {'color': "red", 'width': 4},
-                                    'thickness': 0.75,
-                                    'value': 50
-                                }
-                            }
-                        ))
-                        fig_gauge.update_layout(height=240, margin=dict(l=20, r=20, t=30, b=10))
-                        st.plotly_chart(fig_gauge, use_container_width=True)
-
-                    with res_col2:
-                        st.write("### Decision Outcome")
-                        if pred == 1:
-                            st.error(f"🚨 **FLAGGED AS FRAUD** (Confidence: {prob*100:.2f}%)")
-                            st.markdown("- **Zero-Balance Depletion detected**: Sender emptied balance completely.")
-                            st.markdown(f"- **Accounting Balance Discrepancy**: Sender Error = ${err_orig:,.2f}, Receiver Error = ${err_dest:,.2f}")
-                        else:
-                            st.success(f"✅ **LEGITIMATE TRANSACTION** (Fraud Risk: {prob*100:.2f}%)")
-                            st.markdown("- Transaction falls within normal commercial and retail distribution bounds.")
-        else:
-            st.info("Baseline model weights not found in output/models/baseline.joblib")
+with model_tab:
+    metrics_data = metrics.get("evaluation")
+    st.header("Model results")
+    if not metrics_data:
+        st.info("Model metrics are not available. Run python main.py to generate outputs/evaluation.json.")
     else:
-        st.warning("Metrics CSV files not found in output/metrics/. Run `python run_pipeline.py` first.")
-
-
-# =========================================================================
-# TAB 2: SPARK SYSTEMS SCALING
-# =========================================================================
-with tab_scaling:
-    st.header("Spark Distributed Systems Scaling & Performance")
-    st.markdown("Multi-point scaling benchmarks across Graph Scale fractions ($30\\% \\to 60\\% \\to 100\\%$) under Apache Spark.")
-
-    if df_scaling is not None and not df_scaling.empty:
-        # Systems KPI Row
-        sk1, sk2, sk3, sk4 = st.columns(4)
-        max_edges = df_scaling["Edges"].max()
-        max_nodes = df_scaling["Nodes"].max()
-        peak_mem = df_scaling["JVM Used Mem (MB)"].max()
-        alloc_mem = df_scaling["JVM Max Mem (MB)"].iloc[0]
-
-        sk1.markdown(f"""<div class="metric-card"><div class="metric-label">Max Graph Nodes</div><div class="metric-val">{max_nodes:,}</div></div>""", unsafe_allow_html=True)
-        sk2.markdown(f"""<div class="metric-card"><div class="metric-label">Max Graph Edges</div><div class="metric-val">{max_edges:,}</div></div>""", unsafe_allow_html=True)
-        sk3.markdown(f"""<div class="metric-card"><div class="metric-label">Peak JVM Heap Used</div><div class="metric-val">{peak_mem:,.1f} MB</div></div>""", unsafe_allow_html=True)
-        sk4.markdown(f"""<div class="metric-card"><div class="metric-label">Max JVM Allocated</div><div class="metric-val">{alloc_mem:,.1f} MB</div></div>""", unsafe_allow_html=True)
-
-        st.markdown("<br>", unsafe_allow_html=True)
-
-        sc_col1, sc_col2 = st.columns(2)
-
-        with sc_col1:
-            st.subheader("GraphX Algorithm Runtimes")
-            alg_cols = [
-                ("PageRank Time (s)", "PageRank", "#38bdf8"),
-                ("Connected Comp Time (s)", "Connected Components", "#f87171"),
-                ("Triangle Count Time (s)", "Triangle Count", "#34d399"),
-                ("LPA Time (s)", "Label Propagation", "#fbbf24")
-            ]
-            fig_scale = go.Figure()
-            for col_name, label, color in alg_cols:
-                if col_name in df_scaling.columns:
-                    fig_scale.add_trace(go.Bar(
-                        x=df_scaling["Graph Scale"],
-                        y=df_scaling[col_name],
-                        name=label,
-                        marker_color=color
-                    ))
-
-            fig_scale.update_layout(
-                barmode="group",
-                title="Execution Duration per Graph Algorithm",
-                xaxis_title="Graph Scale Fraction",
-                yaxis_title="Execution Time (Seconds)",
-                height=380,
-                margin=dict(l=20, r=20, t=40, b=20)
-            )
-            st.plotly_chart(fig_scale, use_container_width=True)
-
-        with sc_col2:
-            st.subheader("Memory Allocation & Scaling")
-            fig_mem = go.Figure()
-            fig_mem.add_trace(go.Scatter(
-                x=df_scaling["Graph Scale"],
-                y=df_scaling["JVM Used Mem (MB)"],
-                mode="lines+markers",
-                name="JVM Used Heap (MB)",
-                line=dict(color="#38bdf8", width=3),
-                marker=dict(size=9)
-            ))
-            fig_mem.add_trace(go.Scatter(
-                x=df_scaling["Graph Scale"],
-                y=df_scaling["Total Time (s)"],
-                mode="lines+markers",
-                name="Total Pipeline Stage Time (s)",
-                yaxis="y2",
-                line=dict(color="#f87171", width=3, dash="dash"),
-                marker=dict(size=9)
-            ))
-
-            fig_mem.update_layout(
-                title="JVM Heap Footprint vs. Total Stage Duration",
-                xaxis_title="Graph Scale Fraction",
-                yaxis=dict(title="JVM Memory (MB)", range=[0, 2000]),
-                yaxis2=dict(title="Stage Time (s)", overlaying="y", side="right", range=[0, 20]),
-                height=380,
-                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-                margin=dict(l=20, r=20, t=40, b=20)
-            )
-            st.plotly_chart(fig_mem, use_container_width=True)
-
-        st.subheader("Systems Benchmarking Raw Data")
-        st.dataframe(df_scaling, use_container_width=True)
-
-    else:
-        st.info("No Spark systems scaling data found in output/metrics/spark_systems_scaling.csv")
-
-
-# =========================================================================
-# TAB 3: FRAUD RING INSPECTOR & NETWORK GRAPH
-# =========================================================================
-with tab_inspector:
-    st.header("Fraud Ring Inspector & Entity Network Topology")
-    st.markdown("Interactive network clustering: Visualizes account nodes, directed payment edges, and money laundering syndicates.")
-
-    if df_txns is not None:
-        ctrl1, ctrl2, ctrl3 = st.columns(3)
-        with ctrl1:
-            filter_mode = st.radio("Display Filter", ["Fraud Transactions Only", "All Transactions"], horizontal=True)
-        with ctrl2:
-            num_txns = st.slider("Max Transactions to Render", min_value=10, max_value=200, value=60, step=10)
-        with ctrl3:
-            search_account = st.text_input("Search Account ID (optional)", "")
-
-        # Filter dataset
-        sub_df = df_txns.copy()
-        if filter_mode == "Fraud Transactions Only" and "isFraud" in sub_df.columns:
-            sub_df = sub_df[sub_df["isFraud"] == 1]
-
-        if search_account.strip():
-            sub_df = sub_df[
-                (sub_df["nameOrig"].str.contains(search_account, case=False, na=False)) |
-                (sub_df["nameDest"].str.contains(search_account, case=False, na=False))
-            ]
-
-        sub_df = sub_df.head(num_txns)
-
-        if len(sub_df) == 0:
-            st.warning("No transactions match the selected filter.")
-        else:
-            # Build NetworkX Directed Graph
-            G = nx.DiGraph()
-            for _, row in sub_df.iterrows():
-                src = str(row["nameOrig"])
-                dst = str(row["nameDest"])
-                amt = float(row.get("amount", 1.0))
-                is_fraud = int(row.get("isFraud", 0))
-                t_type = str(row.get("type", "TRANSFER"))
-
-                # Node types
-                src_type = "MERCHANT" if src.startswith("M") else "CUSTOMER"
-                dst_type = "MERCHANT" if dst.startswith("M") else "CUSTOMER"
-
-                G.add_node(src, is_fraud=is_fraud, entity_type=src_type)
-                G.add_node(dst, is_fraud=is_fraud, entity_type=dst_type)
-                G.add_edge(src, dst, amount=amt, is_fraud=is_fraud, type=t_type)
-
-            # Compute spring layout
-            pos = nx.spring_layout(G, seed=42, k=0.35)
-
-            # Extract Edge Traces
-            edge_x = []
-            edge_y = []
-            edge_fraud_x = []
-            edge_fraud_y = []
-
-            for u, v, data in G.edges(data=True):
-                x0, y0 = pos[u]
-                x1, y1 = pos[v]
-                if data["is_fraud"] == 1:
-                    edge_fraud_x.extend([x0, x1, None])
-                    edge_fraud_y.extend([y0, y1, None])
-                else:
-                    edge_x.extend([x0, x1, None])
-                    edge_y.extend([y0, y1, None])
-
-            trace_edges_normal = go.Scatter(
-                x=edge_x, y=edge_y,
-                line=dict(width=1, color="rgba(148, 163, 184, 0.4)"),
-                hoverinfo="none",
-                mode="lines",
-                name="Normal Transaction Link"
-            )
-
-            trace_edges_fraud = go.Scatter(
-                x=edge_fraud_x, y=edge_fraud_y,
-                line=dict(width=2.5, color="#ef4444"),
-                hoverinfo="none",
-                mode="lines",
-                name="Fraudulent Transfer Link"
-            )
-
-            # Extract Node Traces
-            node_x = []
-            node_y = []
-            node_color = []
-            node_text = []
-            node_size = []
-
-            for node in G.nodes():
-                x, y = pos[node]
-                node_x.append(x)
-                node_y.append(y)
-                is_fraud_node = G.nodes[node].get("is_fraud", 0)
-                e_type = G.nodes[node].get("entity_type", "CUSTOMER")
-
-                in_deg = G.in_degree(node)
-                out_deg = G.out_degree(node)
-
-                if is_fraud_node == 1:
-                    node_color.append("#ef4444")  # Red
-                    node_size.append(16)
-                    status_str = "FRAUD RING MEMBER"
-                elif e_type == "MERCHANT":
-                    node_color.append("#10b981")  # Green
-                    node_size.append(12)
-                    status_str = "MERCHANT"
-                else:
-                    node_color.append("#38bdf8")  # Blue
-                    node_size.append(10)
-                    status_str = "NORMAL CUSTOMER"
-
-                node_text.append(f"Account: <b>{node}</b><br>Type: {status_str}<br>In-Degree: {in_deg} | Out-Degree: {out_deg}")
-
-            trace_nodes = go.Scatter(
-                x=node_x, y=node_y,
-                mode="markers",
-                hoverinfo="text",
-                text=node_text,
-                marker=dict(
-                    color=node_color,
-                    size=node_size,
-                    line=dict(width=1.5, color="#ffffff")
-                ),
-                name="Account Nodes"
-            )
-
-            fig_graph = go.Figure(
-                data=[trace_edges_normal, trace_edges_fraud, trace_nodes],
-                layout=go.Layout(
-                    title=dict(text="Transaction Graph Network Map", font=dict(size=16)),
-                    showlegend=True,
-                    hovermode="closest",
-                    margin=dict(b=20, l=20, r=20, t=40),
-                    xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                    yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                    height=520,
-                    plot_bgcolor="#0b1120"
+        split_map = metrics_data.get("splits", {})
+        for split_name, split_results in split_map.items():
+            st.subheader(f"Split: {split_name}")
+            rows_list = []
+            for model_key, values in split_results.items():
+                display_name = model_names.get(model_key, model_key)
+                conf = values.get("confusion", {})
+                rows_list.append(
+                    {
+                        "model": display_name,
+                        "precision": values.get("precision"),
+                        "recall": values.get("recall"),
+                        "f1": values.get("f1"),
+                        "roc_auc": values.get("roc_auc"),
+                        "average_precision": values.get("average_precision"),
+                        "rows": values.get("rows"),
+                        "tp": conf.get("tp"),
+                        "fp": conf.get("fp"),
+                        "fn": conf.get("fn"),
+                        "tn": conf.get("tn"),
+                    }
                 )
-            )
+            if rows_list:
+                st.dataframe(pd.DataFrame(rows_list), use_container_width=True)
 
-            st.plotly_chart(fig_graph, use_container_width=True)
-
-            # Ring Summary Table
-            st.subheader("Sub-Graph Transaction Log")
-            st.dataframe(
-                sub_df[["step", "type", "nameOrig", "nameDest", "amount", "oldbalanceOrg", "newbalanceOrig", "isFraud"]],
-                use_container_width=True
-            )
+with pipeline_tab:
+    st.header("Pipeline evidence")
+    if not scalability:
+        st.info("No scalability data is available.")
     else:
-        st.warning("No transaction data loaded for Fraud Ring Inspector.")
+        timings = scalability.get("timings_seconds", {})
+        if timings:
+            st.subheader("Stage timings (seconds)")
+            st.dataframe(pd.DataFrame([timings]).T.rename(columns={0: "seconds"}), use_container_width=True)
+        if scalability.get("engines"):
+            st.subheader("Graph engine by algorithm")
+            st.dataframe(
+                pd.DataFrame.from_dict(
+                    scalability["engines"], orient="index", columns=["engine"]
+                ).reset_index().rename(columns={"index": "algorithm"}),
+                use_container_width=True,
+            )
+        st.json(scalability)
 
-st.divider()
-st.caption("Financial Fraud Analytics Platform • PySpark 4.2.0 • GraphFrames • XGBoost")
+with sample_tab:
+    st.header("Sample data")
+    csv_path = next(iter(sorted(Path("data").glob("*.csv"))), None)
+    if csv_path is None:
+        st.info("No sample CSV is available in data/.")
+    else:
+        try:
+            sample_df = pd.read_csv(csv_path, nrows=1000)
+            st.dataframe(sample_df.head(20), use_container_width=True)
+        except Exception as exc:  # pragma: no cover
+            st.warning(f"Unable to read sample data: {exc}")

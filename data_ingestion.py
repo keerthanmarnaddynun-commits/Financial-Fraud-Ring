@@ -132,7 +132,7 @@ def ensure_dataset(data_dir: Path = DATA_DIR) -> Path:
 def load_and_validate_data(
     spark: SparkSession, csv_path: Optional[Path] = None
 ) -> DataFrame:
-    """Load the known PaySim schema, remove malformed rows, and add a stable run ID."""
+    """Load the known PaySim schema, remove malformed rows, and preserve merchant edges."""
     path = csv_path or ensure_dataset()
     header = spark.read.option("header", True).option("inferSchema", False).csv(str(path))
     missing = sorted(set(REQUIRED_COLUMNS) - set(header.columns))
@@ -148,13 +148,61 @@ def load_and_validate_data(
     valid = raw.dropna(subset=REQUIRED_COLUMNS)
     for column in NUMERIC_COLUMNS:
         valid = valid.filter(~F.isnan(F.col(column).cast("double")))
+    valid = valid.withColumn(
+        "is_merchant",
+        F.when(F.col("nameDest").startswith("M"), 1).otherwise(0),
+    )
     valid = valid.filter(
         F.col("type").isin("CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER")
         & F.col("nameOrig").startswith("C")
-        & F.col("nameDest").startswith("C")
+        & (F.col("nameDest").startswith("C") | F.col("nameDest").startswith("M"))
         & F.col("amount").between(0, float("inf"))
         & F.col("isFraud").isin(0, 1)
     )
     if not valid.take(1):
         raise ValueError(f"No valid PaySim transactions remain after validation: {path}")
     return valid.withColumn("transaction_id", F.monotonically_increasing_id())
+
+
+def build_data_quality_report(spark: SparkSession, csv_path: Optional[Path] = None) -> dict:
+    """Capture the raw-data quality counts used by the project dashboard and reports."""
+    path = csv_path or ensure_dataset()
+    raw = (
+        spark.read.option("header", True)
+        .option("mode", "PERMISSIVE")
+        .schema(PAYMENTS_SCHEMA)
+        .csv(str(path))
+    )
+    rows_read = int(raw.count())
+    required_valid = raw.dropna(subset=REQUIRED_COLUMNS)
+    null_rows = rows_read - int(required_valid.count())
+    numeric_valid = required_valid
+    for column in NUMERIC_COLUMNS:
+        numeric_valid = numeric_valid.filter(~F.isnan(F.col(column).cast("double")))
+    bad_numeric_rows = int(required_valid.count()) - int(numeric_valid.count())
+    cleaned = numeric_valid.filter(
+        F.col("type").isin("CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER")
+        & F.col("nameOrig").startswith("C")
+        & (F.col("nameDest").startswith("C") | F.col("nameDest").startswith("M"))
+        & F.col("amount").between(0, float("inf"))
+        & F.col("isFraud").isin(0, 1)
+    )
+    rows_kept = int(cleaned.count())
+    by_type = {
+        row["type"]: int(row["count"])
+        for row in raw.groupBy("type").count().orderBy("type").collect()
+    }
+    fraud_rows = int(raw.filter(F.col("isFraud") == 1).count())
+    distinct_accounts = int(raw.select("nameOrig", "nameDest").distinct().count())
+    return {
+        "rows_read": rows_read,
+        "rows_kept": rows_kept,
+        "dropped_by_rule": {
+            "missing_required_columns_or_nulls": null_rows,
+            "non_numeric_values": bad_numeric_rows,
+            "invalid_type_or_account_filter": rows_read - int(numeric_valid.count()),
+        },
+        "by_type": by_type,
+        "fraud_rows": fraud_rows,
+        "distinct_accounts": distinct_accounts,
+    }
