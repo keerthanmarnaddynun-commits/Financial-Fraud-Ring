@@ -210,8 +210,10 @@ def render_metric_card(
 @st.cache_resource
 def load_trained_model(mtime: float) -> Tuple[Optional[Any], str]:
     search_paths = [
+        OUTPUT_DIR / "models" / "m1_tabular.joblib",
         OUTPUT_DIR / "models" / "baseline.joblib",
         OUTPUT_DIR / "baseline.joblib",
+        Path("outputs") / "models" / "m1_tabular.joblib",
         Path("outputs") / "models" / "baseline.joblib",
         Path("output") / "models" / "baseline.joblib",
     ]
@@ -501,10 +503,78 @@ with tab_models:
             st.plotly_chart(fig_bar, use_container_width=True)
 
             st.subheader("Transaction Classification Metrics Table")
-            display_cols = ["Model"] + metric_cols + ["Test Rows"]
+            display_cols = [c for c in ["Model", "Threshold", "Precision", "Recall", "F1-Score", "ROC-AUC", "PR-AUC", "False Alarms / 10k", "Test Rows"] if c in df_txn.columns]
             st.dataframe(df_txn[display_cols].dropna(how="all", axis=1), use_container_width=True)
 
             st.divider()
+
+            # Precision-Recall Curves (if pr_curves.csv present)
+            pr_path = OUTPUT_DIR / "pr_curves.csv"
+            if pr_path.exists():
+                st.subheader("Precision-Recall Curves")
+                try:
+                    pr_df = pd.read_csv(pr_path)
+                    if is_splits_layout and "split" in pr_df.columns:
+                        pr_df = pr_df[pr_df["split"] == selected_split]
+                    if not pr_df.empty:
+                        pr_df["Model Name"] = pr_df["model"].map(lambda m: model_names.get(m, m.replace("_", " ").title()))
+                        fig_pr = px.line(
+                            pr_df,
+                            x="recall",
+                            y="precision",
+                            color="Model Name",
+                            title=f"Precision-Recall Curves ({selected_split if is_splits_layout else 'Test Set'})",
+                            height=380,
+                        )
+                        fig_pr.update_layout(
+                            xaxis_title="Recall",
+                            yaxis_title="Precision",
+                            yaxis_range=[0, 1.05],
+                            margin=dict(l=20, r=20, t=35, b=20),
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                            font=dict(color="#edf7f4"),
+                        )
+                        st.plotly_chart(fig_pr, use_container_width=True)
+                except Exception as ex:
+                    st.caption(f"Could not render PR curves: {ex}")
+
+                st.divider()
+
+            # Feature Importance (if feature_importance.json present)
+            feat_imp_data = load_output_json("feature_importance.json")
+            if feat_imp_data and isinstance(feat_imp_data, dict):
+                st.subheader("Feature Importance (XGBoost Gain)")
+                avail_models = [m for m in feat_imp_data.keys() if feat_imp_data[m]]
+                if avail_models:
+                    model_choice = st.selectbox(
+                        "Select Model for Feature Importance",
+                        avail_models,
+                        format_func=lambda m: model_names.get(m, m.replace("_", " ").title()),
+                    )
+                    top_feats = feat_imp_data[model_choice][:15]
+                    if top_feats:
+                        df_imp = pd.DataFrame(top_feats).sort_values(by="importance", ascending=True)
+                        fig_imp = px.bar(
+                            df_imp,
+                            x="importance",
+                            y="feature",
+                            orientation="h",
+                            title=f"Top Features by Gain: {model_names.get(model_choice, model_choice)}",
+                            height=400,
+                            color_discrete_sequence=["#38bdf8"],
+                        )
+                        fig_imp.update_layout(
+                            xaxis_title="Feature Importance (Gain)",
+                            yaxis_title="Feature",
+                            margin=dict(l=20, r=20, t=35, b=20),
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                            font=dict(color="#edf7f4"),
+                        )
+                        st.plotly_chart(fig_imp, use_container_width=True)
+
+                st.divider()
 
             # Confusion Matrix: ONLY if real confusion counts exist in the file
             st.subheader("Confusion Matrix")
@@ -560,11 +630,16 @@ with tab_pipeline:
         timings = scalability_data.get("timings_seconds", {})
         if timings:
             st.subheader("Measured Stage Timings")
-            timing_items = [
-                {"Stage": k.replace("_", " ").title(), "Seconds": float(v)}
-                for k, v in timings.items()
-                if k != "pipeline_total"
-            ]
+            timing_items = []
+            for k, v in timings.items():
+                if k == "pipeline_total":
+                    continue
+                if isinstance(v, (int, float)):
+                    timing_items.append({"Stage": k.replace("_", " ").title(), "Seconds": float(v)})
+                elif isinstance(v, dict) and k == "timings_seconds":
+                    for sub_k, sub_v in v.items():
+                        if isinstance(sub_v, (int, float)):
+                            timing_items.append({"Stage": f"Graph: {sub_k.replace('_', ' ').title()}", "Seconds": float(sub_v)})
             if timing_items:
                 df_timings = pd.DataFrame(timing_items)
                 fig_timings = px.bar(
@@ -583,7 +658,7 @@ with tab_pipeline:
                     font=dict(color="#edf7f4"),
                 )
                 st.plotly_chart(fig_timings, use_container_width=True)
-                st.dataframe(pd.DataFrame([timings]).T.rename(columns={0: "Seconds"}), use_container_width=True)
+                st.dataframe(df_timings, use_container_width=True)
 
         engines = scalability_data.get("engines")
         if engines:
@@ -720,7 +795,7 @@ with tab_scorer:
 
             # Construct input features dictionary
             feat_dict: Dict[str, Any] = {
-                "step": in_step,
+                "type": in_type,
                 "amount": in_amt,
                 "oldbalanceOrg": in_old_orig,
                 "newbalanceOrig": in_new_orig,
@@ -728,6 +803,8 @@ with tab_scorer:
                 "newbalanceDest": in_new_dest,
                 "errorBalanceOrig": err_orig,
                 "errorBalanceDest": err_dest,
+                "is_merchant": 1.0 if in_type == "PAYMENT" else 0.0,
+                "step": in_step,
             }
             for col_name, val in zip(type_cols, type_vec):
                 feat_dict[col_name] = val
@@ -784,12 +861,43 @@ with tab_scorer:
                         st.success(f"✅ **NORMAL TRANSACTION** (Probability: {prob * 100.0:.2f}%)")
 
                     # Feature contribution analysis (for XGBoost)
-                    if hasattr(model_obj, "get_booster"):
+                    if hasattr(model_obj, "named_steps"):
+                        try:
+                            prep = model_obj.named_steps.get("preprocessing")
+                            clf = model_obj.named_steps.get("classifier")
+                            if clf and hasattr(clf, "get_booster") and prep:
+                                booster = clf.get_booster()
+                                trans_arr = prep.transform(aligned_df)
+                                feature_names_out = [
+                                    f.replace("numeric__", "").replace("type__", "")
+                                    for f in prep.get_feature_names_out()
+                                ]
+                                dmat = xgb.DMatrix(trans_arr, feature_names=feature_names_out)
+                                contribs = booster.predict(dmat, pred_contribs=True)
+                                shap_vals = contribs[0][:-1]
+                                contrib_records = [
+                                    {
+                                        "Feature": col,
+                                        "Contribution (log-odds)": round(float(v), 4),
+                                        "Impact": "Increases Fraud Risk" if v > 0 else "Decreases Fraud Risk",
+                                        "Magnitude": abs(float(v)),
+                                    }
+                                    for col, v in zip(feature_names_out, shap_vals)
+                                ]
+                                df_contrib = (
+                                    pd.DataFrame(contrib_records)
+                                    .sort_values(by="Magnitude", ascending=False)
+                                    .drop(columns=["Magnitude"])
+                                )
+                                st.write("**Top Feature Contributions (Measured SHAP Margins):**")
+                                st.dataframe(df_contrib.head(6), use_container_width=True)
+                        except Exception as ex:
+                            st.caption(f"Feature contributions not computed: {ex}")
+                    elif hasattr(model_obj, "get_booster"):
                         try:
                             booster = model_obj.get_booster()
                             dmat = xgb.DMatrix(aligned_df)
                             contribs = booster.predict(dmat, pred_contribs=True)
-                            # contribs shape: (1, num_features + 1), last element is base margin / bias
                             col_names_used = list(aligned_df.columns)
                             shap_vals = contribs[0][:-1]
                             contrib_records = [
@@ -801,7 +909,11 @@ with tab_scorer:
                                 }
                                 for col, v in zip(col_names_used, shap_vals)
                             ]
-                            df_contrib = pd.DataFrame(contrib_records).sort_values(by="Magnitude", ascending=False).drop(columns=["Magnitude"])
+                            df_contrib = (
+                                pd.DataFrame(contrib_records)
+                                .sort_values(by="Magnitude", ascending=False)
+                                .drop(columns=["Magnitude"])
+                            )
                             st.write("**Top Feature Contributions (Measured SHAP Margins):**")
                             st.dataframe(df_contrib.head(6), use_container_width=True)
                         except Exception as ex:

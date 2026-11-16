@@ -229,3 +229,20 @@ Implemented model persistence and feature importance in models.py:
 python -m pytest tests/test_model_artifacts.py -v
 RESULT: 1 passed in 52.41s.
 - test_model_artefacts_save_and_predict_fresh_process: PASSED (all models loaded and predicted probabilities on 5 test rows).
+
+[2026-11-16 21:00] STEP 1.10 | ACTION
+Updated app.py to support the new evaluation layout and model features:
+1. Pointed the interactive live scorer to m1_tabular.joblib.
+2. Formatted metrics table to display threshold, precision, recall, f1, roc_auc, average precision (pr_auc), prevalence, and false alarms per 10k.
+3. Integrated PR curve visualization from pr_curves.csv across splits.
+4. Integrated feature importance chart from feature_importance.json (XGBoost gain).
+5. Fixed nested dictionary unpacking in stage timings to prevent Arrow table serialization errors.
+6. Created tests/test_app_smoke.py using Streamlit AppTest to verify app initialization, tab presence, preset clicks and distinct probabilities (Normal: 0.19%, Suspicious: 99.72%, Borderline: 2.80%), and graceful missing-data banners.
+7. Logged all assertion outcomes to logs/raw/20261116_1.10_app_smoke.txt.
+
+[2026-11-16 21:00] STEP 1.10 | CMD
+python -m pytest tests/test_app_smoke.py -v
+RESULT: 3 passed in 9.60s.
+- test_app_loads_and_tabs_switch: PASSED (0 exceptions, 6 tabs verified)
+- test_scorer_presets_and_distinct_probabilities: PASSED (all 3 presets yielded distinct probabilities)
+- test_missing_data_graceful_handling: PASSED (0 exceptions, informative guidance banners displayed)
