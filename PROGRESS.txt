@@ -9,7 +9,7 @@ STEP 1.7 | DONE | S1.7 | Splits, training sample, validation threshold
 STEP 1.8 | DONE | S1.8 | Distributed scoring and realistic evaluation
 STEP 1.9 | DONE | S1.9 | Model files, importance, ablation
 STEP 1.10 | DONE | S1.10 | Dashboard compatibility and scorer test
-STEP 1.11 | PENDING | - | Test data and test suite
+STEP 1.11 | DONE | S1.11 | Pytest suite with 1000-row sample
 STEP 1.12 | PENDING | - | Pin requirements and fix README facts
 STEP 1.13 | PENDING | - | Sample run, then full run v2 promoted to outputs
 STEP 1.14 | PENDING | - | [OPTIONAL] Past-only graph features variant

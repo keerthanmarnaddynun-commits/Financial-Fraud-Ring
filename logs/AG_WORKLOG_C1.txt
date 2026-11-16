@@ -246,3 +246,24 @@ RESULT: 3 passed in 9.60s.
 - test_app_loads_and_tabs_switch: PASSED (0 exceptions, 6 tabs verified)
 - test_scorer_presets_and_distinct_probabilities: PASSED (all 3 presets yielded distinct probabilities)
 - test_missing_data_graceful_handling: PASSED (0 exceptions, informative guidance banners displayed)
+
+[2026-11-16 23:23] STEP 1.11 | ACTION
+Created tests/data/sample_1000.csv (1000 rows, 30 fraud rows, 250 merchant payments, seed 42) via scratch script.
+Added tests/test_sample_pipeline.py testing:
+1. Schema validation preserves merchant payments (type == 'PAYMENT' and nameDest starting with 'M').
+2. Data quality report counts balance exactly: rows_read == rows_kept + sum(dropped_by_rule.values()).
+3. Temporal and group destination splits exhibit zero temporal or account leakage on sample_1000.csv.
+Updated tests/test_splits.py and tests/test_sample_pipeline.py to use create_spark_session for uniform worker connection initialization.
+Executed complete test suite with python -m pytest -q and redirected output to logs/raw/20261116_1.11_pytest_suite.txt.
+
+[2026-11-16 23:23] STEP 1.11 | CMD
+python -m pytest -q > logs/raw/20261116_1.11_pytest_suite.txt
+RESULT: 28 passed, 0 failures, 10 warnings in 2734.70s (0:45:34).
+- tests/test_app_smoke.py (3 passed)
+- tests/test_eval_consistency.py (2 passed)
+- tests/test_features.py (7 passed)
+- tests/test_graph_algorithms.py (5 passed)
+- tests/test_model_artifacts.py (1 passed)
+- tests/test_sample_pipeline.py (3 passed)
+- tests/test_splits.py (5 passed)
+- tests/test_stage_timer.py (2 passed)

@@ -1,6 +1,7 @@
 __pycache__/
 .venv/
-data/
+/data/
+!tests/data/
 outputs/
 output/
 *.log

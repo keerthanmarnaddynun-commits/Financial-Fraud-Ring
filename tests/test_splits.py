@@ -5,6 +5,7 @@ import pytest
 from pyspark.sql import SparkSession
 from pyspark.sql import functions as F
 
+from spark_session import create_spark_session
 from splits import (
     create_group_dest_split,
     create_random_split,
@@ -16,12 +17,7 @@ from splits import (
 
 @pytest.fixture(scope="module")
 def spark():
-    session = (
-        SparkSession.builder.master("local[2]")
-        .appName("test_splits")
-        .config("spark.ui.enabled", "false")
-        .getOrCreate()
-    )
+    session = create_spark_session(app_name="test_splits", master="local[2]")
     yield session
     session.stop()
 
