@@ -1,0 +1,49 @@
+# ==============================================================================
+# AG_WORKLOG_C1.txt - Chunk 1 Execution Log
+# PaySim Financial Fraud Analytics - Branch: bdc-final
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# 1. SUMMARY HEADINGS (UPDATED PER STEP)
+# ------------------------------------------------------------------------------
+
+## DECISIONS
+- [2026-11-16 16:20] STEP 1.0: Appended runs/, archive/, logs/raw/, scratch/, BDC_TRANSFORMATION_PLAN.txt, AG_RUNBOOK.txt, AG_LESSONS_NOTE.txt to .gitignore.
+
+## FAILURES
+- (None)
+
+## SURPRISES
+- [2026-11-16 16:18] STEP 1.0: Available RAM was 1.38 GB due to running background applications (WSL, browsers, IDEs); battery plugged in; power confirmed; full run in STEP 1.13 will pause for heavy apps to close.
+
+## OPEN QUESTIONS
+- (None)
+
+# ------------------------------------------------------------------------------
+# 2. TIMELINE OF ACTIONS AND COMMANDS
+# ------------------------------------------------------------------------------
+
+[2026-11-16 16:16] STEP 1.0 | ACTION
+Starting STEP 1.0 setup and pre-flight on branch bdc-final.
+
+[2026-11-16 16:16] STEP 1.0 | CMD
+git branch --show-current
+RESULT: bdc-final
+
+[2026-11-16 16:18] STEP 1.0 | CMD
+psutil hardware and environment checks
+RESULT:
+- Total RAM: 16.51 GB, Available: 1.38 GB
+- Battery: plugged=True (78%)
+- Free disk on project drive: 119.74 GB
+- PaySim CSV in data/: data\PS_20174392719_1491204439457_log.csv (493,534,783 bytes)
+- PaySim CSV SHA-256: 16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b
+
+[2026-11-16 16:19] STEP 1.0 | ACTION
+Created project directories: logs/raw, scratch, runs, docs, configs, tests, archive.
+Appended ignore patterns to .gitignore.
+Created NOTES_FOR_LATER.txt, docs/GLOSSARY.md, provenance.py, PROGRESS.txt.
+
+[2026-11-16 16:20] STEP 1.0 | CMD
+python -c "import provenance"
+RESULT: provenance imported successfully

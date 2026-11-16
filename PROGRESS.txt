@@ -1,0 +1,43 @@
+STEP 1.0 | DONE | S1.0 | setup, logging, glossary, provenance helpers
+STEP 1.1 | PENDING | - | Environment facts, raw data facts, engine findings
+STEP 1.2 | PENDING | - | Single Spark session builder, remove dead utils
+STEP 1.3 | PENDING | - | StageTimer and memory sampler
+STEP 1.4 | PENDING | - | run_info.json writer
+STEP 1.5 | PENDING | - | Spark-native graph algorithms with engine log
+STEP 1.6 | PENDING | - | Shared feature sets and model config
+STEP 1.7 | PENDING | - | Splits, training sample, validation threshold
+STEP 1.8 | PENDING | - | Distributed scoring and realistic evaluation
+STEP 1.9 | PENDING | - | Model files, importance, ablation
+STEP 1.10 | PENDING | - | Dashboard compatibility and scorer test
+STEP 1.11 | PENDING | - | Test data and test suite
+STEP 1.12 | PENDING | - | Pin requirements and fix README facts
+STEP 1.13 | PENDING | - | Sample run, then full run v2 promoted to outputs
+STEP 1.14 | PENDING | - | [OPTIONAL] Past-only graph features variant
+GATE 1 | PENDING | - | Chunk 1 summary and gate check
+STEP 2.1 | PENDING | - | Business impact table
+STEP 2.2 | PENDING | - | Real-data ring analysis
+STEP 2.3 | PENDING | - | Planted-ring validation with camouflage
+STEP 2.4 | PENDING | - | Dashboard tabs: Business impact and Fraud rings
+STEP 2.5 | PENDING | - | Model results polish
+STEP 2.6 | PENDING | - | generate_visuals.py rewrite
+STEP 2.7 | PENDING | - | [OPTIONAL] Account lookup in scorer
+STEP 2.8 | PENDING | - | Dashboard test and chunk summary
+GATE 2 | PENDING | - | Chunk 2 summary and gate check
+STEP 3.0 | PENDING | - | Pre-flight for long runs
+STEP 3.1 | PENDING | - | Parquet storage layer and benchmark
+STEP 3.2 | PENDING | - | Graph-stage runner reused by benchmarks
+STEP 3.3 | PENDING | - | Scaling benchmark
+STEP 3.4 | PENDING | - | pandas/NetworkX vs Spark comparison
+STEP 3.5 | PENDING | - | Aggregation, charts, dashboard
+STEP 3.6 | PENDING | - | [OPTIONAL] Spark settings comparison
+STEP 3.7 | PENDING | - | Demo run helper for Spark UI screenshots
+GATE 3 | PENDING | - | Chunk 3 summary and gate check
+STEP 4.1 | PENDING | - | Report generator and results snapshot
+STEP 4.2 | PENDING | - | README rewrite from template
+STEP 4.3 | PENDING | - | Paper rewrite from template and claims trace
+STEP 4.4 | PENDING | - | Architecture diagram
+STEP 4.5 | PENDING | - | Demo script and viva questions
+STEP 4.6 | PENDING | - | Archive legacy web dashboard
+STEP 4.7 | PENDING | - | Consistency check script (read-only)
+STEP 4.8 | PENDING | - | Final summary and last push
+GATE 4 | PENDING | - | Final gate

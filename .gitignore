@@ -12,3 +12,9 @@ backups/
 outputs_test/
 old_app_reference.py
 BDC_TRANSFORMATION_PLAN.txt
+AG_RUNBOOK.txt
+AG_LESSONS_NOTE.txt
+runs/
+archive/
+logs/raw/
+scratch/

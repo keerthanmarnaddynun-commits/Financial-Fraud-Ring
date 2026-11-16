@@ -1,0 +1,3 @@
+# NOTES_FOR_LATER.txt
+# Items noticed outside current step scope to be addressed in future phases.
+
