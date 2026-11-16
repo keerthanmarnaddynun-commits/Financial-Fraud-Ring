@@ -232,5 +232,40 @@ def train_comparative_models(
         for m_name in TRAINABLE_MODELS:
             joblib.dump(models[m_name], target_dir / f"{m_name}.joblib")
 
+        # Save feature_names.json
+        feature_names_dict = {
+            m_name: get_model_features(m_name) for m_name in TRAINABLE_MODELS
+        }
+        with open(target_dir / "feature_names.json", "w", encoding="utf-8") as f:
+            json.dump(feature_names_dict, f, indent=2)
+
+        # Compute and write feature_importance.json (XGBoost gain, top 20 per model)
+        importance_dict: Dict[str, Any] = {}
+        for m_name in TRAINABLE_MODELS:
+            pipe = models[m_name]
+            try:
+                prep = pipe.named_steps["preprocessing"]
+                clf = pipe.named_steps["classifier"]
+                raw_names = prep.get_feature_names_out()
+                clean_names = [
+                    f.replace("numeric__", "").replace("type__", "") for f in raw_names
+                ]
+                importances = clf.feature_importances_
+                paired = sorted(
+                    zip(clean_names, importances),
+                    key=lambda x: x[1],
+                    reverse=True,
+                )
+                top20 = [
+                    {"feature": feat, "importance": float(imp)}
+                    for feat, imp in paired[:20]
+                ]
+                importance_dict[m_name] = top20
+            except Exception:
+                importance_dict[m_name] = []
+
+        with open(Path(output_dir) / "feature_importance.json", "w", encoding="utf-8") as f:
+            json.dump(importance_dict, f, indent=2)
+
     test["actual"] = test["isFraud"].astype(int)
     return models, test, scores

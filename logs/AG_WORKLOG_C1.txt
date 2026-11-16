@@ -214,3 +214,18 @@ python -m pytest tests/test_eval_consistency.py -v
 RESULT: 2 passed in 4.90s.
 - test_evaluate_model_predictions_exact_consistency: PASSED
 - test_evaluation_json_file_consistency: PASSED (verified on outputs_test/evaluation.json: tp+fn equals fraud rows and tp+fp+fn+tn equals test rows for every split and model).
+
+[2026-11-16 20:49] STEP 1.9 | ACTION
+Implemented model persistence and feature importance in models.py:
+1. Serialized m1_tabular.joblib, m1_tabular_noerr.joblib, m2_graph.joblib, m3_community_mule.joblib, and baseline.joblib under models/.
+2. Generated models/feature_names.json documenting feature inputs per model.
+3. Computed XGBoost gain feature importances (top 20 per model) and saved to feature_importance.json.
+4. Created tests/test_model_artifacts.py verifying serialization, reload via joblib in fresh context, and prediction on 5 test rows.
+
+[2026-11-16 20:49] STEP 1.9 | DECISIONS
+- Used ColumnTransformer get_feature_names_out() with prefix stripping to link importance weights directly to clean feature names.
+
+[2026-11-16 20:49] STEP 1.9 | CMD
+python -m pytest tests/test_model_artifacts.py -v
+RESULT: 1 passed in 52.41s.
+- test_model_artefacts_save_and_predict_fresh_process: PASSED (all models loaded and predicted probabilities on 5 test rows).
