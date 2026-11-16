@@ -110,3 +110,10 @@ Created stage_timer.py with StageTimer context manager and tests/test_stage_time
 [2026-11-16 17:34] STEP 1.3 | CMD
 python -m pytest tests\test_stage_timer.py -v
 RESULT: 2 passed in 0.75s. Peak RSS sampling successfully detected physical allocation of 200MB int64 array.
+
+[2026-11-16 17:38] STEP 1.4 | ACTION
+Created run_info.py to capture comprehensive execution metadata, versions, Git commit/branch, and dataset hash; integrated into main.py.
+
+[2026-11-16 17:40] STEP 1.4 | CMD
+python test of run_info.py writing outputs_test/run_info.json
+RESULT: Success; verified all keys populated and non-empty (Python 3.13.7, OpenJDK 20.0.2, PySpark 4.2.0, pandas 3.0.0, sklearn 1.8.0, xgboost 3.4.1, commit acd44ff, branch bdc-final, dataset SHA-256 16910f9...).

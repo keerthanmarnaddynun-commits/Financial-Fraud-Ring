@@ -16,6 +16,7 @@ from data_ingestion import (
     ensure_dataset,
     load_and_validate_data,
 )
+from run_info import write_run_info
 from spark_session import create_spark_session
 from evaluation import collect_spark_metrics, evaluate_models, write_json
 from feature_engineering import (
@@ -37,6 +38,14 @@ def run_pipeline(
     pipeline_started = time.perf_counter()
     output_dir.mkdir(parents=True, exist_ok=True)
     input_path = data_path or ensure_dataset()
+    write_run_info(
+        output_dir / "run_info.json",
+        dataset_path=input_path,
+        config={
+            "sample_fraction": sample_fraction,
+            "max_training_rows": max_training_rows,
+        },
+    )
     spark = create_spark_session()
     timings: Dict[str, float] = {}
 
