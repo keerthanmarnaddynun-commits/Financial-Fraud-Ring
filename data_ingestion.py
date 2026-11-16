@@ -24,15 +24,7 @@ from pyspark.sql.types import (
 DATASET_ID = "ealaxi/paysim1"
 DATA_DIR = Path(__file__).resolve().parent / "data"
 
-import pyspark
-_spark_major = int(pyspark.__version__.split(".")[0])
-_scala_version = "s_2.13" if _spark_major >= 4 else "s_2.12"
-_default_gf_pkg = (
-    f"graphframes:graphframes:0.8.3-spark3.5-{_scala_version}"
-    if _spark_major >= 4
-    else "io.graphframes:graphframes-spark3_2.12:0.9.3"
-)
-GRAPHFRAMES_PACKAGE = os.getenv("GRAPHFRAMES_PACKAGE", _default_gf_pkg)
+from spark_session import GRAPHFRAMES_PACKAGE, create_spark_session
 
 PAYMENTS_SCHEMA = StructType(
     [
@@ -61,31 +53,6 @@ NUMERIC_COLUMNS = [
     "isFraud",
     "isFlaggedFraud",
 ]
-
-
-def create_spark_session(app_name: str = "PaySimFraudAnalytics") -> SparkSession:
-    """Start a local Spark session, loading the matching GraphFrames JVM package."""
-    builder = (
-        SparkSession.builder.master("local[*]")
-        .appName(app_name)
-        .config("spark.jars.packages", GRAPHFRAMES_PACKAGE)
-        .config("spark.driver.memory", os.getenv("SPARK_DRIVER_MEMORY", "8g"))
-        .config(
-            "spark.jars.excludes",
-            "org.slf4j:slf4j-api,org.scala-lang:scala-library",
-        )
-        .config(
-            "spark.default.parallelism",
-            os.getenv("SPARK_DEFAULT_PARALLELISM", "48"),
-        )
-        .config(
-            "spark.sql.shuffle.partitions",
-            os.getenv("SPARK_SHUFFLE_PARTITIONS", "48"),
-        )
-        .config("spark.ui.enabled", "true")
-        .config("spark.sql.execution.arrow.pyspark.enabled", "true")
-    )
-    return builder.getOrCreate()
 
 
 def ensure_dataset(data_dir: Path = DATA_DIR) -> Path:

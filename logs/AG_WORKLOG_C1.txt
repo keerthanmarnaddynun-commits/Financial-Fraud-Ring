@@ -10,6 +10,7 @@
 ## DECISIONS
 - [2026-11-16 16:20] STEP 1.0: Appended runs/, archive/, logs/raw/, scratch/, BDC_TRANSFORMATION_PLAN.txt, AG_RUNBOOK.txt, AG_LESSONS_NOTE.txt to .gitignore.
 - [2026-11-16 16:59] STEP 1.1: Retain PySpark 4.2.0; documented GraphFrames connectedComponents failure (NoSuchMethodError: SparkSession.implicits()); confirmed that driver fallback to toPandas()/NetworkX must be replaced by distributed Spark-native DataFrame algorithms in STEP 1.5.
+- [2026-11-16 17:30] STEP 1.2: Centralized SparkSession builder in spark_session.py with 6g default driver memory, runs/_checkpoints checkpoint directory, and environment-only HADOOP_HOME; removed utils.py.
 
 ## FAILURES
 - (None)
@@ -83,3 +84,22 @@ RESULT:
 - g.connectedComponents: FAILS with java.lang.NoSuchMethodError: 'SparkSession.implicits()' due to Spark 4 Scala API change.
 - In feature_engineering.py, this failure triggered a fallback to NetworkX via graph.edges.select("src", "dst").toPandas().
 - Wrote findings to docs/engine_findings.txt. Decision logged: implement Spark-native DataFrame algorithms in STEP 1.5.
+
+[2026-11-16 17:03] STEP 1.2 | ACTION
+Creating centralized spark_session.py and removing dead utils.py.
+
+[2026-11-16 17:03] STEP 1.2 | CMD
+git rm utils.py
+RESULT: Removed utils.py (eliminated dead SparkPerformanceTracker and hardcoded paths).
+
+[2026-11-16 17:15] STEP 1.2 | CMD
+Check *.py for 'nbala' and 'C:\hadoop'
+RESULT: 0 matches found across all *.py files.
+
+[2026-11-16 17:24] STEP 1.2 | CMD
+python main.py --sample-fraction 0.005 --output-dir outputs_test
+RESULT: Completed with exit code 0.
+- transaction_count: 32,001
+- account_count: 63,224
+- stage_count: 449
+- pipeline_total: 365.72s

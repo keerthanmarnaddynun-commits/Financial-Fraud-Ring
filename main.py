@@ -13,10 +13,10 @@ from typing import Any, Dict, Optional
 from data_ingestion import (
     PAYMENTS_SCHEMA,
     build_data_quality_report,
-    create_spark_session,
     ensure_dataset,
     load_and_validate_data,
 )
+from spark_session import create_spark_session
 from evaluation import collect_spark_metrics, evaluate_models, write_json
 from feature_engineering import (
     add_transaction_graph_features,

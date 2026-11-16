@@ -1,6 +1,6 @@
 STEP 1.0 | DONE | S1.0 | setup, logging, glossary, provenance helpers
 STEP 1.1 | DONE | S1.1 | environment, raw data facts, engine findings
-STEP 1.2 | PENDING | - | Single Spark session builder, remove dead utils
+STEP 1.2 | DONE | S1.2 | single Spark session builder, remove dead utils
 STEP 1.3 | PENDING | - | StageTimer and memory sampler
 STEP 1.4 | PENDING | - | run_info.json writer
 STEP 1.5 | PENDING | - | Spark-native graph algorithms with engine log
