@@ -167,3 +167,25 @@ RESULT: 7 passed in 10.45s.
 - test_feature_hierarchy_ladder: PASSED
 - test_model_config_loading: PASSED
 - test_create_model_pipeline_trains_and_predicts: PASSED
+
+[2026-11-16 19:10] STEP 1.7 | ACTION
+Implemented data split generators in splits.py:
+1. create_time_split: step <= val_cutoff for train, val_cutoff < step <= q75 for validation, step > q75 for test.
+2. create_group_dest_split: abs(hash(nameDest)) % 4 in (2, 3) for train, % 4 == 1 for val, % 4 == 0 for test.
+3. create_random_split: abs(hash(transaction_id)) % 4 in (2, 3) for train, % 4 == 1 for val, % 4 == 0 for test.
+4. draw_training_sample: bounded sampling strictly from train set with 10:1 negative-to-positive ratio capped at 300,000 rows.
+5. find_best_f1_threshold: validation F1 threshold optimizer via precision_recall_curve.
+Imported split functions in models.py and created unit test suite in tests/test_splits.py.
+
+[2026-11-16 19:10] STEP 1.7 | DECISIONS
+- Handled small test step distributions gracefully to prevent empty train or test partitions while guaranteeing max(train step) < min(test step).
+- Destination grouping partitions cleanly by destination account hash to eliminate test identity leakage.
+
+[2026-11-16 19:10] STEP 1.7 | CMD
+python -m pytest tests/test_splits.py -v
+RESULT: 5 passed in 73.54s.
+- test_time_split_max_train_step_less_than_min_test_step: PASSED (max_train_step < min_test_step)
+- test_group_dest_split_no_dest_leakage: PASSED (0 overlap between train and test destinations)
+- test_random_split_no_tx_leakage: PASSED (0 overlap between train and test transaction IDs)
+- test_find_best_f1_threshold: PASSED (optimal operating threshold found)
+- test_draw_training_sample_ratio: PASSED (exact 10:1 negative-to-positive ratio)
