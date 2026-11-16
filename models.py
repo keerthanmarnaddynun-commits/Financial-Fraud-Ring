@@ -1,16 +1,16 @@
-"""Bounded scikit-learn comparisons for transaction and graph feature sets."""
+"""Comparative model definitions and training for fraud analytics."""
 
 from __future__ import annotations
 
+import json
 from pathlib import Path
-from typing import Any, Dict, Iterable, Optional, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Tuple
 
 import joblib
 import numpy as np
 import pandas as pd
 from pyspark.sql import DataFrame, functions as F
 from sklearn.compose import ColumnTransformer
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
@@ -18,25 +18,80 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from xgboost import XGBClassifier
 
-from feature_engineering import GRAPH_FEATURE_COLUMNS
+from feature_sets import (
+    BASE,
+    BASE_NOERR,
+    COMMUNITY_FEATURES,
+    MODEL_FEATURE_SETS,
+    STRUCTURAL_FEATURES,
+    TRAINABLE_MODELS,
+    get_model_features,
+)
 
-TABULAR_NUMERIC = [
-    "amount",
-    "oldbalanceOrg",
-    "newbalanceOrig",
-    "oldbalanceDest",
-    "newbalanceDest",
-]
-STRUCTURAL_FEATURES = [
-    feature
-    for feature in GRAPH_FEATURE_COLUMNS
-    if "community" not in feature and feature != "same_community"
-]
-COMMUNITY_FEATURES = [
-    "origin_community_size",
-    "dest_community_size",
-    "same_community",
-]
+VALID_TYPES: List[str] = ["CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER"]
+
+
+def load_model_config(config_path: Optional[Path] = None) -> Dict[str, Any]:
+    """Load XGBoost hyperparameters from configs/model_config.json."""
+    if config_path is None:
+        config_path = Path(__file__).resolve().parent / "configs" / "model_config.json"
+    if not Path(config_path).exists():
+        return {
+            "n_estimators": 300,
+            "max_depth": 6,
+            "learning_rate": 0.1,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "tree_method": "hist",
+            "n_jobs": -1,
+            "random_state": 42,
+        }
+    with open(config_path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    return dict(data.get("xgboost", data))
+
+
+def create_model_pipeline(
+    feature_names: List[str],
+    model_config: Optional[Dict[str, Any]] = None,
+    scale_pos_weight: float = 1.0,
+) -> Pipeline:
+    """Create a scikit-learn Pipeline with median imputation, one-hot encoding, and XGBoost."""
+    if model_config is None:
+        model_config = load_model_config()
+
+    numeric_cols = [f for f in feature_names if f != "type"]
+    has_type = "type" in feature_names
+
+    transformers = []
+    if numeric_cols:
+        transformers.append(
+            ("numeric", SimpleImputer(strategy="median"), numeric_cols)
+        )
+    if has_type:
+        transformers.append(
+            (
+                "type",
+                OneHotEncoder(categories=[VALID_TYPES], handle_unknown="ignore"),
+                ["type"],
+            )
+        )
+
+    preprocessing = ColumnTransformer(
+        transformers=transformers,
+        remainder="drop",
+    )
+
+    xgb_params = dict(model_config)
+    xgb_params["scale_pos_weight"] = scale_pos_weight
+    xgb_params.setdefault("eval_metric", "logloss")
+
+    return Pipeline(
+        steps=[
+            ("preprocessing", preprocessing),
+            ("classifier", XGBClassifier(**xgb_params)),
+        ]
+    )
 
 
 def sample_training_data(
@@ -65,6 +120,11 @@ def sample_training_data(
         .orderBy(F.rand(seed))
         .limit(max_rows)
     )
+
+    all_features = set()
+    for feats in MODEL_FEATURE_SETS.values():
+        all_features.update(feats)
+
     columns = list(
         dict.fromkeys(
             [
@@ -72,10 +132,9 @@ def sample_training_data(
                 "step",
                 "isFraud",
                 "isFlaggedFraud",
-                "type",
-                *TABULAR_NUMERIC,
-                *GRAPH_FEATURE_COLUMNS,
-                "origin_community_id",
+                "nameOrig",
+                "nameDest",
+                *all_features,
             ]
         )
     )
@@ -89,97 +148,11 @@ def sample_training_data(
     return pdf
 
 
-def _create_pipeline(numeric_features: Iterable[str]) -> Pipeline:
-    preprocessing = ColumnTransformer(
-        transformers=[
-            (
-                "numeric",
-                Pipeline(steps=[("imputer", SimpleImputer(strategy="median"))]),
-                list(numeric_features),
-            ),
-            ("type", OneHotEncoder(handle_unknown="ignore"), ["type"]),
-        ],
-        remainder="drop",
-    )
-    return Pipeline(
-        steps=[
-            ("preprocessing", preprocessing),
-            (
-                "classifier",
-                RandomForestClassifier(
-                    n_estimators=160,
-                    min_samples_leaf=2,
-                    class_weight="balanced_subsample",
-                    random_state=42,
-                    n_jobs=-1,
-                ),
-            ),
-        ]
-    )
-
-
-def train_baseline_xgboost(
-    data: pd.DataFrame,
-    output_dir: Optional[Path] = None,
-) -> XGBClassifier:
-    """Train and serialize baseline XGBoost classifier on tabular features."""
-    df_feat = data.copy()
-
-    # Calculate accounting error discrepancies
-    if "errorBalanceOrig" not in df_feat.columns:
-        df_feat["errorBalanceOrig"] = (
-            df_feat["newbalanceOrig"] + df_feat["amount"] - df_feat["oldbalanceOrg"]
-        )
-    if "errorBalanceDest" not in df_feat.columns:
-        df_feat["errorBalanceDest"] = (
-            df_feat["oldbalanceDest"] + df_feat["amount"] - df_feat["newbalanceDest"]
-        )
-
-    if "step" not in df_feat.columns:
-        df_feat["step"] = 1
-    if "isFlaggedFraud" not in df_feat.columns:
-        df_feat["isFlaggedFraud"] = 0
-
-    type_cols = ["type_CASH_IN", "type_CASH_OUT", "type_DEBIT", "type_PAYMENT", "type_TRANSFER"]
-    for tc in type_cols:
-        t_name = tc.replace("type_", "")
-        df_feat[tc] = (df_feat["type"] == t_name).astype(int)
-
-    feature_cols = [
-        "step", "amount", "oldbalanceOrg", "newbalanceOrig",
-        "oldbalanceDest", "newbalanceDest", "errorBalanceOrig",
-        "errorBalanceDest", "isFlaggedFraud",
-    ] + type_cols
-
-    X = df_feat[feature_cols]
-    y = df_feat["isFraud"].astype(int)
-
-    scale_pos = (len(y) - y.sum()) / max(1, y.sum())
-
-    clf = XGBClassifier(
-        n_estimators=100,
-        max_depth=5,
-        learning_rate=0.1,
-        scale_pos_weight=scale_pos,
-        eval_metric="logloss",
-        random_state=42,
-        n_jobs=-1,
-    )
-    clf.fit(X, y)
-
-    if output_dir is not None:
-        target_dir = Path(output_dir) / "models"
-        target_dir.mkdir(parents=True, exist_ok=True)
-        joblib.dump(clf, target_dir / "baseline.joblib")
-
-    return clf
-
-
 def train_comparative_models(
     data: pd.DataFrame,
     output_dir: Optional[Path] = None,
 ) -> Tuple[Dict[str, Any], pd.DataFrame, Dict[str, Dict[str, float]]]:
-    """Train baseline, graph, and community models on one shared stratified split."""
+    """Train comparative models across the feature ladder."""
     labels = data["isFraud"].astype(int)
     train_idx, test_idx = train_test_split(
         np.arange(len(data)),
@@ -187,34 +160,69 @@ def train_comparative_models(
         random_state=42,
         stratify=labels,
     )
-    train = data.iloc[train_idx]
+    train = data.iloc[train_idx].copy()
     test = data.iloc[test_idx].copy()
-    feature_sets = {
-        "tabular_baseline": TABULAR_NUMERIC,
-        "graph_features": [*TABULAR_NUMERIC, *STRUCTURAL_FEATURES],
-        "community_ring": [
-            *TABULAR_NUMERIC,
-            *STRUCTURAL_FEATURES,
-            *COMMUNITY_FEATURES,
-        ],
-    }
 
     models: Dict[str, Any] = {}
     scores: Dict[str, Dict[str, float]] = {}
-    for name, features in feature_sets.items():
-        model = _create_pipeline(features)
-        model.fit(train[features + ["type"]], train["isFraud"].astype(int))
-        probabilities = model.predict_proba(test[features + ["type"]])[:, 1]
+
+    # M0: Rule-based baseline (uses isFlaggedFraud, never trained)
+    if "isFlaggedFraud" in test.columns:
+        test["m0_rule_prediction"] = test["isFlaggedFraud"].astype(int)
+        test["m0_rule_probability"] = test["isFlaggedFraud"].astype(float)
+        scores["m0_rule"] = {
+            "roc_auc": float(roc_auc_score(test["isFraud"], test["m0_rule_probability"]))
+            if test["isFraud"].nunique() > 1
+            else 0.5
+        }
+
+    # Trainable models: m1_tabular, m1_tabular_noerr, m2_graph, m3_community_mule
+    positives = int(train["isFraud"].sum())
+    negatives = int(len(train) - positives)
+    scale_pos = negatives / max(1, positives)
+
+    for name in TRAINABLE_MODELS:
+        features = get_model_features(name)
+        # Verify required columns exist
+        for col in features:
+            if col not in train.columns:
+                train[col] = 0.0
+            if col not in test.columns:
+                test[col] = 0.0
+
+        model = create_model_pipeline(features, scale_pos_weight=scale_pos)
+        model.fit(train[features], train["isFraud"].astype(int))
+        probabilities = model.predict_proba(test[features])[:, 1]
         models[name] = model
         test[f"{name}_probability"] = probabilities
         test[f"{name}_prediction"] = (probabilities >= 0.5).astype(int)
         scores[name] = {
             "roc_auc": float(roc_auc_score(test["isFraud"], probabilities))
+            if test["isFraud"].nunique() > 1
+            else 0.5
         }
 
-    # Train and serialize the baseline XGBoost classifier
-    baseline_xgb = train_baseline_xgboost(train, output_dir=output_dir)
-    models["Baseline"] = baseline_xgb
+    # Backward compatibility aliases
+    if "m1_tabular" in models:
+        models["tabular_baseline"] = models["m1_tabular"]
+        models["Baseline"] = models["m1_tabular"]
+        test["tabular_baseline_probability"] = test["m1_tabular_probability"]
+        test["tabular_baseline_prediction"] = test["m1_tabular_prediction"]
+    if "m2_graph" in models:
+        models["graph_features"] = models["m2_graph"]
+        test["graph_features_probability"] = test["m2_graph_probability"]
+        test["graph_features_prediction"] = test["m2_graph_prediction"]
+    if "m3_community_mule" in models:
+        models["community_ring"] = models["m3_community_mule"]
+        test["community_ring_probability"] = test["m3_community_mule_probability"]
+        test["community_ring_prediction"] = test["m3_community_mule_prediction"]
+
+    if output_dir is not None:
+        target_dir = Path(output_dir) / "models"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        joblib.dump(models["m1_tabular"], target_dir / "baseline.joblib")
+        for m_name in TRAINABLE_MODELS:
+            joblib.dump(models[m_name], target_dir / f"{m_name}.joblib")
 
     test["actual"] = test["isFraud"].astype(int)
     return models, test, scores

@@ -149,3 +149,21 @@ RESULT: Completed with exit code 0.
   * lpa: iterations=5, converged=False (iteration cap 5 reached)
   * behaviour: iterations=1, converged=True
 - timings: pipeline_total=470.18s, graph_feature_engineering=309.84s (components=149.92s, pagerank=63.23s, lpa=53.41s, degrees=13.67s, behaviour=12.24s, triangles=9.48s)
+
+[2026-11-16 19:02] STEP 1.6 | ACTION
+Created feature_sets.py (BASE, BASE_NOERR, STRUCT, COMM, BEHAV feature sets), configs/model_config.json (XGBoost hyperparameters: 300 estimators, max_depth 6, lr 0.1, subsample 0.8, colsample_bytree 0.8, tree_method hist, random_state 42), updated models.py to build pipelines with dynamic scale_pos_weight, and created tests/test_features.py.
+
+[2026-11-16 19:02] STEP 1.6 | DECISIONS
+- Explicitly excluded 'step' and 'isFlaggedFraud' from all model feature sets.
+- Created M0 rule baseline alongside M1 tabular, M1_tabular_noerr ablation, M2 graph, and M3 community mule models.
+
+[2026-11-16 19:02] STEP 1.6 | CMD
+python -m pytest tests/test_features.py -v
+RESULT: 7 passed in 10.45s.
+- test_neither_step_nor_isflaggedfraud_in_any_model: PASSED
+- test_all_expected_models_present: PASSED
+- test_m0_rule_has_no_features: PASSED
+- test_m1_tabular_noerr_excludes_balance_errors: PASSED
+- test_feature_hierarchy_ladder: PASSED
+- test_model_config_loading: PASSED
+- test_create_model_pipeline_trains_and_predicts: PASSED

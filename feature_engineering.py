@@ -481,12 +481,19 @@ def add_transaction_graph_features(
         )
 
     # Balance error accounting features
-    enriched = enriched.withColumn(
-        "errorBalanceOrig",
-        F.col("newbalanceOrig") + F.col("amount") - F.col("oldbalanceOrg"),
-    ).withColumn(
-        "errorBalanceDest",
-        F.col("oldbalanceDest") + F.col("amount") - F.col("newbalanceDest"),
+    enriched = (
+        enriched.withColumn(
+            "errorBalanceOrig",
+            F.col("newbalanceOrig") + F.col("amount") - F.col("oldbalanceOrg"),
+        )
+        .withColumn(
+            "errorBalanceDest",
+            F.col("oldbalanceDest") + F.col("amount") - F.col("newbalanceDest"),
+        )
+        .withColumn(
+            "is_merchant",
+            F.when(F.col("nameDest").startswith("M"), 1.0).otherwise(0.0),
+        )
     )
 
     return enriched
