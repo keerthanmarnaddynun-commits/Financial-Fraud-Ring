@@ -117,3 +117,35 @@ Created run_info.py to capture comprehensive execution metadata, versions, Git c
 [2026-11-16 17:40] STEP 1.4 | CMD
 python test of run_info.py writing outputs_test/run_info.json
 RESULT: Success; verified all keys populated and non-empty (Python 3.13.7, OpenJDK 20.0.2, PySpark 4.2.0, pandas 3.0.0, sklearn 1.8.0, xgboost 3.4.1, commit acd44ff, branch bdc-final, dataset SHA-256 16910f9...).
+
+[2026-11-16 18:54] STEP 1.5 | ACTION
+Implemented Spark-native graph algorithms in feature_engineering.py (in/out degrees, PageRank with damping 0.85, triangle counting via 3-way join on undirected edges, connected components via iterative min-label propagation, label propagation via iterative neighbor mode selection, and label-free behaviour features: total_in_amount, total_out_amount, pass_through_ratio, distinct_senders, distinct_receivers, is_merchant). Added per-algorithm StageTimer tracking and engine reporting ("spark-native", iterations, converged). Added tests/test_graph_algorithms.py comparing against NetworkX ground truth.
+
+[2026-11-16 18:54] STEP 1.5 | DECISIONS
+- Used Spark DataFrame operations with iterative localCheckpointing to prevent lineage explosion in PageRank, connected components, and LPA.
+- Capped PageRank at 10 iterations, connected components at 10 iterations, and LPA at 5 iterations.
+- Handled division by zero in pass_through_ratio using F.when(total_in > 0).
+
+[2026-11-16 18:54] STEP 1.5 | CMD
+python -m pytest tests/test_graph_algorithms.py -v
+RESULT: 5 passed in 1623.47s.
+- test_degrees_equal_networkx: PASSED
+- test_triangles_equal_networkx: PASSED
+- test_connected_components_partition_equal_networkx: PASSED
+- test_pagerank_within_tolerance: PASSED
+- test_lpa_subsets_of_connected_components: PASSED
+
+[2026-11-16 18:54] STEP 1.5 | CMD
+python main.py --sample-fraction 0.02 --output-dir outputs_test
+RESULT: Completed with exit code 0.
+- transaction_count: 127,737
+- account_count: 244,236
+- engines: degrees="spark-native", pagerank="spark-native", triangles="spark-native", components="spark-native", lpa="spark-native", behaviour="spark-native"
+- algorithm_info:
+  * degrees: iterations=1, converged=True
+  * pagerank: iterations=10, converged=True
+  * triangles: iterations=1, converged=True
+  * components: iterations=4, converged=True
+  * lpa: iterations=5, converged=False (iteration cap 5 reached)
+  * behaviour: iterations=1, converged=True
+- timings: pipeline_total=470.18s, graph_feature_engineering=309.84s (components=149.92s, pagerank=63.23s, lpa=53.41s, degrees=13.67s, behaviour=12.24s, triangles=9.48s)

@@ -70,7 +70,10 @@ def run_pipeline(
         timings["graph_construction"] = time.perf_counter() - started
 
         started = time.perf_counter()
-        account_features = extract_account_features(graph).cache()
+        account_features, engines, algo_info = extract_account_features(
+            graph, transactions=transactions, timer_results=timings, spark=spark
+        )
+        account_features = account_features.cache()
         account_count = account_features.count()
         enriched = add_transaction_graph_features(
             transactions, account_features
@@ -92,6 +95,8 @@ def run_pipeline(
         metrics["sampled_training_rows"] = int(len(training_data))
         metrics["test_rows"] = int(len(test_data))
         metrics["model_names"] = list(models)
+        metrics["engines"] = engines
+        metrics["algorithm_info"] = algo_info
         write_json(metrics, str(output_dir / "scalability.json"))
         LOGGER.info("Evaluation report: %s", json.dumps(report, indent=2))
         LOGGER.info("Scalability metrics: %s", json.dumps(metrics, indent=2))
