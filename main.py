@@ -42,14 +42,12 @@ def run_pipeline(
 
     try:
         started = time.perf_counter()
-        raw_df = spark.read.option("header", True).option("mode", "PERMISSIVE").schema(
-            PAYMENTS_SCHEMA
-        ).csv(str(input_path))
         quality_report = build_data_quality_report(spark, input_path)
         write_json(quality_report, str(output_dir / "data_quality.json"))
         transactions = load_and_validate_data(spark, input_path)
         if sample_fraction is not None:
             transactions = transactions.sample(withReplacement=False, fraction=sample_fraction, seed=42)
+        transactions = transactions.cache()
         transaction_count = transactions.count()
         timings["ingestion_and_validation"] = time.perf_counter() - started
         LOGGER.info("Validated %s PaySim transactions", f"{transaction_count:,}")

@@ -4,3 +4,11 @@ data/
 outputs/
 output/
 *.log
+*.zip
+app_mine.py
+app_his.py
+*.patch
+backups/
+outputs_test/
+old_app_reference.py
+BDC_TRANSFORMATION_PLAN.txt
