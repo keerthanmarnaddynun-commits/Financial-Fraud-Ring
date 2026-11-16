@@ -149,3 +149,4 @@ class SparkPerformanceTracker:
             logger.debug(f"Could not retrieve shuffle metrics: {e}")
 
         return metrics
+

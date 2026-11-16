@@ -59,7 +59,7 @@ def run_pipeline(
 
         started = time.perf_counter()
         training_data = sample_training_data(enriched, max_training_rows)
-        models, test_data, _ = train_comparative_models(training_data)
+        models, test_data, _ = train_comparative_models(training_data, output_dir=output_dir)
         timings["model_training_and_prediction"] = time.perf_counter() - started
 
         report = evaluate_models(test_data)

@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Dict, Iterable, Tuple
+from pathlib import Path
+from typing import Any, Dict, Iterable, Optional, Tuple
 
+import joblib
 import numpy as np
 import pandas as pd
 from pyspark.sql import DataFrame, functions as F
@@ -14,6 +16,7 @@ from sklearn.metrics import roc_auc_score
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
+from xgboost import XGBClassifier
 
 from feature_engineering import GRAPH_FEATURE_COLUMNS
 
@@ -66,7 +69,9 @@ def sample_training_data(
         dict.fromkeys(
             [
                 "transaction_id",
+                "step",
                 "isFraud",
+                "isFlaggedFraud",
                 "type",
                 *TABULAR_NUMERIC,
                 *GRAPH_FEATURE_COLUMNS,
@@ -74,7 +79,9 @@ def sample_training_data(
             ]
         )
     )
-    pdf = sampled.select(*columns).toPandas()
+    available = set(transactions.columns)
+    selected = [c for c in columns if c in available]
+    pdf = sampled.select(*selected).toPandas()
     if pdf.empty or pdf["isFraud"].nunique() < 2:
         raise ValueError(
             "The bounded sample did not contain both classes; increase max_rows and retry"
@@ -111,9 +118,67 @@ def _create_pipeline(numeric_features: Iterable[str]) -> Pipeline:
     )
 
 
+def train_baseline_xgboost(
+    data: pd.DataFrame,
+    output_dir: Optional[Path] = None,
+) -> XGBClassifier:
+    """Train and serialize baseline XGBoost classifier on tabular features."""
+    df_feat = data.copy()
+
+    # Calculate accounting error discrepancies
+    if "errorBalanceOrig" not in df_feat.columns:
+        df_feat["errorBalanceOrig"] = (
+            df_feat["newbalanceOrig"] + df_feat["amount"] - df_feat["oldbalanceOrg"]
+        )
+    if "errorBalanceDest" not in df_feat.columns:
+        df_feat["errorBalanceDest"] = (
+            df_feat["oldbalanceDest"] + df_feat["amount"] - df_feat["newbalanceDest"]
+        )
+
+    if "step" not in df_feat.columns:
+        df_feat["step"] = 1
+    if "isFlaggedFraud" not in df_feat.columns:
+        df_feat["isFlaggedFraud"] = 0
+
+    type_cols = ["type_CASH_IN", "type_CASH_OUT", "type_DEBIT", "type_PAYMENT", "type_TRANSFER"]
+    for tc in type_cols:
+        t_name = tc.replace("type_", "")
+        df_feat[tc] = (df_feat["type"] == t_name).astype(int)
+
+    feature_cols = [
+        "step", "amount", "oldbalanceOrg", "newbalanceOrig",
+        "oldbalanceDest", "newbalanceDest", "errorBalanceOrig",
+        "errorBalanceDest", "isFlaggedFraud",
+    ] + type_cols
+
+    X = df_feat[feature_cols]
+    y = df_feat["isFraud"].astype(int)
+
+    scale_pos = (len(y) - y.sum()) / max(1, y.sum())
+
+    clf = XGBClassifier(
+        n_estimators=100,
+        max_depth=5,
+        learning_rate=0.1,
+        scale_pos_weight=scale_pos,
+        eval_metric="logloss",
+        random_state=42,
+        n_jobs=-1,
+    )
+    clf.fit(X, y)
+
+    if output_dir is not None:
+        target_dir = Path(output_dir) / "models"
+        target_dir.mkdir(parents=True, exist_ok=True)
+        joblib.dump(clf, target_dir / "baseline.joblib")
+
+    return clf
+
+
 def train_comparative_models(
     data: pd.DataFrame,
-) -> Tuple[Dict[str, Pipeline], pd.DataFrame, Dict[str, Dict[str, float]]]:
+    output_dir: Optional[Path] = None,
+) -> Tuple[Dict[str, Any], pd.DataFrame, Dict[str, Dict[str, float]]]:
     """Train baseline, graph, and community models on one shared stratified split."""
     labels = data["isFraud"].astype(int)
     train_idx, test_idx = train_test_split(
@@ -134,7 +199,7 @@ def train_comparative_models(
         ],
     }
 
-    models: Dict[str, Pipeline] = {}
+    models: Dict[str, Any] = {}
     scores: Dict[str, Dict[str, float]] = {}
     for name, features in feature_sets.items():
         model = _create_pipeline(features)
@@ -146,6 +211,10 @@ def train_comparative_models(
         scores[name] = {
             "roc_auc": float(roc_auc_score(test["isFraud"], probabilities))
         }
+
+    # Train and serialize the baseline XGBoost classifier
+    baseline_xgb = train_baseline_xgboost(train, output_dir=output_dir)
+    models["Baseline"] = baseline_xgb
 
     test["actual"] = test["isFraud"].astype(int)
     return models, test, scores
