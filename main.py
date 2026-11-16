@@ -10,7 +10,13 @@ import time
 from pathlib import Path
 from typing import Any, Dict, Optional
 
-from data_ingestion import create_spark_session, ensure_dataset, load_and_validate_data
+from data_ingestion import (
+    PAYMENTS_SCHEMA,
+    build_data_quality_report,
+    create_spark_session,
+    ensure_dataset,
+    load_and_validate_data,
+)
 from evaluation import collect_spark_metrics, evaluate_models, write_json
 from feature_engineering import (
     add_transaction_graph_features,
@@ -26,6 +32,7 @@ def run_pipeline(
     data_path: Optional[Path],
     output_dir: Path,
     max_training_rows: int,
+    sample_fraction: Optional[float] = None,
 ) -> Dict[str, Any]:
     pipeline_started = time.perf_counter()
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -35,7 +42,14 @@ def run_pipeline(
 
     try:
         started = time.perf_counter()
-        transactions = load_and_validate_data(spark, input_path).cache()
+        raw_df = spark.read.option("header", True).option("mode", "PERMISSIVE").schema(
+            PAYMENTS_SCHEMA
+        ).csv(str(input_path))
+        quality_report = build_data_quality_report(spark, input_path)
+        write_json(quality_report, str(output_dir / "data_quality.json"))
+        transactions = load_and_validate_data(spark, input_path)
+        if sample_fraction is not None:
+            transactions = transactions.sample(withReplacement=False, fraction=sample_fraction, seed=42)
         transaction_count = transactions.count()
         timings["ingestion_and_validation"] = time.perf_counter() - started
         LOGGER.info("Validated %s PaySim transactions", f"{transaction_count:,}")
@@ -74,7 +88,7 @@ def run_pipeline(
         write_json(metrics, str(output_dir / "scalability.json"))
         LOGGER.info("Evaluation report: %s", json.dumps(report, indent=2))
         LOGGER.info("Scalability metrics: %s", json.dumps(metrics, indent=2))
-        return {"evaluation": report, "scalability": metrics}
+        return {"evaluation": report, "scalability": metrics, "data_quality": quality_report}
     finally:
         spark.stop()
 
@@ -101,6 +115,12 @@ def parse_args() -> argparse.Namespace:
         default=100_000,
         help="Maximum class-aware sample collected for scikit-learn training.",
     )
+    parser.add_argument(
+        "--sample-fraction",
+        type=float,
+        default=None,
+        help="Optional sample fraction for fast debugging runs (0.0-1.0).",
+    )
     return parser.parse_args()
 
 
@@ -110,7 +130,9 @@ def main() -> None:
         format="%(asctime)s %(levelname)s %(name)s: %(message)s",
     )
     args = parse_args()
-    run_pipeline(args.data, args.output_dir, args.max_training_rows)
+    if args.sample_fraction is not None and not 0 < args.sample_fraction <= 1:
+        raise ValueError("--sample-fraction must be between 0 and 1.")
+    run_pipeline(args.data, args.output_dir, args.max_training_rows, args.sample_fraction)
 
 
 if __name__ == "__main__":
