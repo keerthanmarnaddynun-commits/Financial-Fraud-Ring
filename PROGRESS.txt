@@ -6,7 +6,7 @@ STEP 1.4 | DONE | S1.4 | run_info writer
 STEP 1.5 | DONE | S1.5 | Spark-native graph algorithms with engine log
 STEP 1.6 | DONE | S1.6 | Shared feature sets and model config
 STEP 1.7 | DONE | S1.7 | Splits, training sample, validation threshold
-STEP 1.8 | PENDING | - | Distributed scoring and realistic evaluation
+STEP 1.8 | DONE | S1.8 | Distributed scoring and realistic evaluation
 STEP 1.9 | PENDING | - | Model files, importance, ablation
 STEP 1.10 | PENDING | - | Dashboard compatibility and scorer test
 STEP 1.11 | PENDING | - | Test data and test suite

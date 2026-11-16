@@ -189,3 +189,28 @@ RESULT: 5 passed in 73.54s.
 - test_random_split_no_tx_leakage: PASSED (0 overlap between train and test transaction IDs)
 - test_find_best_f1_threshold: PASSED (optimal operating threshold found)
 - test_draw_training_sample_ratio: PASSED (exact 10:1 negative-to-positive ratio)
+
+[2026-11-16 20:05] STEP 1.8 | ACTION
+Implemented distributed batch scoring with PySpark mapInPandas and comprehensive multi-split evaluation in evaluation.py:
+1. Broadcasted trained models across Spark workers and scored test and validation sets via mapInPandas, saving scored_<split>.parquet.
+2. Optimized F1 threshold on validation sets at true prevalence.
+3. Computed evaluation metrics at validation threshold and 0.5: precision, recall, f1, exact confusion counts (tp, fp, fn, tn), ROC AUC, average precision, prevalence, false_alarms_per_10k, and total rows.
+4. Exported PR curves (capped at 2000 points per model) to pr_curves.csv.
+5. Measured scoring throughput via StageTimer.
+6. Updated app.py to support the new splits/at_threshold schema and added tests/test_eval_consistency.py.
+
+[2026-11-16 20:05] STEP 1.8 | DECISIONS
+- Handled empty partitions in mapInPandas by returning empty DataFrame matching the output schema.
+- Added summary() method to StageTimer to expose wall_seconds and memory deltas cleanly.
+
+[2026-11-16 20:05] STEP 1.8 | CMD
+python main.py --sample-fraction 0.02 --output-dir outputs_test
+RESULT: Completed with exit code 0.
+- Generated evaluation.json across time, group_dest, and random splits for m0_rule, m1_tabular, m1_tabular_noerr, m2_graph, m3_community_mule.
+- Written scored_time.parquet, scored_group_dest.parquet, scored_random.parquet, pr_curves.csv.
+
+[2026-11-16 20:05] STEP 1.8 | CMD
+python -m pytest tests/test_eval_consistency.py -v
+RESULT: 2 passed in 4.90s.
+- test_evaluate_model_predictions_exact_consistency: PASSED
+- test_evaluation_json_file_consistency: PASSED (verified on outputs_test/evaluation.json: tp+fn equals fraud rows and tp+fp+fn+tn equals test rows for every split and model).

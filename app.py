@@ -417,20 +417,23 @@ with tab_models:
                 continue
             display_name = model_names.get(m_key, m_key.replace("_", " ").title())
 
-            # Legacy layout has nested 'transaction' and 'ring'
-            if "transaction" in m_val:
+            # Check if using the new 'at_threshold' contract or legacy nested 'transaction'
+            if "at_threshold" in m_val:
+                t_data = m_val["at_threshold"]
+                r_data = {}
+            elif "transaction" in m_val:
                 t_data = m_val.get("transaction", {})
                 r_data = m_val.get("ring", {})
             else:
                 t_data = m_val
                 r_data = {}
 
-            prec = t_data.get("precision")
-            rec = t_data.get("recall")
-            f1 = t_data.get("f1")
-            auc = t_data.get("roc_auc")
-            ap = t_data.get("average_precision")
-            rows = t_data.get("rows")
+            prec = t_data.get("precision", m_val.get("precision"))
+            rec = t_data.get("recall", m_val.get("recall"))
+            f1 = t_data.get("f1", m_val.get("f1"))
+            auc = m_val.get("roc_auc", t_data.get("roc_auc"))
+            ap = m_val.get("average_precision", t_data.get("average_precision"))
+            rows = m_val.get("rows", t_data.get("rows"))
 
             record: Dict[str, Any] = {
                 "Model Key": m_key,
@@ -443,6 +446,10 @@ with tab_models:
             }
             if ap is not None:
                 record["PR-AUC"] = float(ap)
+            if "threshold" in m_val:
+                record["Threshold"] = float(m_val["threshold"])
+            if "false_alarms_per_10k" in m_val:
+                record["False Alarms / 10k"] = float(m_val["false_alarms_per_10k"])
 
             # Check for honest confusion matrix
             conf = t_data.get("confusion")

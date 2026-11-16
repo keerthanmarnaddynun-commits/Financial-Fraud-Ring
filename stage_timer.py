@@ -158,3 +158,15 @@ class StageTimer:
             if "stages" not in self.results_dict:
                 self.results_dict["stages"] = {}
             self.results_dict["stages"][self.name] = record
+
+    def summary(self) -> Dict[str, Any]:
+        """Return the dictionary of metrics captured during this stage."""
+        return {
+            "wall_seconds": self.wall_seconds,
+            "peak_rss_bytes": self.peak_rss_bytes,
+            "baseline_rss_bytes": self.baseline_rss_bytes,
+            "min_available_ram_bytes": self.min_available_ram_bytes,
+            "stages_count_delta": self.stages_count_delta,
+            "shuffle_read_bytes_delta": self.shuffle_read_bytes_delta,
+            "shuffle_write_bytes_delta": self.shuffle_write_bytes_delta,
+        }

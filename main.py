@@ -18,13 +18,19 @@ from data_ingestion import (
 )
 from run_info import write_run_info
 from spark_session import create_spark_session
-from evaluation import collect_spark_metrics, evaluate_models, write_json
+from evaluation import (
+    collect_spark_metrics,
+    evaluate_models,
+    run_distributed_evaluation,
+    write_json,
+)
 from feature_engineering import (
     add_transaction_graph_features,
     extract_account_features,
 )
 from graph_construction import build_transaction_graph
-from models import sample_training_data, train_comparative_models
+from models import train_comparative_models
+from splits import draw_training_sample, get_dataset_split
 
 LOGGER = logging.getLogger("fraud_analytics")
 
@@ -82,18 +88,26 @@ def run_pipeline(
         LOGGER.info("Computed graph features for %s accounts", f"{account_count:,}")
 
         started = time.perf_counter()
-        training_data = sample_training_data(enriched, max_training_rows)
+        train_df, _, _ = get_dataset_split(enriched, "time")
+        training_data = draw_training_sample(train_df, max_training_rows)
         models, test_data, _ = train_comparative_models(training_data, output_dir=output_dir)
-        timings["model_training_and_prediction"] = time.perf_counter() - started
+        timings["model_training"] = time.perf_counter() - started
 
-        report = evaluate_models(test_data)
-        write_json(report, str(output_dir / "evaluation.json"))
+        started = time.perf_counter()
+        report = run_distributed_evaluation(
+            spark=spark,
+            enriched_df=enriched,
+            models=models,
+            output_dir=output_dir,
+            splits_to_run=["time", "group_dest", "random"],
+        )
+        timings["distributed_scoring_and_eval"] = time.perf_counter() - started
+
         metrics = collect_spark_metrics(spark, timings)
         timings["pipeline_total"] = time.perf_counter() - pipeline_started
         metrics["transaction_count"] = transaction_count
         metrics["account_count"] = account_count
         metrics["sampled_training_rows"] = int(len(training_data))
-        metrics["test_rows"] = int(len(test_data))
         metrics["model_names"] = list(models)
         metrics["engines"] = engines
         metrics["algorithm_info"] = algo_info
