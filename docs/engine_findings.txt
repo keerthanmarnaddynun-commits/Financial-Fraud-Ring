@@ -1,0 +1,24 @@
+# Engine Findings: Graph Analytics Execution Assessment
+# Date: 2026-11-16
+# Environment: PySpark 4.2.0, Java 20.0.2 (Temurin), graphframes 0.8.3-spark3.5-s_2.13
+
+## 1. Summary of Execution by Algorithm
+
+| Graph Algorithm | GraphFrames Binding Status | Fallback in Current Codebase | Driver Bottleneck (toPandas/NetworkX) | Target Plan (STEP 1.5) |
+| --- | --- | --- | --- | --- |
+| **Degrees (in/out)** | Operates correctly | Native Spark DataFrame `groupBy` | No (distributed) | Native Spark DataFrame aggregations |
+| **PageRank** | Operates correctly | Native Spark iterative DataFrame joins | No (distributed) | Spark-native iterative DataFrame joins with damping & StageTimer |
+| **Triangle Count** | Operates correctly | Native Spark 3-way edge join | No (distributed) | Spark-native 3-way edge join with degree skew handling |
+| **Connected Components** | FAILS on Spark 4.2.0 (`NoSuchMethodError: SparkSession.implicits()`) | NetworkX `nx.connected_components` | YES (calls `graph.edges.toPandas()` to driver) | Spark-native iterative min-label propagation with checkpointing |
+| **Label Propagation (LPA)**| Operates on small graphs | NetworkX `label_propagation_communities` | YES (calls `graph.edges.toPandas()` to driver) | Spark-native iterative neighbor label mode aggregations |
+
+## 2. Root Cause Analysis of GraphFrames Incompatibility
+- Package `graphframes:graphframes:0.8.3-spark3.5-s_2.13` was compiled against Apache Spark 3.5.
+- On Apache Spark 4.2.0, invoking `graph.connectedComponents()` triggers:
+  `java.lang.NoSuchMethodError: 'org.apache.spark.sql.SparkSession$implicits$ org.apache.spark.sql.SparkSession.implicits()'`
+  due to internal Scala API refactorings in Spark 4.
+- In `feature_engineering.py`, this failure caught by `except Exception` silently redirected connected component calculation to NetworkX via `edges_pdf = graph.edges.select("src", "dst").toPandas()`.
+
+## 3. Implications for Big Data Pipeline
+- On a 100k-row or 4.2M-row dataset, pulling edges to driver pandas consumes significant driver memory and defeats distributed execution.
+- Per AG_RUNBOOK.txt Section 2.3 and Rule R10: We retain PySpark 4.2.0 and implement pure Spark-native DataFrame iterative algorithms for connected components and label propagation, recording `engine: spark-native` in results.

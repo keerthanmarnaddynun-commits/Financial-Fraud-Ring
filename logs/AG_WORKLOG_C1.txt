@@ -9,6 +9,7 @@
 
 ## DECISIONS
 - [2026-11-16 16:20] STEP 1.0: Appended runs/, archive/, logs/raw/, scratch/, BDC_TRANSFORMATION_PLAN.txt, AG_RUNBOOK.txt, AG_LESSONS_NOTE.txt to .gitignore.
+- [2026-11-16 16:59] STEP 1.1: Retain PySpark 4.2.0; documented GraphFrames connectedComponents failure (NoSuchMethodError: SparkSession.implicits()); confirmed that driver fallback to toPandas()/NetworkX must be replaced by distributed Spark-native DataFrame algorithms in STEP 1.5.
 
 ## FAILURES
 - (None)
@@ -47,3 +48,38 @@ Created NOTES_FOR_LATER.txt, docs/GLOSSARY.md, provenance.py, PROGRESS.txt.
 [2026-11-16 16:20] STEP 1.0 | CMD
 python -c "import provenance"
 RESULT: provenance imported successfully
+
+[2026-11-16 16:21] STEP 1.1 | ACTION
+Generating environment snapshot, raw data facts, and engine findings.
+
+[2026-11-16 16:21] STEP 1.1 | CMD
+python script generating docs/env_snapshot.txt
+RESULT: Python 3.13.7, OpenJDK Temurin-20.0.2+9, 22 logical CPU cores, 16 physical cores, 15.37 GB RAM.
+
+[2026-11-16 16:22] STEP 1.1 | CMD
+python chunked reader over data/PS_20174392719_1491204439457_log.csv generating docs/raw_data_facts.json
+RESULT:
+- total_rows: 6,362,620 (matches data_quality rows_read)
+- rows_by_type: CASH_OUT: 2,237,500, PAYMENT: 2,151,495, CASH_IN: 1,399,284, TRANSFER: 532,909, DEBIT: 41,432
+- rows_by_dest_prefix: C: 4,211,125, M: 2,151,495 (all 2,151,495 PAYMENT transactions are to merchants M)
+- fraud_rows_total: 8,213 (CASH_OUT: 4,116, TRANSFER: 4,097)
+- step_min: 1, step_max: 743
+- distinct_nameOrig_count: 6,353,307
+- distinct_nameDest_count: 2,722,362
+- distinct_accounts_union: 9,073,900 (matches data_quality distinct_accounts)
+
+[2026-11-16 16:33] STEP 1.1 | CMD
+python main.py --sample-fraction 0.01 --output-dir outputs_test
+RAW: logs/raw/20261116_1.1_engine_sample.txt
+RESULT: Sample pipeline completed; 63,925 sample transactions; 124,723 accounts; pipeline_total: 352.13s.
+
+[2026-11-16 16:42] STEP 1.1 | CMD
+GraphFrames method testing on PySpark 4.2.0
+RESULT:
+- g.degrees: succeeds
+- g.pageRank: succeeds
+- g.triangleCount: succeeds
+- g.labelPropagation: succeeds on small graphs
+- g.connectedComponents: FAILS with java.lang.NoSuchMethodError: 'SparkSession.implicits()' due to Spark 4 Scala API change.
+- In feature_engineering.py, this failure triggered a fallback to NetworkX via graph.edges.select("src", "dst").toPandas().
+- Wrote findings to docs/engine_findings.txt. Decision logged: implement Spark-native DataFrame algorithms in STEP 1.5.
