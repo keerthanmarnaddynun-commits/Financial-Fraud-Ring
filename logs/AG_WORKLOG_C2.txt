@@ -289,3 +289,21 @@ PRE-FIX QUESTIONS (CHUNK 2)
 - Adhered strictly to directive F3: Gate 2B summary tables are populated entirely by script from source JSON files.
 - Maintained per-split model isolation: models evaluated on group_dest and random splits are trained on their respective split train partitions.
 - Zero manual numbers in worklog prose; all inspection metrics are referenced directly from logs/raw/20261117_full_rerun_metrics.txt and logs/raw/20261117_pytest_gate2b.txt.
+
+[2026-11-17 21:30] PART 1 & PART 2 COMPLETION | ACTION
+1. Complete Pytest Suite Execution (Part 1):
+   - Executed complete test suite (`python -u -m pytest -q`) unsandboxed in background, logging to logs/raw/20261117_full_pytest_after_1_15.txt.
+   - Result: 37 passed, 10 warnings, 0 failed in 2084.27s (34m 44s). Zero fix attempts required.
+2. Scalability Schema Updates (Part 2a, 2b, 2c):
+   - In evaluation.py, structured scalability metrics into three distinct blocks: 'phases', 'graph_stages', and 'stages'. Retained flat 'timings_seconds' for backward compatibility.
+   - In scripts/package_run_v2.py, removed 'Total Sum Timings Seconds'; replaced with 'Pipeline Total Seconds' mapped to phases.pipeline_total.
+   - In main.py, tracked and recorded sampled_training_rows per split (time, group_dest, random).
+3. Dashboard Dual-Layout Support (Part 2d):
+   - In app.py, updated tab_pipeline to render Pipeline Execution Phases, Graph Algorithm Stages, and Stage Resource Diagnostics when the 'phases' block is present, while maintaining graceful fallback to legacy 'timings_seconds'.
+4. Verification:
+   - Executed 2% sample run targeting outputs_test; confirmed presence and structure of 'phases', 'graph_stages', 'stages', and per-split 'sampled_training_rows'.
+   - Ran dashboard smoke test suite (tests/test_app_smoke.py); 5 passed, 0 failed.
+
+[2026-11-17 21:30] PART 1 & PART 2 COMPLETION | DECISIONS
+- Maintained clean separation between phases (high-level end-to-end steps) and graph_stages (individual algorithm runtimes) to prevent double-counting.
+- Enabled seamless dual-layout compatibility in Streamlit dashboard to support both current runs and historical snapshots.

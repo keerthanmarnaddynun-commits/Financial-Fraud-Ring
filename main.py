@@ -96,6 +96,7 @@ def run_pipeline(
         # Per-split training: call training once per split on each split's own train rows
         splits_to_run = ["time", "group_dest", "random"]
         models_by_split = {}
+        training_samples_by_split = {}
         total_training_rows = 0
 
         started = time.perf_counter()
@@ -103,6 +104,7 @@ def run_pipeline(
             LOGGER.info("Drawing training sample and training models for split: %s", split_name)
             split_train_df, _, _ = get_dataset_split(enriched, split_name)
             split_training_data = draw_training_sample(split_train_df, max_training_rows)
+            training_samples_by_split[split_name] = int(len(split_training_data))
             total_training_rows += len(split_training_data)
             split_models, _, _ = train_comparative_models(
                 split_training_data, output_dir=output_dir, split_name=split_name
@@ -120,12 +122,19 @@ def run_pipeline(
             splits_to_run=splits_to_run,
         )
         timings["distributed_scoring_and_eval"] = time.perf_counter() - started
+        timings["pipeline_total"] = time.perf_counter() - pipeline_started
 
         metrics = collect_spark_metrics(spark, timings)
-        timings["pipeline_total"] = time.perf_counter() - pipeline_started
+        metrics["phases"]["pipeline_total"] = time.perf_counter() - pipeline_started
+        metrics["timings_seconds"]["pipeline_total"] = metrics["phases"]["pipeline_total"]
         metrics["transaction_count"] = transaction_count
         metrics["account_count"] = account_count
-        metrics["sampled_training_rows"] = total_training_rows
+
+        # Requirement (c): record sampled_training_rows per split
+        metrics["sampled_training_rows"] = training_samples_by_split
+        metrics["sampled_training_rows_per_split"] = training_samples_by_split
+        metrics["sampled_training_rows_total"] = int(total_training_rows)
+
         # Canonical model names only (no legacy aliases)
         canonical_models = [m for m in models_by_split.get("time", {}).keys() if not m.startswith("score_")]
         metrics["model_names"] = canonical_models

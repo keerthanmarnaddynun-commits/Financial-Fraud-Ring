@@ -18,8 +18,8 @@ with open(RUN_DIR / 'scalability.json') as f:
 
 # Build CARD.md
 splits_ev = ev.get('splits', {})
-timings = sc.get('timings_seconds', {})
-total_time = sum(v for k, v in timings.items() if isinstance(v, (int, float)))
+phases = sc.get('phases') or sc.get('timings_seconds', {})
+pipeline_total = phases.get('pipeline_total', 0.0)
 
 card_lines = [
     "# Results Card: 20261117_162714_c1-full-v2",
@@ -63,8 +63,8 @@ for split_name in ['time', 'group_dest', 'random']:
         card_lines.append(f"| {split_name} {m} PR-AUC | `{pr_auc}` | `evaluation.json` | `splits.{split_name}.{m}.average_precision` |")
 
 card_lines.extend([
-    f"| Total Sum Timings Seconds | `{total_time:.2f}` | `scalability.json` | `timings_seconds` |",
-    f"| Graph Engineering Seconds | `{timings.get('graph_feature_engineering')}` | `scalability.json` | `timings_seconds.graph_feature_engineering` |",
+    f"| Pipeline Total Seconds | `{pipeline_total:.2f}` | `scalability.json` | `phases.pipeline_total` |",
+    f"| Graph Engineering Seconds | `{phases.get('graph_feature_engineering')}` | `scalability.json` | `phases.graph_feature_engineering` |",
     f"| Total Shuffle Read Bytes | `{sc.get('shuffle_read_bytes')}` | `scalability.json` | `shuffle_read_bytes` |",
     f"| Total Shuffle Write Bytes | `{sc.get('shuffle_write_bytes')}` | `scalability.json` | `shuffle_write_bytes` |",
     f"| Memory Warning | `{sc.get('memory_warning')}` | `scalability.json` | `memory_warning` |",

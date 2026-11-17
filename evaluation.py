@@ -399,12 +399,36 @@ def collect_spark_metrics(
     spark: SparkSession, timings: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Collect observed executor memory and shuffle bytes from Spark's local REST UI."""
-    flat_timings: Dict[str, float] = {}
-    for k, v in timings.items():
-        if k == "timings_seconds" and isinstance(v, dict):
-            flat_timings.update(v)
-        elif not isinstance(v, dict):
-            flat_timings[k] = float(v)
+    # 1. Block 'phases': ingestion_and_validation, graph_construction, graph_feature_engineering,
+    #    model_training, distributed_scoring_and_eval, pipeline_total
+    phases: Dict[str, float] = {
+        "ingestion_and_validation": float(timings.get("ingestion_and_validation", 0.0)),
+        "graph_construction": float(timings.get("graph_construction", 0.0)),
+        "graph_feature_engineering": float(timings.get("graph_feature_engineering", 0.0)),
+        "model_training": float(timings.get("model_training", 0.0)),
+        "distributed_scoring_and_eval": float(timings.get("distributed_scoring_and_eval", 0.0)),
+        "pipeline_total": float(timings.get("pipeline_total", 0.0)),
+    }
+
+    # 2. Block 'graph_stages': degrees, pagerank, triangles, components, lpa, behaviour_features
+    graph_stages: Dict[str, float] = {}
+    raw_graph = timings.get("graph_stages") or timings.get("timings_seconds") or timings.get("stages") or {}
+    for stg in ["degrees", "pagerank", "triangles", "components", "lpa", "behaviour_features"]:
+        if isinstance(raw_graph, dict) and stg in raw_graph and isinstance(raw_graph[stg], (int, float)):
+            graph_stages[stg] = float(raw_graph[stg])
+        elif "stages" in timings and isinstance(timings["stages"], dict) and stg in timings["stages"]:
+            graph_stages[stg] = float(timings["stages"][stg].get("wall_seconds", 0.0))
+        elif stg in timings and isinstance(timings[stg], (int, float)):
+            graph_stages[stg] = float(timings[stg])
+
+    # 3. Block 'stages': per-stage wall_seconds, peak_rss_bytes, baseline_rss_bytes, min_available_ram_bytes,
+    #    stages_count_delta, shuffle_read_bytes_delta, shuffle_write_bytes_delta
+    stages_block: Dict[str, Any] = {}
+    if "stages" in timings and isinstance(timings["stages"], dict):
+        stages_block = timings["stages"]
+
+    # Flat timings_seconds for backward compatibility
+    flat_timings: Dict[str, float] = {**phases, **graph_stages}
 
     avail_bytes = psutil.virtual_memory().available
     mem_warning = None
@@ -415,6 +439,9 @@ def collect_spark_metrics(
         LOGGER.warning(mem_warning)
 
     metrics: Dict[str, Any] = {
+        "phases": phases,
+        "graph_stages": graph_stages,
+        "stages": stages_block,
         "timings_seconds": flat_timings,
         "spark_application_id": spark.sparkContext.applicationId,
         "spark_master": spark.sparkContext.master,

@@ -354,8 +354,9 @@ with tab_overview:
         st.info(f"Overview metrics not available. Run `python main.py --output-dir {OUTPUT_DIR}` to generate pipeline output.")
     else:
         # Extract KPI values honestly
+        phases = scalability_data.get("phases", {}) if scalability_data else {}
         timings = scalability_data.get("timings_seconds", {}) if scalability_data else {}
-        pipeline_total_sec = timings.get("pipeline_total")
+        pipeline_total_sec = phases.get("pipeline_total") or timings.get("pipeline_total")
         txns_count = (
             scalability_data.get("transaction_count")
             if scalability_data
@@ -698,8 +699,66 @@ with tab_pipeline:
     if not scalability_data:
         st.info(f"Pipeline scalability evidence not available. Run `python main.py --output-dir {OUTPUT_DIR}` to generate outputs/scalability.json.")
     else:
+        phases = scalability_data.get("phases", {})
+        graph_stages = scalability_data.get("graph_stages", {})
+        stages_detail = scalability_data.get("stages", {})
         timings = scalability_data.get("timings_seconds", {})
-        if timings:
+
+        # New layout: phases block present
+        if phases:
+            st.subheader("Pipeline Execution Phases")
+            phase_items = []
+            for k in ["ingestion_and_validation", "graph_construction", "graph_feature_engineering", "model_training", "distributed_scoring_and_eval"]:
+                if k in phases:
+                    phase_items.append({"Phase": k.replace("_", " ").title(), "Seconds": float(phases[k])})
+            if phase_items:
+                df_phases = pd.DataFrame(phase_items)
+                fig_phases = px.bar(
+                    df_phases,
+                    x="Phase",
+                    y="Seconds",
+                    text_auto=".2f",
+                    color="Seconds",
+                    color_continuous_scale="Viridis",
+                    height=320,
+                )
+                fig_phases.update_layout(
+                    margin=dict(l=20, r=20, t=25, b=20),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                    font=dict(color="#edf7f4"),
+                )
+                st.plotly_chart(fig_phases, use_container_width=True)
+                st.dataframe(df_phases, use_container_width=True)
+
+            if "pipeline_total" in phases:
+                st.caption(f"End-to-end pipeline duration: {format_seconds(phases['pipeline_total'])}")
+
+            if graph_stages:
+                st.subheader("Graph Algorithm Stages")
+                graph_items = [{"Stage": k.replace("_", " ").title(), "Seconds": float(v)} for k, v in graph_stages.items()]
+                df_graph = pd.DataFrame(graph_items)
+                st.dataframe(df_graph, use_container_width=True)
+
+            if stages_detail:
+                st.subheader("Stage Resource Diagnostics")
+                stage_rows = []
+                for stg_name, stg_metrics in stages_detail.items():
+                    if isinstance(stg_metrics, dict):
+                        stage_rows.append({
+                            "Stage": stg_name.replace("_", " ").title(),
+                            "Wall Seconds": f"{stg_metrics.get('wall_seconds', 0.0):.2f}",
+                            "Peak RSS": format_bytes(stg_metrics.get("peak_rss_bytes")),
+                            "Min Avail RAM": format_bytes(stg_metrics.get("min_available_ram_bytes")),
+                            "Stages Delta": stg_metrics.get("stages_count_delta"),
+                            "Shuffle Read Delta": format_bytes(stg_metrics.get("shuffle_read_bytes_delta")),
+                            "Shuffle Write Delta": format_bytes(stg_metrics.get("shuffle_write_bytes_delta")),
+                        })
+                if stage_rows:
+                    st.dataframe(pd.DataFrame(stage_rows), use_container_width=True)
+
+        elif timings:
+            # Old layout fallback
             st.subheader("Measured Stage Timings")
             timing_items = []
             for k, v in timings.items():
