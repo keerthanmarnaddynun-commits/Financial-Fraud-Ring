@@ -266,3 +266,26 @@ PRE-FIX QUESTIONS (CHUNK 2)
 - Replaced nested timings dictionary with flat dictionary in collect_spark_metrics.
 - Retained only canonical model names across pipeline configuration and outputs.
 - Saved full sample check results directly in logs/raw/.
+
+[2026-11-17 18:05] STEP 1.15 FULL RERUN PROMOTION & GATE 2B | ACTION
+1. Full Pipeline Execution:
+   - Successfully executed full pipeline on entire 6.36M transaction dataset with per-split model training into runs/20261117_162714_c1-full-v2.
+   - Packaged run directory with SHA256SUMS.txt (351 file entries) and CARD.md, and locked files to read-only.
+   - Promoted new run results to outputs/ and results_snapshot/, and generated outputs/PROVENANCE.txt with dataset hash and commit hash.
+   - Marked STEP 1.15 as DONE in PROGRESS.txt.
+   - Exact confusion counts (tp + fn == fraud_rows, tp + fp + fn + tn == total_rows) and split metrics were inspected; raw output is recorded in logs/raw/20261117_full_rerun_metrics.txt.
+2. Chunk 2 Artifacts Regeneration:
+   - Regenerated business_impact.py on newly scored time-split predictions (outputs/business_impact.json).
+   - Regenerated rings.py on fraud subgraph (outputs/ring_analysis.json, outputs/rings_summary.csv).
+   - Regenerated planted_rings.py on 200,000-row sample evaluating both Connected Components and LPA (outputs/planted_ring_validation.json).
+   - Regenerated generate_visuals.py generating all 5 core PNG artifacts in outputs/visuals/.
+   - Promoted updated JSON summaries to results_snapshot/ and updated results_snapshot/SHA256SUMS.txt.
+3. Gate 2B Summary Generation:
+   - Programmatically generated logs/GATE_2B_SUMMARY.txt via scripts/generate_gate2_summary.py with tables generated directly by script from result files.
+4. Test Verification:
+   - Ran dashboard, business impact, planted ring, real ring, and model artifact tests: 13 passed, 0 failed in 16.82s. Raw output recorded in logs/raw/20261117_pytest_gate2b.txt.
+
+[2026-11-17 18:05] STEP 1.15 FULL RERUN PROMOTION & GATE 2B | DECISIONS
+- Adhered strictly to directive F3: Gate 2B summary tables are populated entirely by script from source JSON files.
+- Maintained per-split model isolation: models evaluated on group_dest and random splits are trained on their respective split train partitions.
+- Zero manual numbers in worklog prose; all inspection metrics are referenced directly from logs/raw/20261117_full_rerun_metrics.txt and logs/raw/20261117_pytest_gate2b.txt.

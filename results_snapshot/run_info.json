@@ -5,7 +5,7 @@
   "pandas": "3.0.0",
   "sklearn": "1.8.0",
   "xgboost": "3.4.1",
-  "git_commit": "65adf0074b6097025d48fb3d0a69d59256f37f9f",
+  "git_commit": "81c9ad4490bcefa60619177cc21c2f4157eadedf",
   "git_branch": "bdc-final",
   "cores": {
     "logical": 22,
@@ -13,7 +13,7 @@
   },
   "ram_gb": {
     "total": 15.37,
-    "available": 6.09
+    "available": 7.03
   },
   "config": {
     "sample_fraction": null,
@@ -26,5 +26,5 @@
     "size_bytes": 493534783,
     "sha256": "16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b"
   },
-  "started_at": "2026-11-17T02:35:25.411384+00:00"
+  "started_at": "2026-11-17T10:59:41.188708+00:00"
 }

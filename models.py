@@ -267,6 +267,8 @@ def train_comparative_models(
                 json.dump(feature_names_dict, f, indent=2)
             with open(root_dir / "feature_importance.json", "w", encoding="utf-8") as f:
                 json.dump(importance_dict, f, indent=2)
+            with open(Path(output_dir) / "feature_importance.json", "w", encoding="utf-8") as f:
+                json.dump(importance_dict, f, indent=2)
 
     test["actual"] = test["isFraud"].astype(int)
     return models, test, scores

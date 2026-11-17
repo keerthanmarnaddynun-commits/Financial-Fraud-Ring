@@ -38,10 +38,11 @@ def generate_gate2_summary(
         with open(pr_path, "r", encoding="utf-8") as f:
             pr_data = json.load(f)
 
+    gate_title = "GATE 2B SUMMARY" if "2B" in str(summary_path).upper() else "GATE 2 SUMMARY"
     lines: List[str] = []
-    lines.append("GATE 2 SUMMARY")
+    lines.append(gate_title)
     lines.append("=" * 90)
-    lines.append("Status: Complete. Ready for Gate 2 review.")
+    lines.append(f"Status: Complete. Ready for {gate_title.lower()} review.")
     lines.append("Worklog: logs/AG_WORKLOG_C2.txt")
     lines.append("Branch: bdc-final")
     lines.append("=" * 90)
@@ -194,7 +195,7 @@ def generate_gate2_summary(
 
     lines.append("5. GATE STATUS")
     lines.append("-" * 90)
-    lines.append("GATE 2 updated with F1, F2, and F3 requirements.")
+    lines.append(f"{gate_title} generated from promoted rerun outputs.")
     lines.append("=" * 90)
 
     summary_text = "\n".join(lines) + "\n"
@@ -205,4 +206,11 @@ def generate_gate2_summary(
 
 
 if __name__ == "__main__":
-    generate_gate2_summary()
+    import argparse
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--output-dir", type=Path, default=Path("outputs"))
+    parser.add_argument("--summary-path", type=Path, default=Path("logs/GATE_2_SUMMARY.txt"))
+    args = parser.parse_args()
+    generate_gate2_summary(output_dir=args.output_dir, summary_path=args.summary_path)
+
+

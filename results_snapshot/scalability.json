@@ -1,94 +1,32 @@
 {
   "timings_seconds": {
-    "ingestion_and_validation": 58.063424200001464,
-    "graph_construction": 15.049468900000647,
-    "timings_seconds": {
-      "degrees": 26.214471899998898,
-      "pagerank": 147.0559362999993,
-      "triangles": 83.64755890000015,
-      "components": 1965.9632373000022,
-      "lpa": 454.3652550000006,
-      "behaviour_features": 45.444017099998746
-    },
-    "stages": {
-      "degrees": {
-        "wall_seconds": 26.214471899998898,
-        "peak_rss_bytes": 5568942080,
-        "baseline_rss_bytes": 3823550464,
-        "min_available_ram_bytes": 1253339136,
-        "stages_count_delta": 6,
-        "shuffle_read_bytes_delta": 171210728,
-        "shuffle_write_bytes_delta": 171210728
-      },
-      "pagerank": {
-        "wall_seconds": 147.0559362999993,
-        "peak_rss_bytes": 7256276992,
-        "baseline_rss_bytes": 5569359872,
-        "min_available_ram_bytes": 17891328,
-        "stages_count_delta": 27,
-        "shuffle_read_bytes_delta": 1505709304,
-        "shuffle_write_bytes_delta": 1505709304
-      },
-      "triangles": {
-        "wall_seconds": 83.64755890000015,
-        "peak_rss_bytes": 6915231744,
-        "baseline_rss_bytes": 6716547072,
-        "min_available_ram_bytes": 256614400,
-        "stages_count_delta": 25,
-        "shuffle_read_bytes_delta": 2130421261,
-        "shuffle_write_bytes_delta": 2130421261
-      },
-      "components": {
-        "wall_seconds": 1965.9632373000022,
-        "peak_rss_bytes": 7164194816,
-        "baseline_rss_bytes": 6916325376,
-        "min_available_ram_bytes": 107921408,
-        "stages_count_delta": 181,
-        "shuffle_read_bytes_delta": 54368214826,
-        "shuffle_write_bytes_delta": 47116363435
-      },
-      "lpa": {
-        "wall_seconds": 454.3652550000006,
-        "peak_rss_bytes": 7053676544,
-        "baseline_rss_bytes": 7015739392,
-        "min_available_ram_bytes": 477667328,
-        "stages_count_delta": 68,
-        "shuffle_read_bytes_delta": 12666942086,
-        "shuffle_write_bytes_delta": 12666942086
-      },
-      "behaviour_features": {
-        "wall_seconds": 45.444017099998746,
-        "peak_rss_bytes": 7037534208,
-        "baseline_rss_bytes": 7023726592,
-        "min_available_ram_bytes": 1077211136,
-        "stages_count_delta": 7,
-        "shuffle_read_bytes_delta": 742135753,
-        "shuffle_write_bytes_delta": 742135753
-      }
-    },
-    "graph_feature_engineering": 2776.1716218,
-    "model_training": 67.58845639999709,
-    "distributed_scoring_and_eval": 760.191060000001,
-    "pipeline_total": 3688.5033079999994
+    "ingestion_and_validation": 60.089810000004945,
+    "graph_construction": 15.038408299995353,
+    "degrees": 30.32792860000336,
+    "pagerank": 144.30477930000052,
+    "triangles": 78.45839639999758,
+    "components": 2042.2003299999997,
+    "lpa": 487.8777820000032,
+    "behaviour_features": 57.23539729999902,
+    "graph_feature_engineering": 2908.3806035000016,
+    "model_training": 99.71300320000591,
+    "distributed_scoring_and_eval": 691.3541066000034
   },
-  "spark_application_id": "local-1794882930472",
+  "spark_application_id": "local-1794913185371",
   "spark_master": "local[*]",
-  "executor_memory_bytes": 753346771,
-  "shuffle_read_bytes": 74845291046,
-  "shuffle_write_bytes": 67593357090,
-  "stage_count": 939,
+  "executor_memory_bytes": 1411361407,
+  "shuffle_read_bytes": 73452995505,
+  "shuffle_write_bytes": 66214952182,
+  "stage_count": 945,
+  "memory_warning": "Low memory warning: available RAM (1.82 GB) dropped below 2.0 GB threshold.",
   "transaction_count": 6362620,
   "account_count": 9073900,
-  "sampled_training_rows": 58223,
+  "sampled_training_rows": 147532,
   "model_names": [
     "m1_tabular",
     "m1_tabular_noerr",
     "m2_graph",
-    "m3_community_mule",
-    "tabular_baseline",
-    "Baseline",
-    "graph_features",
-    "community_ring"
+    "m3_community_mule"
   ],
   "engines": {
     "degrees": "spark-native",
