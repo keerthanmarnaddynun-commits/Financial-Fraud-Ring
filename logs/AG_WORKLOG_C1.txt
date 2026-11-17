@@ -278,3 +278,29 @@ RESULT: 28 passed, 0 failures, 10 warnings in 2734.70s (0:45:34).
 - Pinned exact versions matching the active Python 3.13.7 virtual environment snapshot recorded in STEP 1.1.
 - Documented Java 20.0.2 status transparently in README environment section.
 
+[2026-11-17 09:12] STEP 1.13 | ACTION
+1. Pre-flight system check executed: AC power plugged in, 122.8 GB disk free, available RAM checked and monitored.
+2. Executed 2% verification sample run: python main.py --sample-fraction 0.02 --output-dir runs/20261117_c1-sample. Checked DONE conditions of STEP 1.5 (Spark-native graph counts) and STEP 1.8 (mathematical consistency of confusion counts).
+3. Executed full pipeline run across all 6,362,620 transactions and 9,073,900 accounts: python -u main.py --output-dir runs/20261117_c1-full in 3,688.50s (~61.5 minutes, under 90m budget).
+4. Run metrics:
+   - Total transactions: 6,362,620; dropped by rules: 0; valid kept: 6,362,620
+   - Distinct accounts: 9,073,900 (fraud rows: 8,213)
+   - Sampled training rows: 58,223
+   - Spark stages: 939; Shuffle read: 74,845,291,046 bytes (74.8 GB); Shuffle write: 67,593,357,090 bytes (67.6 GB)
+   - Graph engineering wall time: 2,776.17s (Degrees: 26.2s, PageRank: 147.1s, Triangles: 83.6s, Components: 1966.0s, LPA: 454.4s, Behaviour: 45.4s)
+   - Model training: 67.59s; Distributed scoring: 760.19s
+   - Evaluation F1 scores:
+     * Time split: M0 Rule: 0.0087, M1 Tabular: 0.9961, M1 Tabular (no balance err): 0.9121, M2 Graph: 0.9976, M3 Community/Mule: 0.9961
+     * GroupDest split: M0 Rule: 0.0019, M1 Tabular: 0.9902, M1 Tabular (no balance err): 0.8404, M2 Graph: 0.9900, M3 Community/Mule: 0.9899
+     * Random split: M0 Rule: 0.0029, M1 Tabular: 0.9875, M1 Tabular (no balance err): 0.8359, M2 Graph: 0.9872, M3 Community/Mule: 0.9858
+5. Generated SHA256SUMS.txt, CARD.md, and made run directory read-only.
+6. Archived legacy outputs to archive/outputs_prev_20261117_091008/.
+7. Promoted accepted run results to outputs/ with PROVENANCE.txt.
+8. Populated results_snapshot/ with JSON reports and SHA256SUMS.txt.
+9. Verified dashboard loads without exception via pytest tests/test_app_smoke.py (3 passed) and verified evaluation consistency via pytest tests/test_eval_consistency.py (2 passed).
+
+[2026-11-17 09:12] STEP 1.13 | DECISIONS
+- Promoted full run 20261117_c1-full to outputs/ as the primary empirical baseline.
+- Retained scored Parquet partitions in outputs/ and runs/ for downstream Chunk 2 business impact analysis.
+
+

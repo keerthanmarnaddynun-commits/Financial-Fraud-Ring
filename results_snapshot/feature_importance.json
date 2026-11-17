@@ -1,0 +1,266 @@
+{
+  "m1_tabular": [
+    {
+      "feature": "type_PAYMENT",
+      "importance": 0.4816078245639801
+    },
+    {
+      "feature": "newbalanceOrig",
+      "importance": 0.16607363522052765
+    },
+    {
+      "feature": "errorBalanceOrig",
+      "importance": 0.1285833865404129
+    },
+    {
+      "feature": "is_merchant",
+      "importance": 0.11073846369981766
+    },
+    {
+      "feature": "type_DEBIT",
+      "importance": 0.051664575934410095
+    },
+    {
+      "feature": "oldbalanceOrg",
+      "importance": 0.01802496798336506
+    },
+    {
+      "feature": "type_CASH_IN",
+      "importance": 0.01680728606879711
+    },
+    {
+      "feature": "type_TRANSFER",
+      "importance": 0.0092063769698143
+    },
+    {
+      "feature": "amount",
+      "importance": 0.007172771263867617
+    },
+    {
+      "feature": "type_CASH_OUT",
+      "importance": 0.004522616509348154
+    },
+    {
+      "feature": "errorBalanceDest",
+      "importance": 0.0034782534930855036
+    },
+    {
+      "feature": "oldbalanceDest",
+      "importance": 0.0012407368049025536
+    },
+    {
+      "feature": "newbalanceDest",
+      "importance": 0.0008791202562861145
+    }
+  ],
+  "m1_tabular_noerr": [
+    {
+      "feature": "type_CASH_IN",
+      "importance": 0.4543960988521576
+    },
+    {
+      "feature": "is_merchant",
+      "importance": 0.20364715158939362
+    },
+    {
+      "feature": "newbalanceOrig",
+      "importance": 0.17450687289237976
+    },
+    {
+      "feature": "type_TRANSFER",
+      "importance": 0.05984896048903465
+    },
+    {
+      "feature": "type_PAYMENT",
+      "importance": 0.02854269929230213
+    },
+    {
+      "feature": "type_CASH_OUT",
+      "importance": 0.027058705687522888
+    },
+    {
+      "feature": "oldbalanceOrg",
+      "importance": 0.02216840535402298
+    },
+    {
+      "feature": "amount",
+      "importance": 0.012388329952955246
+    },
+    {
+      "feature": "newbalanceDest",
+      "importance": 0.007618379779160023
+    },
+    {
+      "feature": "type_DEBIT",
+      "importance": 0.005362977739423513
+    },
+    {
+      "feature": "oldbalanceDest",
+      "importance": 0.004461296368390322
+    }
+  ],
+  "m2_graph": [
+    {
+      "feature": "type_PAYMENT",
+      "importance": 0.26544734835624695
+    },
+    {
+      "feature": "newbalanceOrig",
+      "importance": 0.26498836278915405
+    },
+    {
+      "feature": "errorBalanceOrig",
+      "importance": 0.237336665391922
+    },
+    {
+      "feature": "is_merchant",
+      "importance": 0.09541840106248856
+    },
+    {
+      "feature": "type_DEBIT",
+      "importance": 0.049983784556388855
+    },
+    {
+      "feature": "type_CASH_IN",
+      "importance": 0.039273545145988464
+    },
+    {
+      "feature": "oldbalanceOrg",
+      "importance": 0.01218567043542862
+    },
+    {
+      "feature": "amount",
+      "importance": 0.011797590181231499
+    },
+    {
+      "feature": "type_TRANSFER",
+      "importance": 0.007684556767344475
+    },
+    {
+      "feature": "type_CASH_OUT",
+      "importance": 0.004638296086341143
+    },
+    {
+      "feature": "oldbalanceDest",
+      "importance": 0.0025421814061701298
+    },
+    {
+      "feature": "newbalanceDest",
+      "importance": 0.0024465019814670086
+    },
+    {
+      "feature": "errorBalanceDest",
+      "importance": 0.002020798623561859
+    },
+    {
+      "feature": "dest_pagerank",
+      "importance": 0.0014527097810059786
+    },
+    {
+      "feature": "dest_in_degree",
+      "importance": 0.0014150497736409307
+    },
+    {
+      "feature": "origin_component_size",
+      "importance": 0.0009978195885196328
+    },
+    {
+      "feature": "dest_component_size",
+      "importance": 0.00037072974373586476
+    },
+    {
+      "feature": "origin_in_degree",
+      "importance": 0.0
+    },
+    {
+      "feature": "origin_out_degree",
+      "importance": 0.0
+    },
+    {
+      "feature": "origin_pagerank",
+      "importance": 0.0
+    }
+  ],
+  "m3_community_mule": [
+    {
+      "feature": "newbalanceOrig",
+      "importance": 0.3320878744125366
+    },
+    {
+      "feature": "errorBalanceOrig",
+      "importance": 0.28427809476852417
+    },
+    {
+      "feature": "is_merchant",
+      "importance": 0.19107815623283386
+    },
+    {
+      "feature": "type_PAYMENT",
+      "importance": 0.05144868418574333
+    },
+    {
+      "feature": "type_DEBIT",
+      "importance": 0.03661362826824188
+    },
+    {
+      "feature": "oldbalanceOrg",
+      "importance": 0.024081047624349594
+    },
+    {
+      "feature": "type_TRANSFER",
+      "importance": 0.02074679732322693
+    },
+    {
+      "feature": "amount",
+      "importance": 0.01818399503827095
+    },
+    {
+      "feature": "errorBalanceDest",
+      "importance": 0.008128133602440357
+    },
+    {
+      "feature": "type_CASH_OUT",
+      "importance": 0.005863976199179888
+    },
+    {
+      "feature": "type_CASH_IN",
+      "importance": 0.005140060558915138
+    },
+    {
+      "feature": "oldbalanceDest",
+      "importance": 0.004122115205973387
+    },
+    {
+      "feature": "origin_total_out_amount",
+      "importance": 0.003440168686211109
+    },
+    {
+      "feature": "newbalanceDest",
+      "importance": 0.0026148073375225067
+    },
+    {
+      "feature": "dest_in_degree",
+      "importance": 0.0024834389332681894
+    },
+    {
+      "feature": "dest_pagerank",
+      "importance": 0.0018594227731227875
+    },
+    {
+      "feature": "dest_distinct_senders",
+      "importance": 0.0017353561706840992
+    },
+    {
+      "feature": "dest_community_size",
+      "importance": 0.001596303773112595
+    },
+    {
+      "feature": "origin_community_size",
+      "importance": 0.0013559204526245594
+    },
+    {
+      "feature": "origin_component_size",
+      "importance": 0.0011604874162003398
+    }
+  ]
+}

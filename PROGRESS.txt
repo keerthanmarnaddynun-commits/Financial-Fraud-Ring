@@ -11,7 +11,7 @@ STEP 1.9 | DONE | S1.9 | Model files, importance, ablation
 STEP 1.10 | DONE | S1.10 | Dashboard compatibility and scorer test
 STEP 1.11 | DONE | S1.11 | Pytest suite with 1000-row sample
 STEP 1.12 | DONE | S1.12 | Pin requirements and fix README facts
-STEP 1.13 | PENDING | - | Sample run, then full run v2 promoted to outputs
+STEP 1.13 | DONE | S1.13 | Sample run, then full run v2 promoted to outputs
 STEP 1.14 | PENDING | - | [OPTIONAL] Past-only graph features variant
 GATE 1 | PENDING | - | Chunk 1 summary and gate check
 STEP 2.1 | PENDING | - | Business impact table
