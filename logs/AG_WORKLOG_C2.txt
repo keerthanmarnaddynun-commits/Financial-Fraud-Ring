@@ -31,4 +31,18 @@ AG WORKLOG CHUNK 2: BUSINESS IMPACT, RINGS, DASHBOARD
 - Reported real topological findings plainly without fabricating ring structures.
 - Checked preflight RAM (5.66 GB available) before running Spark.
 
+[2026-11-17 10:45] STEP 2.3 | ACTION
+1. Implemented planted_rings.py taking a uniform 200,000-row sample from PaySim CSV and injecting 60 synthetic rings (20 chains, 20 funnels, 20 cycles) across 3 camouflage levels (0%, 20%, 50%).
+2. Executed Spark-native connected components on the combined graph (302,167 nodes, 200,619 edges).
+3. Computed recovery metrics per pattern and camouflage level:
+   - 0% camouflage: 21/21 rings recovered (100% recovery rate, 1.0 homogeneity/completeness/v-measure, 0.0 contamination).
+   - 20% & 50% camouflage: 0/39 recovered under strict community purity threshold due to absorption of background normal accounts (contamination 62% - 81%), though homogeneity and completeness remained 0.86 - 1.0.
+4. Saved outputs/planted_ring_validation.json (labeled "synthetic injection for validation") and mirrored to results_snapshot/.
+5. Created tests/test_planted.py (3 passed in 2.01s).
+
+[2026-11-17 10:45] STEP 2.3 | DECISIONS
+- Labeled planted ring results explicitly as synthetic injection for validation.
+- Checked pre-flight RAM (6.41 GB available) before running Spark.
+
+
 

@@ -1,0 +1,107 @@
+{
+  "label": "synthetic injection for validation",
+  "total_planted_rings": 60,
+  "total_recovered_rings": 21,
+  "overall_recovery_rate": 0.35,
+  "results_by_pattern_and_camouflage": [
+    {
+      "pattern": "chain",
+      "camouflage": "0%",
+      "planted": 7,
+      "recovered": 7,
+      "recovery_rate": 1.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.0
+    },
+    {
+      "pattern": "chain",
+      "camouflage": "20%",
+      "planted": 7,
+      "recovered": 0,
+      "recovery_rate": 0.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.621
+    },
+    {
+      "pattern": "chain",
+      "camouflage": "50%",
+      "planted": 6,
+      "recovered": 0,
+      "recovery_rate": 0.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.8169
+    },
+    {
+      "pattern": "cycle",
+      "camouflage": "0%",
+      "planted": 7,
+      "recovered": 7,
+      "recovery_rate": 1.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.0
+    },
+    {
+      "pattern": "cycle",
+      "camouflage": "20%",
+      "planted": 7,
+      "recovered": 0,
+      "recovery_rate": 0.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.636
+    },
+    {
+      "pattern": "cycle",
+      "camouflage": "50%",
+      "planted": 6,
+      "recovered": 0,
+      "recovery_rate": 0.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.8164
+    },
+    {
+      "pattern": "funnel",
+      "camouflage": "0%",
+      "planted": 7,
+      "recovered": 7,
+      "recovery_rate": 1.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.0
+    },
+    {
+      "pattern": "funnel",
+      "camouflage": "20%",
+      "planted": 7,
+      "recovered": 0,
+      "recovery_rate": 0.0,
+      "homogeneity": 1.0,
+      "completeness": 1.0,
+      "v_measure": 1.0,
+      "contamination": 0.6831
+    },
+    {
+      "pattern": "funnel",
+      "camouflage": "50%",
+      "planted": 6,
+      "recovered": 0,
+      "recovery_rate": 0.0,
+      "homogeneity": 0.8581,
+      "completeness": 1.0,
+      "v_measure": 0.9236,
+      "contamination": 0.7892
+    }
+  ]
+}
