@@ -430,6 +430,13 @@ with tab_overview:
 # =========================================================================
 with tab_models:
     st.subheader("Model Evaluation & Comparative Performance")
+    st.info(
+        "⚠️ **Methodological & Evaluation Limitations:**\n"
+        "- **Simulated Data**: PaySim is a synthetic financial dataset generated via multi-agent simulation; real production fraud patterns may exhibit differing topologies.\n"
+        "- **Transductive Graph Features**: Graph metrics (PageRank, Triangle Count, Degree, LPA Community IDs) were computed on the static snapshot of the transaction graph rather than rolling past-only subgraphs.\n"
+        "- **Split Evaluation Integrity**: Models were trained on time-split rows. Results for `group_dest` and `random` are displayed for reference only under pending-retraining notice."
+    )
+
     if not evaluation_data:
         st.info(f"Model evaluation metrics not available. Run `python main.py --output-dir {OUTPUT_DIR}` to generate outputs/evaluation.json.")
     else:
@@ -440,7 +447,8 @@ with tab_models:
         if is_splits_layout:
             splits_dict = evaluation_data["splits"]
             split_keys = list(splits_dict.keys())
-            selected_split = st.selectbox("Evaluation Split Strategy", split_keys)
+            time_idx = split_keys.index("time") if "time" in split_keys else 0
+            selected_split = st.selectbox("Evaluation Split Strategy", split_keys, index=time_idx)
             if selected_split in ("group_dest", "random"):
                 st.warning("⚠️ not a valid test: models were trained on time-split rows, retraining pending")
             active_split_data = splits_dict.get(selected_split, {})
@@ -448,6 +456,11 @@ with tab_models:
             # Legacy layout: top-level keys like tabular_baseline, graph_features, community_ring
             st.caption("Displaying results from legacy evaluation format.")
             active_split_data = evaluation_data
+
+        # Population and prevalence extraction for honest captions
+        first_model_data = next((v for k, v in active_split_data.items() if isinstance(v, dict) and "rows" in v), {})
+        test_rows_pop = first_model_data.get("rows")
+        prev_rate = first_model_data.get("prevalence")
 
         # Parse transaction metrics
         txn_records = []
@@ -543,6 +556,12 @@ with tab_models:
             st.plotly_chart(fig_bar, use_container_width=True)
 
             st.subheader("Transaction Classification Metrics Table")
+            if test_rows_pop is not None and prev_rate is not None:
+                st.caption(
+                    f"📊 **Evaluation Population:** {test_rows_pop:,} test transactions | "
+                    f"**True Fraud Prevalence:** {prev_rate * 100:.3f}% ({int(round(test_rows_pop * prev_rate)):,} fraud cases) | "
+                    f"**Threshold Selection:** Validation set maximum F1"
+                )
             display_cols = [c for c in ["Model", "Threshold", "Precision", "Recall", "F1-Score", "ROC-AUC", "PR-AUC", "False Alarms / 10k", "Test Rows"] if c in df_txn.columns]
             st.dataframe(df_txn[display_cols].dropna(how="all", axis=1), use_container_width=True)
 
@@ -552,6 +571,11 @@ with tab_models:
             pr_path = OUTPUT_DIR / "pr_curves.csv"
             if pr_path.exists():
                 st.subheader("Precision-Recall Curves")
+                if test_rows_pop is not None and prev_rate is not None:
+                    st.caption(
+                        f"📊 Evaluated on {test_rows_pop:,} test rows (prevalence {prev_rate * 100:.3f}%). "
+                        f"Curves computed from score deciles/quantiles in `{pr_path.name}`."
+                    )
                 try:
                     pr_df = pd.read_csv(pr_path)
                     if is_splits_layout and "split" in pr_df.columns:
@@ -641,6 +665,11 @@ with tab_models:
                     font=dict(color="#edf7f4"),
                 )
                 st.plotly_chart(fig_cm, use_container_width=True)
+                if test_rows_pop is not None and prev_rate is not None:
+                    st.caption(
+                        f"📊 Measured confusion matrix on {test_rows_pop:,} test transactions "
+                        f"(prevalence: {prev_rate * 100:.3f}%). Operating threshold: `{float(sel_row.get('Threshold', 0.5)):.4f}`."
+                    )
             else:
                 st.info("Confusion matrix counts (TP/FP/FN/TN) are not present in this evaluation file. (Only exact measured confusion counts are shown; no estimates are synthesized).")
 
@@ -654,6 +683,8 @@ with tab_models:
                 )
                 df_ring = pd.DataFrame(ring_records)
                 st.dataframe(df_ring, use_container_width=True)
+                if test_rows_pop is not None:
+                    st.caption(f"Evaluated across community graph partitions extracted from {test_rows_pop:,} test transactions.")
 
         with st.expander("Raw file: evaluation.json"):
             st.json(evaluation_data)
