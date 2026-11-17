@@ -1,0 +1,48 @@
+================================================================================
+AG_WORKLOG_C3.txt - Chunk 3 Big-Data Benchmarks Worklog
+================================================================================
+
+[2026-11-18 00:25] STEP 3.0 | ACTION
+Ran Chunk 3 pre-flight check (scratch/preflight_c3.py) against thresholds:
+RAM >= 7 GB available, disk >= 40 GB free, AC power plugged in, branch bdc-final.
+RAW: logs/raw/20261118_3.0_preflight.txt
+
+[2026-11-18 00:25] STEP 3.0 | RESULT
+- Git branch: bdc-final (pass)
+- Power: plugged in, battery 85% (pass)
+- Disk free: 116.07 GiB (pass; threshold 40 GB)
+- Data CSV: data/PS_20174392719_1491204439457_log.csv present (pass)
+- Available RAM: 6.04 GiB / 6.49 GB (6,486,138,880 bytes; second reading 6.14 GiB / 6.59 GB) -> FAIL (threshold 7 GB)
+- Stopped per STEP 3.0 and Appendix D without starting benchmarks.
+
+[2026-11-18 00:29] STEP 3.0 | ACTION
+Re-ran Chunk 3 pre-flight check (scratch/preflight_c3.py) after user resumed.
+RAW: logs/raw/20261118_3.0_preflight.txt
+
+[2026-11-18 00:29] STEP 3.0 | RESULT
+- Git branch: bdc-final (pass)
+- Power: plugged in, battery 88% (pass)
+- Disk free: 115.91 GiB / 124.46 GB (pass; threshold 40 GB)
+- Available RAM: 6.77 GiB / 7.27 GB (7,270,072,320 bytes) (pass; threshold 7 GB)
+- Top host python/java processes: ms-python extension (58.1 MiB) and preflight script (19.7 MiB); no heavy jobs running.
+- STEP 3.0 PASSED. Proceeding to STEP 3.1.
+
+================================================================================
+DECISIONS
+================================================================================
+- Stopped at STEP 3.0 because available RAM (6.04 GiB / 6.49 GB; re-check 6.14 GiB / 6.59 GB) is below the 7 GB pre-flight threshold.
+
+================================================================================
+FAILURES
+================================================================================
+- [2026-11-18 00:25] STEP 3.0: Pre-flight RAM check failed (6.04 GiB available < 7 GB threshold). RAW: logs/raw/20261118_3.0_preflight.txt
+
+================================================================================
+SURPRISES
+================================================================================
+- Untracked file `to_run.txt` present in workspace root (left untouched).
+
+================================================================================
+OPEN QUESTIONS
+================================================================================
+- Waiting for user to free RAM to >= 7 GB available (or lower the STEP 3.0 RAM threshold) before starting Chunk 3 benchmarks.

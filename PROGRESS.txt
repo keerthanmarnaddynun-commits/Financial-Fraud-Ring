@@ -24,8 +24,8 @@ STEP 2.6 | DONE | S2.6 | generate_visuals.py rewrite
 STEP 2.7 | SKIPPED(time) | - | [OPTIONAL] Account lookup in scorer
 STEP 2.8 | DONE | S2.8 | Dashboard tests for new tabs
 GATE 2 | DONE | S2.GATE | Chunk 2 summary and gate check
-STEP 3.0 | PENDING | - | Pre-flight for long runs
-STEP 3.1 | PENDING | - | Parquet storage layer and benchmark
+STEP 3.0 | DONE | S3.0 | Pre-flight for long runs (7.27 GB RAM, 115.91 GiB disk, AC power)
+STEP 3.1 | IN_PROGRESS | - | Parquet storage layer and benchmark
 STEP 3.2 | PENDING | - | Graph-stage runner reused by benchmarks
 STEP 3.3 | PENDING | - | Scaling benchmark
 STEP 3.4 | PENDING | - | pandas/NetworkX vs Spark comparison
