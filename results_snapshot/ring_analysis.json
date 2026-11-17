@@ -1,0 +1,11 @@
+{
+  "number_of_fraud_accounts": 16382,
+  "number_of_components": 8169,
+  "number_of_components_by_size": {
+    "2": 8125,
+    "3": 44
+  },
+  "count_size_ge_3": 44,
+  "exported_rings_count": 20,
+  "finding": "In the PaySim dataset, real fraud transactions are overwhelmingly isolated 1-to-1 interactions (8125 components of size 2). Exactly 44 components have size >= 3 (all of size 3, where 2 distinct origin accounts transferred funds to the same destination account). There are zero multi-hop chains, cycles, or larger fraud rings of size >= 4 in the ground-truth fraud data."
+}
