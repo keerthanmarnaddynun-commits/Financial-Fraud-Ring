@@ -102,3 +102,15 @@ AG WORKLOG CHUNK 2: BUSINESS IMPACT, RINGS, DASHBOARD
 [2026-11-17 11:31] STEP 2.7 | DECISIONS
 - Skipped optional account lookup feature to conserve battery and avoid heavy graph processing.
 
+[2026-11-17 12:10] STEP 2.8 | ACTION
+1. Extended tests/test_app_smoke.py with:
+   - test_business_impact_tab_interaction(): tests model selectbox, review cost number input (100.0), and threshold slider (0.75) via AppTest.
+   - test_fraud_rings_tab_interaction(): tests real rings selectbox (20 exported rings) and verifies dataframe presence for planted validation table.
+   - updated tab assertion to assert 7 tabs present.
+   - preserved test_scorer_presets_and_distinct_probabilities() and test_missing_data_graceful_handling().
+2. Ran tests/test_app_smoke.py: all 5 tests passed in 8.42s; assertions logged to logs/raw/20261117_2.8_app_smoke.txt.
+3. Executed full test suite (`python -m pytest -q`): 37 passed, 0 failed in 1957.63s; raw output saved to logs/raw/20261117_2.8_pytest_suite.txt.
+
+[2026-11-17 12:10] STEP 2.8 | DECISIONS
+- Tested both full output directory (outputs) and isolated test output (outputs_test).
+

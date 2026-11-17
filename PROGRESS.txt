@@ -22,7 +22,7 @@ STEP 2.4 | DONE | S2.4 | Dashboard tabs: Business impact and Fraud rings
 STEP 2.5 | DONE | S2.5 | Model results polish
 STEP 2.6 | DONE | S2.6 | generate_visuals.py rewrite
 STEP 2.7 | SKIPPED(time) | - | [OPTIONAL] Account lookup in scorer
-STEP 2.8 | PENDING | - | Dashboard test and chunk summary
+STEP 2.8 | DONE | S2.8 | Dashboard tests for new tabs
 GATE 2 | PENDING | - | Chunk 2 summary and gate check
 STEP 3.0 | PENDING | - | Pre-flight for long runs
 STEP 3.1 | PENDING | - | Parquet storage layer and benchmark
@@ -42,3 +42,5 @@ STEP 4.6 | PENDING | - | Archive legacy web dashboard
 STEP 4.7 | PENDING | - | Consistency check script (read-only)
 STEP 4.8 | PENDING | - | Final summary and last push
 GATE 4 | PENDING | - | Final gate
+
+
