@@ -309,5 +309,9 @@ Marked STEP 1.14 as SKIPPED(time) to preserve runtime budget for core evaluation
 [2026-11-17 09:15] STEP 1.14 | DECISIONS
 - Skipped per runbook rule: "If skipped, log SKIPPED(time) and keep the limitation text."
 
+[2026-11-17 09:17] GATE 1 | ACTION
+Compiled logs/GATE_1_SUMMARY.txt detailing all 15 steps in Chunk 1, empirical evaluation tables across time, destination group, and random splits, Spark-native engines and stage timings, exact failure/retry history, decisions, surprises, and reproducibility commands.
+
+
 
 

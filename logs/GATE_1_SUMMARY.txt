@@ -1,0 +1,136 @@
+GATE 1 SUMMARY
+==============
+
+1. COMPLETED STEPS AND COMMITS
+------------------------------
+- STEP 1.0 | DONE | commit 01f61fb | setup, logging, glossary, provenance helpers
+- STEP 1.1 | DONE | commit cb0e93b | environment, raw data facts, engine findings
+- STEP 1.2 | DONE | commit 0ef8b3f | single Spark session builder, remove dead utils
+- STEP 1.3 | DONE | commit acd44ff | StageTimer with process-tree RSS sampling
+- STEP 1.4 | DONE | commit 3ea3713 | run_info writer
+- STEP 1.5 | DONE | commit 8a2669e | Spark-native graph algorithms with engine reporting
+- STEP 1.6 | DONE | commit bfa31d0 | shared feature sets and model config
+- STEP 1.7 | DONE | commit 6b7ce4f | time, group and random splits with validation threshold
+- STEP 1.8 | DONE | commit 3bb418d | distributed scoring and realistic evaluation
+- STEP 1.9 | DONE | commit 3ba64c5 | model artefacts and feature importance
+- STEP 1.10 | DONE | commit 5c2684a | dashboard reads new layout, scorer tested
+- STEP 1.11 | DONE | commit 76b0f28 | pytest suite with 1000-row sample
+- STEP 1.12 | DONE | commit 65adf00 | pinned requirements, README fact fixes
+- STEP 1.13 | DONE | commit 59b02eb | full run v2 promoted to outputs
+- STEP 1.14 | SKIPPED(time) | commit 6ada005 | past-only variant skipped for time budget
+
+2. KEY TABLES (READ DIRECTLY FROM ACCEPTED RUN OUTPUTS)
+------------------------------------------------------
+Source file: outputs/data_quality.json
+| Metric | Value |
+| --- | --- |
+| Rows Read | 6,362,620 |
+| Rows Kept | 6,362,620 |
+| Dropped: missing_required_columns_or_nulls | 0 |
+| Dropped: non_numeric_values | 0 |
+| Dropped: invalid_type_or_account_filter | 0 |
+| Distinct Accounts | 9,073,900 |
+| Fraud Rows | 8,213 |
+
+Source file: outputs/scalability.json (Engines Table)
+| Task | Engine | Iterations | Converged |
+| --- | --- | --- | --- |
+| degrees | spark-native | 1 | True |
+| pagerank | spark-native | 10 | True |
+| triangles | spark-native | 1 | True |
+| components | spark-native | 9 | True |
+| lpa | spark-native | 5 | False |
+| behaviour | spark-native | 1 | True |
+
+Source file: outputs/scalability.json (Stage Timings and Resource Metrics)
+| Stage | Wall Clock (s) | Peak RSS (MB) | Stages Delta | Shuffle Read (MB) | Shuffle Write (MB) |
+| --- | --- | --- | --- | --- | --- |
+| degrees | 26.21 | 5311.0 | 6 | 163.3 | 163.3 |
+| pagerank | 147.06 | 6920.1 | 27 | 1436.0 | 1436.0 |
+| triangles | 83.65 | 6594.9 | 25 | 2031.7 | 2031.7 |
+| components | 1965.96 | 6832.3 | 181 | 51849.6 | 44933.7 |
+| lpa | 454.37 | 6726.9 | 68 | 12080.1 | 12080.1 |
+| behaviour_features | 45.44 | 6711.5 | 7 | 707.8 | 707.8 |
+
+Source file: outputs/scalability.json (High-level Pipeline Wall Clock)
+- ingestion_and_validation: 58.06s (0.97 min)
+- graph_construction: 15.05s (0.25 min)
+- graph_feature_engineering: 2776.17s (46.27 min)
+- model_training: 67.59s (1.13 min)
+- distributed_scoring_and_eval: 760.19s (12.67 min)
+- pipeline_total: 3688.50s (61.48 min)
+- Total Shuffle Read: 69.71 GB
+- Total Shuffle Write: 62.95 GB
+- Total Spark Stages Executed: 939
+
+Source file: outputs/evaluation.json (Comparative Models Evaluation)
+| Split | Model | Threshold | Precision | Recall | F1 | ROC AUC | PR AUC | False Alarms / 10k | Test Rows |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| time | m0_rule | 0.5000 | 1.0000 | 0.0044 | 0.0087 | 0.5022 | 0.0150 | 0.00 | 193,939 |
+| time | m1_tabular | 0.9968 | 0.9976 | 0.9947 | 0.9961 | 0.9999 | 0.9988 | 0.26 | 193,939 |
+| time | m1_tabular_noerr | 0.9870 | 0.9487 | 0.8783 | 0.9121 | 0.9998 | 0.9844 | 5.05 | 193,939 |
+| time | m2_graph | 0.9898 | 0.9971 | 0.9981 | 0.9976 | 1.0000 | 0.9989 | 0.31 | 193,939 |
+| time | m3_community_mule | 0.9959 | 0.9971 | 0.9952 | 0.9961 | 0.9999 | 0.9988 | 0.31 | 193,939 |
+| group_dest | m0_rule | 0.5000 | 1.0000 | 0.0010 | 0.0019 | 0.5005 | 0.0023 | 0.00 | 1,600,192 |
+| group_dest | m1_tabular | 0.9902 | 0.9866 | 0.9937 | 0.9902 | 0.9996 | 0.9972 | 0.17 | 1,600,192 |
+| group_dest | m1_tabular_noerr | 0.9983 | 0.9378 | 0.7613 | 0.8404 | 0.9993 | 0.9258 | 0.66 | 1,600,192 |
+| group_dest | m2_graph | 0.9816 | 0.9843 | 0.9957 | 0.9900 | 0.9998 | 0.9973 | 0.21 | 1,600,192 |
+| group_dest | m3_community_mule | 0.9860 | 0.9857 | 0.9942 | 0.9899 | 0.9998 | 0.9971 | 0.19 | 1,600,192 |
+| random | m0_rule | 0.5000 | 1.0000 | 0.0014 | 0.0029 | 0.5007 | 0.0027 | 0.00 | 1,589,069 |
+| random | m1_tabular | 0.9965 | 0.9817 | 0.9933 | 0.9875 | 0.9999 | 0.9974 | 0.25 | 1,589,069 |
+| random | m1_tabular_noerr | 0.9983 | 0.9416 | 0.7515 | 0.8359 | 0.9997 | 0.9207 | 0.62 | 1,589,069 |
+| random | m2_graph | 0.9970 | 0.9816 | 0.9929 | 0.9872 | 1.0000 | 0.9973 | 0.25 | 1,589,069 |
+| random | m3_community_mule | 0.9978 | 0.9811 | 0.9905 | 0.9858 | 0.9999 | 0.9968 | 0.25 | 1,589,069 |
+
+3. FAILURES AND RETRIES (EXACT ERROR LINES)
+------------------------------------------
+- STEP 1.1: GraphFrames binary incompatibility on PySpark 4.2.0:
+  'java.lang.NoSuchMethodError: org.apache.spark.sql.SparkSession.implicits()Lorg/apache/spark/sql/SQLImplicits;'
+  Resolution: Implemented Spark-native DataFrame iterative graph algorithms with local checkpointing.
+- STEP 1.5: Ambiguous column reference in LPA convergence test:
+  'AnalysisException: [AMBIGUOUS_REFERENCE] Reference `community_id` is ambiguous'
+  Resolution: Added explicit column alias `new_community_id` prior to join.
+- STEP 1.7: Training sampling undershoot on small debug fractions:
+  Sampling returned fewer negatives than requested due to Bernoulli variance on small datasets.
+  Resolution: Switched to order-by rand with limit for small samples, 1.5x oversampling buffer for large sets.
+- STEP 1.8: Distributed batch scoring empty partition schema mismatch:
+  'ValueError: Number of columns does not match number of column names'
+  Resolution: In mapInPandas generator, return pd.DataFrame(columns=output_cols) when partition iterator is empty.
+- STEP 1.12: Git index.lock permission denied in standard sandbox:
+  'fatal: Unable to create .git/index.lock: Permission denied'
+  Resolution: Executed git index write commands with elevated execution mode.
+
+4. DECISIONS TAKEN (DEFAULTS USED)
+---------------------------------
+- Single Spark Session: Maintained unified builder in spark_session.py configured with local[*] and 8GB driver memory.
+- Native Graph Algorithms: Iterative graph algorithms utilize localCheckpoint(eager=True) every 2 iterations to truncate RDD lineage.
+- Leakage Prevention: Excluded `step` and `isFlaggedFraud` from ML feature lists; evaluated `isFlaggedFraud` as M0 rule baseline.
+- Threshold Selection: Tuned threshold on validation set (max F1) and applied out-of-sample to test set.
+- Accepted Outputs Promotion: Archived legacy run to archive/outputs_prev_20261117_091008/ and promoted 20261117_c1-full to outputs/.
+
+5. SURPRISES NOTICED
+--------------------
+- Simulator Artifact Signal: On all splits, removing simulator balance error features (errorBalanceOrig, errorBalanceDest) drops F1 by 0.08 to 0.15 (e.g. from 0.996 to 0.912 on time split; from 0.990 to 0.840 on group_dest split), indicating substantial model reliance on simulator accounting balance discrepancies.
+- M0 Rule Baseline: The bank's static transfer rule (isFlaggedFraud: transfer > 200,000) flags only 16 fraud transactions out of 8,213 total, yielding an F1 of 0.0087 (time split).
+- LPA Convergence: LPA ran 5 iterations without full label convergence (converged=False), producing bounded community assignments across 9.07M accounts.
+
+6. NOT CHECKED / NOT DONE
+------------------------
+- STEP 1.14 (Past-only graph features variant): Marked SKIPPED(time) per runbook budget allocation.
+- Multi-node cluster execution: Evaluated on single-machine local mode only.
+- Ground-truth fraud ring labels: PaySim provides transaction-level fraud flags, not syndicate membership annotations.
+
+7. HOW TO INSPECT THE RESULTS
+-----------------------------
+To open the interactive Streamlit dashboard:
+  streamlit run app.py
+
+To execute the automated test suite:
+  python -m pytest -q
+
+To inspect accepted run metrics and cards:
+  type outputs/evaluation.json
+  type outputs/scalability.json
+  type runs/20261117_c1-full/CARD.md
+
+Waiting for the user to type "continue"
