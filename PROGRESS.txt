@@ -18,7 +18,7 @@ STEP 1.15 | PENDING | - | [POSTPONED] Per-split training, feature persistence, s
 STEP 2.1 | DONE | S2.1 | Business impact table
 STEP 2.2 | DONE | S2.2 | Real-data ring analysis
 STEP 2.3 | DONE | S2.3 | Planted-ring validation with camouflage
-STEP 2.4 | PENDING | - | Dashboard tabs: Business impact and Fraud rings
+STEP 2.4 | DONE | S2.4 | Dashboard tabs: Business impact and Fraud rings
 STEP 2.5 | PENDING | - | Model results polish
 STEP 2.6 | PENDING | - | generate_visuals.py rewrite
 STEP 2.7 | PENDING | - | [OPTIONAL] Account lookup in scorer

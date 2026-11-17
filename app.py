@@ -268,6 +268,40 @@ def load_fraud_sample_transactions(
     return pd.DataFrame()
 
 
+@st.cache_data
+def list_available_rings(rings_dir_str: str, mtime: float) -> List[str]:
+    """List available ring JSON files in outputs/rings/."""
+    rings_dir = Path(rings_dir_str)
+    if not rings_dir.exists():
+        return []
+    return sorted([f.name for f in rings_dir.glob("ring_*.json")])
+
+
+@st.cache_data
+def load_ring_file(ring_path_str: str, mtime: float) -> Optional[Dict[str, Any]]:
+    """Load a single ring JSON export."""
+    path = Path(ring_path_str)
+    if not path.exists():
+        return None
+    try:
+        with path.open("r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+@st.cache_data
+def load_rings_summary_csv(csv_path_str: str, mtime: float) -> Optional[pd.DataFrame]:
+    """Load the full rings summary CSV."""
+    path = Path(csv_path_str)
+    if not path.exists():
+        return None
+    try:
+        return pd.read_csv(path)
+    except Exception:
+        return None
+
+
 # Load primary files
 model_names = load_model_names_map(get_file_mtime(MODEL_NAMES_PATH))
 scalability_data = load_output_json("scalability.json")
@@ -275,6 +309,9 @@ evaluation_data = load_output_json("evaluation.json")
 data_quality_data = load_output_json("data_quality.json")
 run_info_data = load_output_json("run_info.json")
 scaling_runs_data = load_output_json("scaling_runs.json")
+business_impact_data = load_output_json("business_impact.json")
+ring_analysis_data = load_output_json("ring_analysis.json")
+planted_rings_data = load_output_json("planted_ring_validation.json")
 
 # Header
 app_id = (
@@ -295,14 +332,15 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-tab_overview, tab_models, tab_pipeline, tab_scaling, tab_scorer, tab_inspector = st.tabs(
+tab_overview, tab_models, tab_pipeline, tab_impact, tab_rings, tab_scaling, tab_scorer = st.tabs(
     [
         "📈 Overview",
         "📊 Model Results",
         "⚡ Pipeline Evidence",
+        "💼 Business Impact",
+        "🕸️ Fraud Rings",
         "🚀 Scaling",
         "🛡️ Live Scorer",
-        "🕸️ Fraud Ring Inspector",
     ]
 )
 
@@ -694,7 +732,497 @@ with tab_pipeline:
 
 
 # =========================================================================
-# TAB 4: SCALING
+# TAB 4: BUSINESS IMPACT
+# =========================================================================
+with tab_impact:
+    st.subheader("Business Impact & Threshold Analysis (Time Split)")
+    st.markdown(
+        "Financial cost-benefit analysis of fraud detection across score operating thresholds. "
+        "Evaluated on the 193,939 time-split test transactions (2,062 ground-truth fraud cases)."
+    )
+
+    if not business_impact_data:
+        st.info(
+            f"Business impact analysis not available. Run `python business_impact.py --output-dir {OUTPUT_DIR}` to generate."
+        )
+    else:
+        st.caption(
+            f"All financial values are denominated in **{business_impact_data.get('currency', 'PaySim simulated currency units')}**."
+        )
+
+        impact_models = business_impact_data.get("models", {})
+        rule_baseline = business_impact_data.get("rule_baseline", {})
+        total_fraud_val = float(business_impact_data.get("fraud_value_total", 0.0))
+        total_fraud_txns = int(business_impact_data.get("fraud_rows", 0))
+
+        if not impact_models:
+            st.warning("No model threshold grids found in business_impact.json.")
+        else:
+            model_keys = list(impact_models.keys())
+            c_sel1, c_sel2 = st.columns([2, 2])
+            with c_sel1:
+                selected_impact_model = st.selectbox(
+                    "Select Model for Analysis",
+                    options=model_keys,
+                    format_func=lambda k: model_names.get(k, k),
+                    key="impact_model_select",
+                )
+            with c_sel2:
+                review_cost = st.number_input(
+                    "Investigation Cost per Alert (simulated currency units)",
+                    min_value=0.0,
+                    value=50.0,
+                    step=10.0,
+                    help="Manual investigator review cost incurred per flagged transaction alert.",
+                    key="impact_review_cost",
+                )
+
+            m_data = impact_models.get(selected_impact_model, {})
+            grid = m_data.get("grid", [])
+
+            if not grid:
+                st.warning("Threshold grid is empty for the selected model.")
+            else:
+                # Find best threshold maximizing net saving = fraud_value_caught - review_cost * alerts
+                best_point = max(
+                    grid,
+                    key=lambda p: float(p.get("fraud_value_caught", 0.0)) - review_cost * float(p.get("alerts", 0)),
+                )
+                best_th = float(best_point.get("threshold", 0.5))
+                best_caught = float(best_point.get("fraud_value_caught", 0.0))
+                best_alerts = int(best_point.get("alerts", 0))
+                best_net = best_caught - (review_cost * best_alerts)
+
+                st.slider(
+                    "Operating Score Threshold",
+                    min_value=0.0,
+                    max_value=1.0,
+                    value=float(round(best_th, 4)),
+                    step=0.01,
+                    key="impact_threshold_slider",
+                )
+                user_th = st.session_state.get("impact_threshold_slider", best_th)
+
+                # Find closest grid point to chosen slider value
+                chosen_point = min(grid, key=lambda p: abs(float(p.get("threshold", 0.0)) - user_th))
+                th_val = float(chosen_point.get("threshold", 0.0))
+                alerts_val = int(chosen_point.get("alerts", 0))
+                true_alerts_val = int(chosen_point.get("true_alerts", 0))
+                false_alerts_val = int(chosen_point.get("false_alerts", 0))
+                caught_val = float(chosen_point.get("fraud_value_caught", 0.0))
+                missed_val = float(chosen_point.get("fraud_value_missed", 0.0))
+                share_caught = float(chosen_point.get("share_fraud_value_caught", 0.0))
+                alerts_10k = float(chosen_point.get("alerts_per_10k", 0.0))
+                net_saving_val = caught_val - (review_cost * alerts_val)
+
+                # Best operating threshold callout
+                st.success(
+                    f"📌 **Best Operating Threshold for Investigation Cost {review_cost:,.0f}:** `threshold = {best_th:.4f}` | "
+                    f"Maximum Net Saving: **{best_net:,.2f}** simulated currency units "
+                    f"({best_alerts:,} alerts, {best_caught:,.2f} caught)."
+                )
+
+                # KPI Cards for chosen threshold
+                kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+                with kpi1:
+                    render_metric_card(
+                        "Total Alerts",
+                        f"{alerts_val:,}",
+                        f"{alerts_10k:.1f} per 10k rows",
+                        ratio=alerts_val / max(1, int(business_impact_data.get("test_rows", 193939))),
+                    )
+                with kpi2:
+                    render_metric_card(
+                        "Fraud Value Caught",
+                        f"{caught_val:,.0f}",
+                        f"{share_caught * 100:.1f}% of total ({true_alerts_val:,} true alerts)",
+                        ratio=share_caught,
+                    )
+                with kpi3:
+                    render_metric_card(
+                        "Fraud Value Missed",
+                        f"{missed_val:,.0f}",
+                        f"{(1.0 - share_caught) * 100:.1f}% missed",
+                        ratio=1.0 - share_caught,
+                    )
+                with kpi4:
+                    render_metric_card(
+                        "Net Financial Saving",
+                        f"{net_saving_val:,.0f}",
+                        f"Caught minus ({review_cost:,.0f} × alerts)",
+                    )
+
+                # Side-by-side comparison table: Selected vs Best vs Rule Baseline
+                st.markdown("#### Performance Comparison")
+                rule_alerts = int(rule_baseline.get("alerts", 0))
+                rule_true_alerts = int(rule_baseline.get("true_alerts", 0))
+                rule_false_alerts = int(rule_baseline.get("false_alerts", 0))
+                rule_caught = float(rule_baseline.get("fraud_value_caught", 0.0))
+                rule_missed = float(rule_baseline.get("fraud_value_missed", 0.0))
+                rule_share = float(rule_baseline.get("share_fraud_value_caught", 0.0))
+                rule_net = rule_caught - (review_cost * rule_alerts)
+
+                comp_data = {
+                    "Metric": [
+                        "Threshold",
+                        "Alerts Triggered",
+                        "True Alerts (Fraud)",
+                        "False Alerts (Non-Fraud)",
+                        "Alerts per 10k Rows",
+                        "Fraud Value Caught (units)",
+                        "Fraud Value Missed (units)",
+                        "Share of Fraud Caught (%)",
+                        "Net Saving (units)",
+                    ],
+                    f"Selected Point ({th_val:.4f})": [
+                        f"{th_val:.4f}",
+                        f"{alerts_val:,}",
+                        f"{true_alerts_val:,}",
+                        f"{false_alerts_val:,}",
+                        f"{alerts_10k:.2f}",
+                        f"{caught_val:,.2f}",
+                        f"{missed_val:,.2f}",
+                        f"{share_caught * 100:.2f}%",
+                        f"{net_saving_val:,.2f}",
+                    ],
+                    f"Best Point ({best_th:.4f})": [
+                        f"{best_th:.4f}",
+                        f"{best_alerts:,}",
+                        f"{int(best_point.get('true_alerts', 0)):,}",
+                        f"{int(best_point.get('false_alerts', 0)):,}",
+                        f"{float(best_point.get('alerts_per_10k', 0.0)):.2f}",
+                        f"{best_caught:,.2f}",
+                        f"{float(best_point.get('fraud_value_missed', 0.0)):,.2f}",
+                        f"{float(best_point.get('share_fraud_value_caught', 0.0)) * 100:.2f}%",
+                        f"{best_net:,.2f}",
+                    ],
+                    "Rule Baseline (isFlaggedFraud)": [
+                        "Amount > 200k",
+                        f"{rule_alerts:,}",
+                        f"{rule_true_alerts:,}",
+                        f"{rule_false_alerts:,}",
+                        f"{float(rule_baseline.get('alerts_per_10k', 0.0)):.2f}",
+                        f"{rule_caught:,.2f}",
+                        f"{rule_missed:,.2f}",
+                        f"{rule_share * 100:.2f}%",
+                        f"{rule_net:,.2f}",
+                    ],
+                }
+                st.dataframe(pd.DataFrame(comp_data), use_container_width=True, hide_index=True)
+
+                # Plotly Net Saving Curve across Threshold Grid
+                st.markdown("#### Net Saving vs Operating Threshold")
+                th_x = [float(p.get("threshold", 0.0)) for p in grid]
+                net_y = [
+                    float(p.get("fraud_value_caught", 0.0)) - review_cost * float(p.get("alerts", 0))
+                    for p in grid
+                ]
+
+                fig_impact = go.Figure()
+                fig_impact.add_trace(
+                    go.Scatter(
+                        x=th_x,
+                        y=net_y,
+                        mode="lines",
+                        name=f"Net Saving (Cost={review_cost:,.0f})",
+                        line=dict(color="#38bdf8", width=3),
+                        hoverinfo="text",
+                        hovertext=[
+                            f"Threshold: {x:.4f}<br>Net Saving: {y:,.2f}<br>Alerts: {int(p.get('alerts', 0)):,}"
+                            for x, y, p in zip(th_x, net_y, grid)
+                        ],
+                    )
+                )
+                fig_impact.add_trace(
+                    go.Scatter(
+                        x=[best_th],
+                        y=[best_net],
+                        mode="markers+text",
+                        name=f"Best Threshold ({best_th:.4f})",
+                        marker=dict(color="#10b981", size=12, symbol="star"),
+                        text=[f"Best: {best_net:,.0f}"],
+                        textposition="top center",
+                    )
+                )
+                fig_impact.add_trace(
+                    go.Scatter(
+                        x=[th_val],
+                        y=[net_saving_val],
+                        mode="markers",
+                        name=f"Current Slider ({th_val:.4f})",
+                        marker=dict(color="#f59e0b", size=10, symbol="diamond"),
+                    )
+                )
+                fig_impact.add_hline(
+                    y=rule_net,
+                    line_dash="dash",
+                    line_color="#ef4444",
+                    annotation_text=f"Rule Baseline Net ({rule_net:,.0f})",
+                    annotation_position="bottom right",
+                )
+
+                fig_impact.update_layout(
+                    title=dict(
+                        text=f"Net Financial Saving Curve across Thresholds ({model_names.get(selected_impact_model, selected_impact_model)})",
+                        font=dict(size=14),
+                    ),
+                    xaxis=dict(title="Score Threshold", showgrid=True, gridcolor="rgba(148,163,184,0.15)"),
+                    yaxis=dict(
+                        title="Simulated Currency Units",
+                        showgrid=True,
+                        gridcolor="rgba(148,163,184,0.15)",
+                    ),
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="#071a17",
+                    font=dict(color="#edf7f4"),
+                    margin=dict(l=40, r=40, t=50, b=40),
+                    height=450,
+                    legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
+                )
+                st.plotly_chart(fig_impact, use_container_width=True)
+
+        with st.expander("Raw file: business_impact.json", expanded=False):
+            st.json(business_impact_data)
+
+
+# =========================================================================
+# TAB 5: FRAUD RINGS
+# =========================================================================
+with tab_rings:
+    st.subheader("Fraud Ring Analysis & Topology")
+    st.markdown(
+        "Topological graph analysis of fraud components and planted synthetic ring detection. "
+        "Evaluated on ground-truth fraud transactions from the PaySim dataset."
+    )
+
+    if not ring_analysis_data:
+        st.info(
+            f"Fraud ring analysis not available. Run `python rings.py --output-dir {OUTPUT_DIR}` to generate."
+        )
+    else:
+        finding_text = ring_analysis_data.get("finding", "")
+        if finding_text:
+            st.info(f"📋 **Empirical Finding:** {finding_text}")
+
+        rkpi1, rkpi2, rkpi3, rkpi4 = st.columns(4)
+        with rkpi1:
+            render_metric_card(
+                "Fraud Accounts",
+                f"{ring_analysis_data.get('number_of_fraud_accounts', 0):,}",
+                "Distinct nodes in fraud subgraph",
+            )
+        with rkpi2:
+            render_metric_card(
+                "Fraud Components",
+                f"{ring_analysis_data.get('number_of_components', 0):,}",
+                "Connected components",
+            )
+        with rkpi3:
+            render_metric_card(
+                "Components (Size 2)",
+                f"{ring_analysis_data.get('number_of_components_by_size', {}).get('2', 0):,}",
+                "Isolated 1-to-1 account pairs",
+            )
+        with rkpi4:
+            render_metric_card(
+                "Components (Size ≥ 3)",
+                f"{ring_analysis_data.get('count_size_ge_3', 0):,}",
+                "All size 3 (2-to-1 funnels)",
+            )
+
+        st.markdown("#### Real Exported Fraud Rings (Size ≥ 3)")
+        rings_dir = OUTPUT_DIR / "rings"
+        available_ring_files = list_available_rings(str(rings_dir), get_file_mtime(rings_dir))
+
+        if not available_ring_files:
+            st.caption(f"No individual ring JSON files found in `{rings_dir}`.")
+        else:
+            ring_options = {}
+            for r_file in available_ring_files:
+                r_path = rings_dir / r_file
+                r_data = load_ring_file(str(r_path), get_file_mtime(r_path))
+                if r_data:
+                    label = (
+                        f"Ring {r_data.get('ring_id', r_file)} — "
+                        f"Amount: {float(r_data.get('total_amount', 0.0)):,.2f} | "
+                        f"Nodes: {r_data.get('size', 3)} | "
+                        f"Txns: {r_data.get('transaction_count', 2)}"
+                    )
+                    ring_options[label] = (r_file, r_data)
+
+            chosen_ring_label = st.selectbox(
+                "Select Real Fraud Ring to Inspect",
+                options=list(ring_options.keys()),
+                key="real_ring_select",
+            )
+
+            if chosen_ring_label:
+                _, chosen_ring = ring_options[chosen_ring_label]
+
+                G_ring = nx.DiGraph()
+                nodes_list = chosen_ring.get("nodes", [])
+                for nd in nodes_list:
+                    G_ring.add_node(nd["id"], role=nd.get("role", "unknown"))
+
+                edges_list = chosen_ring.get("edges", [])
+                for ed in edges_list:
+                    G_ring.add_edge(
+                        ed["src"],
+                        ed["dst"],
+                        amount=float(ed.get("amount", 0.0)),
+                        step=int(ed.get("step", 0)),
+                        type=str(ed.get("type", "CASH_OUT")),
+                    )
+
+                pos = nx.circular_layout(G_ring) if len(G_ring.nodes) <= 4 else nx.spring_layout(G_ring, seed=42)
+
+                edge_x, edge_y = [], []
+                for u, v, d in G_ring.edges(data=True):
+                    x0, y0 = pos[u]
+                    x1, y1 = pos[v]
+                    edge_x.extend([x0, x1, None])
+                    edge_y.extend([y0, y1, None])
+
+                trace_ring_edges = go.Scatter(
+                    x=edge_x,
+                    y=edge_y,
+                    line=dict(width=2.5, color="#ef4444"),
+                    hoverinfo="none",
+                    mode="lines",
+                    name="Fraud Transfer Edge",
+                )
+
+                node_x, node_y, node_colors, node_texts, node_sizes = [], [], [], [], []
+                for nid in G_ring.nodes():
+                    x, y = pos[nid]
+                    node_x.append(x)
+                    node_y.append(y)
+                    role = G_ring.nodes[nid].get("role", "unknown")
+
+                    if role == "origin":
+                        node_colors.append("#38bdf8")  # Sky blue
+                        node_sizes.append(22)
+                    elif role == "destination":
+                        node_colors.append("#ef4444")  # Coral / Red
+                        node_sizes.append(24)
+                    else:
+                        node_colors.append("#a855f7")  # Purple
+                        node_sizes.append(26)
+
+                    in_d = G_ring.in_degree(nid)
+                    out_d = G_ring.out_degree(nid)
+                    node_texts.append(
+                        f"Account: <b>{nid}</b><br>Role: <b>{role.upper()}</b><br>In-degree: {in_d} | Out-degree: {out_d}"
+                    )
+
+                trace_ring_nodes = go.Scatter(
+                    x=node_x,
+                    y=node_y,
+                    mode="markers+text",
+                    hoverinfo="text",
+                    text=[nid[:8] + ".." for nid in G_ring.nodes()],
+                    textposition="bottom center",
+                    textfont=dict(color="#ffffff", size=10),
+                    hovertext=node_texts,
+                    marker=dict(
+                        color=node_colors,
+                        size=node_sizes,
+                        line=dict(width=2, color="#ffffff"),
+                    ),
+                    name="Accounts (Blue=Origin, Red=Destination, Purple=Both)",
+                )
+
+                fig_ring = go.Figure(
+                    data=[trace_ring_edges, trace_ring_nodes],
+                    layout=go.Layout(
+                        title=dict(
+                            text=f"Directed Topology: Ring {chosen_ring.get('ring_id')} (Total Amount: {float(chosen_ring.get('total_amount', 0)):,.2f} simulated currency units)",
+                            font=dict(size=14),
+                        ),
+                        showlegend=True,
+                        hovermode="closest",
+                        margin=dict(b=20, l=20, r=20, t=40),
+                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
+                        height=420,
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="#071a17",
+                        font=dict(color="#edf7f4"),
+                    ),
+                )
+                st.plotly_chart(fig_ring, use_container_width=True)
+
+                st.markdown("**Ring Transactions:**")
+                df_edges = pd.DataFrame(edges_list)
+                if not df_edges.empty:
+                    df_edges["amount"] = df_edges["amount"].apply(lambda v: f"{v:,.2f}")
+                    st.dataframe(df_edges, use_container_width=True, hide_index=True)
+
+        rings_summary_path = OUTPUT_DIR / "rings_summary.csv"
+        df_rings_summary = load_rings_summary_csv(str(rings_summary_path), get_file_mtime(rings_summary_path))
+        if df_rings_summary is not None and not df_rings_summary.empty:
+            with st.expander("Full Real Fraud Rings Table (Components with Size ≥ 3)", expanded=False):
+                st.dataframe(df_rings_summary[df_rings_summary["size"] >= 3], use_container_width=True)
+
+    # Planted Ring Results Table (Marked as synthetic injection for validation)
+    st.divider()
+    st.markdown("#### Planted-Ring Benchmark (Synthetic Injection for Validation)")
+    st.caption(
+        "Evaluation of Spark-native Connected Components and LPA graph clustering on 60 synthetic rings "
+        "(chains, funnels, cycles) injected into a 200,000-row PaySim sample at 3 camouflage levels."
+    )
+
+    if not planted_rings_data:
+        st.info(
+            f"Planted-ring validation not available. Run `python planted_rings.py --output-dir {OUTPUT_DIR}` to generate."
+        )
+    else:
+        results_list = planted_rings_data.get("results_by_pattern_and_camouflage", [])
+        if results_list:
+            df_planted = pd.DataFrame(results_list)
+            df_display = pd.DataFrame({
+                "Pattern": df_planted["pattern"].str.capitalize(),
+                "Camouflage": df_planted["camouflage"],
+                "Planted": df_planted["planted"],
+                "Recovered": df_planted["recovered"],
+                "Recovery Rate": (df_planted["recovery_rate"] * 100).apply(lambda v: f"{v:.1f}%"),
+                "Homogeneity": df_planted["homogeneity"].apply(lambda v: f"{v:.4f}"),
+                "Completeness": df_planted["completeness"].apply(lambda v: f"{v:.4f}"),
+                "V-Measure": df_planted["v_measure"].apply(lambda v: f"{v:.4f}"),
+                "Contamination": (df_planted["contamination"] * 100).apply(lambda v: f"{v:.1f}%"),
+            })
+            st.dataframe(df_display, use_container_width=True, hide_index=True)
+            st.caption(
+                "📌 **Topology Dynamic:** At 0% camouflage (isolated synthetic rings), 100% of planted rings are recovered with 0.0 contamination. "
+                "With camouflage transactions (20% and 50%), normal background accounts are absorbed into the detected components, "
+                "increasing contamination to 62%–81% and reducing isolated community recovery to 0%, while maintaining high clustering homogeneity (0.86–1.0)."
+            )
+
+    with st.expander("Explore Raw Dataset Sample Subgraph (from CSV)", expanded=False):
+        data_dir = Path("data")
+        csv_candidates = sorted(data_dir.glob("*.csv")) + sorted(data_dir.glob("*/*.csv"))
+        csv_path = csv_candidates[0] if csv_candidates else None
+
+        if csv_path is None:
+            st.info("No PaySim CSV dataset found in `data/`.")
+        else:
+            sample_df = load_fraud_sample_transactions(str(csv_path), get_file_mtime(csv_path))
+            if not sample_df.empty:
+                max_render = st.slider("Max Transactions to Render", min_value=10, max_value=100, value=30, step=10, key="raw_sample_render_slider")
+                sub_df = sample_df[sample_df["isFraud"] == 1].head(max_render)
+                st.dataframe(sub_df[["step", "type", "nameOrig", "nameDest", "amount", "isFraud"]], use_container_width=True)
+
+    with st.expander("Raw file: ring_analysis.json & planted_ring_validation.json", expanded=False):
+        if ring_analysis_data:
+            st.markdown("**ring_analysis.json:**")
+            st.json(ring_analysis_data)
+        if planted_rings_data:
+            st.markdown("**planted_ring_validation.json:**")
+            st.json(planted_rings_data)
+
+
+# =========================================================================
+# TAB 6: SCALING
 # =========================================================================
 with tab_scaling:
     st.subheader("Distributed Systems Scaling Benchmarks")
@@ -924,155 +1452,6 @@ with tab_scorer:
             except Exception as e:
                 st.error(f"Scoring error: {e}")
 
-
-# =========================================================================
-# TAB 6: FRAUD RING INSPECTOR
-# =========================================================================
-with tab_inspector:
-    st.subheader("Fraud Ring Inspector")
-    st.markdown("Topological network visualization: **Sample of labelled fraud transactions, not detected rings**.")
-
-    # Locate dataset
-    data_dir = Path("data")
-    csv_candidates = sorted(data_dir.glob("*.csv")) + sorted(data_dir.glob("*/*.csv"))
-    csv_path = csv_candidates[0] if csv_candidates else None
-
-    if csv_path is None:
-        st.info("No PaySim CSV dataset found in `data/`. Place the CSV file in `data/` to view the graph inspector.")
-    else:
-        sample_df = load_fraud_sample_transactions(str(csv_path), get_file_mtime(csv_path))
-        if sample_df.empty:
-            st.warning("Could not read sample transactions from the CSV dataset.")
-        else:
-            ctl1, ctl2, ctl3 = st.columns(3)
-            with ctl1:
-                filter_choice = st.radio("Transaction Subset", ["Fraud Transactions Only", "All Sampled Transactions"], horizontal=True)
-            with ctl2:
-                max_render = st.slider("Max Transactions to Render", min_value=10, max_value=150, value=40, step=10)
-            with ctl3:
-                account_search = st.text_input("Filter by Account ID", "")
-
-            filtered_df = sample_df.copy()
-            if filter_choice == "Fraud Transactions Only" and "isFraud" in filtered_df.columns:
-                filtered_df = filtered_df[filtered_df["isFraud"] == 1]
-            if account_search.strip():
-                filtered_df = filtered_df[
-                    filtered_df["nameOrig"].str.contains(account_search, case=False, na=False) |
-                    filtered_df["nameDest"].str.contains(account_search, case=False, na=False)
-                ]
-            filtered_df = filtered_df.head(max_render)
-
-            if filtered_df.empty:
-                st.warning("No transactions match the selected filter criteria.")
-            else:
-                G = nx.DiGraph()
-                for _, row in filtered_df.iterrows():
-                    src = str(row["nameOrig"])
-                    dst = str(row["nameDest"])
-                    amt = float(row.get("amount", 0.0))
-                    is_f = int(row.get("isFraud", 0))
-                    t_type = str(row.get("type", "TRANSFER"))
-                    G.add_edge(src, dst, amount=amt, is_fraud=is_f, type=t_type)
-
-                # Assign roles based on degree
-                for n in G.nodes():
-                    in_d = G.in_degree(n)
-                    out_d = G.out_degree(n)
-                    if in_d > 0 and out_d > 0:
-                        G.nodes[n]["role"] = "Intermediary / Mule Account"
-                    elif in_d > 0:
-                        G.nodes[n]["role"] = "Destination Account"
-                    else:
-                        G.nodes[n]["role"] = "Origin Account"
-
-                pos = nx.spring_layout(G, seed=42, k=0.35)
-
-                # Build edge traces
-                edge_norm_x, edge_norm_y = [], []
-                edge_fraud_x, edge_fraud_y = [], []
-
-                for u, v, data in G.edges(data=True):
-                    x0, y0 = pos[u]
-                    x1, y1 = pos[v]
-                    if data.get("is_fraud") == 1:
-                        edge_fraud_x.extend([x0, x1, None])
-                        edge_fraud_y.extend([y0, y1, None])
-                    else:
-                        edge_norm_x.extend([x0, x1, None])
-                        edge_norm_y.extend([y0, y1, None])
-
-                trace_norm_edges = go.Scatter(
-                    x=edge_norm_x, y=edge_norm_y,
-                    line=dict(width=1, color="rgba(148, 163, 184, 0.35)"),
-                    hoverinfo="none",
-                    mode="lines",
-                    name="Normal Transaction Link",
-                )
-                trace_fraud_edges = go.Scatter(
-                    x=edge_fraud_x, y=edge_fraud_y,
-                    line=dict(width=2.5, color="#ef4444"),
-                    hoverinfo="none",
-                    mode="lines",
-                    name="Fraud Transaction Link",
-                )
-
-                # Build node traces colored by role
-                node_x, node_y, node_colors, node_texts, node_sizes = [], [], [], [], []
-                for n in G.nodes():
-                    x, y = pos[n]
-                    node_x.append(x)
-                    node_y.append(y)
-                    role = G.nodes[n]["role"]
-                    in_d = G.in_degree(n)
-                    out_d = G.out_degree(n)
-
-                    if role == "Origin Account":
-                        node_colors.append("#38bdf8")  # Sky blue
-                        node_sizes.append(11)
-                    elif role == "Destination Account":
-                        node_colors.append("#10b981")  # Emerald green
-                        node_sizes.append(11)
-                    else:
-                        node_colors.append("#f59e0b")  # Amber / Intermediary
-                        node_sizes.append(15)
-
-                    node_texts.append(
-                        f"Account: <b>{n}</b><br>Role: <b>{role}</b><br>In-Degree: {in_d} | Out-Degree: {out_d}"
-                    )
-
-                trace_nodes = go.Scatter(
-                    x=node_x, y=node_y,
-                    mode="markers",
-                    hoverinfo="text",
-                    text=node_texts,
-                    marker=dict(
-                        color=node_colors,
-                        size=node_sizes,
-                        line=dict(width=1.5, color="#ffffff"),
-                    ),
-                    name="Accounts (Blue=Origin, Green=Dest, Amber=Intermediary)",
-                )
-
-                fig_net = go.Figure(
-                    data=[trace_norm_edges, trace_fraud_edges, trace_nodes],
-                    layout=go.Layout(
-                        title=dict(text="Network Graph (Sample of Labelled Fraud Transactions, Not Detected Rings)", font=dict(size=14)),
-                        showlegend=True,
-                        hovermode="closest",
-                        margin=dict(b=20, l=20, r=20, t=40),
-                        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False),
-                        height=500,
-                        paper_bgcolor="rgba(0,0,0,0)",
-                        plot_bgcolor="#071a17",
-                        font=dict(color="#edf7f4"),
-                    ),
-                )
-                st.plotly_chart(fig_net, use_container_width=True)
-
-                st.subheader("Sub-Graph Transaction Records")
-                cols_to_show = [c for c in ["step", "type", "nameOrig", "nameDest", "amount", "oldbalanceOrg", "newbalanceOrig", "isFraud"] if c in filtered_df.columns]
-                st.dataframe(filtered_df[cols_to_show], use_container_width=True)
 
 st.divider()
 st.caption("Financial Fraud Ring Analytics - PaySim Big Data Pipeline • Strictly honest data layer")

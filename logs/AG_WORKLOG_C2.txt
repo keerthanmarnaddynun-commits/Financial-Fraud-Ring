@@ -46,3 +46,22 @@ AG WORKLOG CHUNK 2: BUSINESS IMPACT, RINGS, DASHBOARD
 
 
 
+[2026-11-17 11:22] STEP 2.4 | ACTION
+1. Updated app.py expanding dashboard to 7 tabs: Overview, Model Results, Pipeline Evidence, Business Impact, Fraud Rings, Scaling, Live Scorer.
+2. Implemented Business Impact tab:
+   - Model selector dropdown, threshold slider, review-cost number input.
+   - Dynamic calculation of net financial saving: caught fraud value minus (review cost * alerts).
+   - Displayed best operating threshold callout, KPI cards (alerts, caught value, missed value, net saving), rule baseline comparison table (isFlaggedFraud), and Plotly net saving curve across threshold quantiles.
+   - Explicitly stated PaySim simulated currency units and handled missing files with clear informative status.
+3. Implemented Fraud Rings tab:
+   - Real-data fraud ring summary KPIs and empirical finding text callout.
+   - Dropdown of real exported rings from outputs/rings/ with interactive Plotly directed network graph (role colors: blue origin, coral destination, purple both) and ring transaction table.
+   - Planted-ring validation table labeled "synthetic injection for validation" reporting pattern, camouflage, recovery rate, homogeneity, completeness, v-measure, and contamination.
+   - Expander for exploring raw dataset sample subgraph from CSV.
+4. AppTest smoke test passed with 0 exceptions across all 7 tabs for both outputs and outputs_test.
+
+[2026-11-17 11:22] STEP 2.4 | DECISIONS
+- Evaluated business impact on time split only per directive A.
+- Used no banned words (zero instances of optimal, robust, verified, etc.).
+- Kept raw data expanders collapsed by default.
+
