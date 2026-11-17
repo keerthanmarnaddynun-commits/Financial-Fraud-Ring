@@ -95,3 +95,10 @@ AG WORKLOG CHUNK 2: BUSINESS IMPACT, RINGS, DASHBOARD
 - Used time split exclusively for confusion matrices, PR curves, and business impact.
 - Avoided all banned words.
 
+[2026-11-17 11:31] STEP 2.7 | ACTION
+- STEP 2.7 ([OPTIONAL] Account lookup in the scorer): Skipped per instruction D to conserve battery budget and avoid full-graph feature recomputation on 9.07M accounts.
+- Status: SKIPPED(time).
+
+[2026-11-17 11:31] STEP 2.7 | DECISIONS
+- Skipped optional account lookup feature to conserve battery and avoid heavy graph processing.
+
