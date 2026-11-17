@@ -5,8 +5,9 @@ from __future__ import annotations
 import argparse
 import json
 import logging
+import os
 from pathlib import Path
-from typing import Any, Dict, List, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import numpy as np
 import pandas as pd
@@ -21,25 +22,29 @@ from spark_session import create_spark_session
 LOGGER = logging.getLogger("planted_rings")
 
 
-def check_ram_preflight(min_gb_normal: float = 4.0, min_gb_fallback: float = 1.5) -> Dict[str, Any]:
+def check_ram_preflight(min_gb_normal: float = 3.0, min_gb_fallback: float = 1.5) -> Dict[str, Any]:
     """Check system available memory and return appropriate driver settings."""
     avail_bytes = psutil.virtual_memory().available
     avail_gb = avail_bytes / (1024**3)
     LOGGER.info("Pre-flight check: Available RAM = %.2f GB", avail_gb)
 
+    driver_mem = os.getenv("SPARK_DRIVER_MEMORY", "3g")
+    shuffle_parts = os.getenv("SPARK_SHUFFLE_PARTITIONS", "8")
+
+    if avail_gb < min_gb_fallback:
+        raise MemoryError(
+            f"Available RAM ({avail_gb:.2f} GB) is below critical threshold ({min_gb_fallback:.2f} GB). Aborting."
+        )
+
     if avail_gb < min_gb_normal:
-        if avail_gb < min_gb_fallback:
-            raise MemoryError(
-                f"Available RAM ({avail_gb:.2f} GB) is below the critical threshold ({min_gb_fallback:.2f} GB). Aborting."
-            )
         LOGGER.warning(
-            "Available RAM (%.2f GB) is below %.1f GB; applying low-memory Spark configuration (2g driver, 8 partitions).",
+            "Available RAM (%.2f GB) is below %.1f GB; setting low-memory fallback (2g driver, 8 partitions).",
             avail_gb,
             min_gb_normal,
         )
         return {"driver_memory": "2g", "shuffle_partitions": "8", "low_memory": True}
 
-    return {"driver_memory": "4g", "shuffle_partitions": "16", "low_memory": False}
+    return {"driver_memory": driver_mem, "shuffle_partitions": shuffle_parts, "low_memory": False}
 
 
 def generate_planted_rings(
@@ -176,15 +181,13 @@ def evaluate_ring_recovery(
     ground_truth: Dict[str, Dict[str, Any]],
     account_to_community: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Evaluate community-level ring recovery, homogeneity, completeness, and contamination."""
+    """Evaluate ring recovery, ring contained rate, ring purity, and clustering metrics."""
     # Build reverse community to accounts mapping
     community_to_accounts: Dict[Any, Set[str]] = {}
     for acc, comm in account_to_community.items():
         community_to_accounts.setdefault(comm, set()).add(acc)
 
-    results_by_group: Dict[str, Dict[str, Any]] = {}
     pattern_camo_groups: Dict[Tuple[str, float], List[str]] = {}
-
     for r_id, meta in ground_truth.items():
         key = (meta["pattern"], meta["camouflage"])
         pattern_camo_groups.setdefault(key, []).append(r_id)
@@ -196,13 +199,15 @@ def evaluate_ring_recovery(
 
     for (pattern, camo), ring_ids in sorted(pattern_camo_groups.items()):
         recovered_in_group = 0
-        y_true_planted = []
-        y_pred_comm = []
-        contaminations = []
+        y_true_planted: List[str] = []
+        y_pred_comm: List[str] = []
+        contaminations: List[float] = []
+        contained_rates: List[float] = []
+        purities: List[float] = []
+        comms_with_planted_accounts: Set[Any] = set()
 
         for r_id in ring_ids:
             ring_nodes = set(ground_truth[r_id]["accounts"])
-            # Find candidate communities that hold ring nodes
             comm_counts: Dict[Any, int] = {}
             for node in ring_nodes:
                 c = account_to_community.get(node)
@@ -210,38 +215,47 @@ def evaluate_ring_recovery(
                     comm_counts[c] = comm_counts.get(c, 0) + 1
                     y_true_planted.append(r_id)
                     y_pred_comm.append(str(c))
+                    comms_with_planted_accounts.add(c)
 
-            # Check recovery criteria:
-            # At least 80% of ring nodes in one community AND at least 80% of that community's nodes belong to ring
-            is_recovered = False
+            # Find dominant component for this ring
             best_comm = None
             best_overlap = 0
-
             for comm, overlap in comm_counts.items():
                 if overlap > best_overlap:
                     best_overlap = overlap
                     best_comm = comm
 
             if best_comm is not None:
-                comm_nodes = community_to_accounts[best_comm]
-                ring_coverage = best_overlap / len(ring_nodes)
-                comm_purity = best_overlap / len(comm_nodes)
+                comm_nodes = community_to_accounts.get(best_comm, set())
+                comm_size = len(comm_nodes)
+                ring_contained_frac = best_overlap / max(1, len(ring_nodes))
+                purity = best_overlap / max(1, comm_size)
 
-                # Contamination: non-ring accounts in this community
-                normal_in_comm = sum(1 for n in comm_nodes if not n.startswith("CPLANT"))
-                contaminations.append(normal_in_comm / len(comm_nodes) if len(comm_nodes) > 0 else 0.0)
+                contained_rates.append(ring_contained_frac)
+                purities.append(purity)
 
-                if ring_coverage >= 0.80 and comm_purity >= 0.80:
-                    is_recovered = True
+                normal_in_comm = sum(1 for n in comm_nodes if not str(n).startswith("CPLANT"))
+                contam = normal_in_comm / max(1, comm_size)
+                contaminations.append(contam)
 
-            if is_recovered:
-                recovered_in_group += 1
-                total_recovered += 1
+                # Strict recovery criterion: at least 80% of ring nodes in community AND 80% of community is ring
+                if ring_contained_frac >= 0.80 and purity >= 0.80:
+                    recovered_in_group += 1
+                    total_recovered += 1
+            else:
+                contained_rates.append(0.0)
+                purities.append(0.0)
+                contaminations.append(0.0)
+
+        # Largest component size holding any planted accounts in this group
+        largest_comp_size = max(
+            (len(community_to_accounts.get(c, set())) for c in comms_with_planted_accounts),
+            default=0,
+        )
 
         homog = float(homogeneity_score(y_true_planted, y_pred_comm)) if y_true_planted else 0.0
         comp = float(completeness_score(y_true_planted, y_pred_comm)) if y_true_planted else 0.0
         v_meas = float(v_measure_score(y_true_planted, y_pred_comm)) if y_true_planted else 0.0
-        avg_contam = float(np.mean(contaminations)) if contaminations else 0.0
 
         group_summary = {
             "pattern": pattern,
@@ -249,10 +263,13 @@ def evaluate_ring_recovery(
             "planted": len(ring_ids),
             "recovered": recovered_in_group,
             "recovery_rate": round(recovered_in_group / len(ring_ids), 4) if ring_ids else 0.0,
+            "ring_contained_rate": round(float(np.mean(contained_rates)), 4) if contained_rates else 0.0,
+            "mean_ring_purity": round(float(np.mean(purities)), 4) if purities else 0.0,
+            "largest_component_size_with_planted": int(largest_comp_size),
             "homogeneity": round(homog, 4),
             "completeness": round(comp, 4),
             "v_measure": round(v_meas, 4),
-            "contamination": round(avg_contam, 4),
+            "contamination": round(float(np.mean(contaminations)), 4) if contaminations else 0.0,
         }
         detailed_eval.append(group_summary)
 
@@ -271,7 +288,7 @@ def run_planted_ring_validation(
     sample_rows: int = 200_000,
     seed: int = 42,
 ) -> Dict[str, Any]:
-    """Run full planted ring injection and recovery benchmark on 200k PaySim sample."""
+    """Run full planted ring injection and recovery benchmark on 200k PaySim sample using CC and LPA."""
     output_dir = Path(output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -279,8 +296,7 @@ def run_planted_ring_validation(
     csv_path = data_path or ensure_dataset()
 
     LOGGER.info("Loading %d uniform row sample from %s", sample_rows, csv_path)
-    # Read sample using pandas for exact deterministic sampling
-    df_sample = pd.read_csv(csv_path, nrows=sample_rows * 2)  # fast load
+    df_sample = pd.read_csv(csv_path, nrows=sample_rows * 2)
     df_sample = df_sample.sample(n=min(sample_rows, len(df_sample)), random_state=seed)
 
     normal_accounts = list(set(df_sample["nameOrig"]).union(set(df_sample["nameDest"])))
@@ -303,22 +319,55 @@ def run_planted_ring_validation(
     )
 
     try:
-        LOGGER.info("Running Spark-native connected components on combined graph (%d nodes, %d edges)", len(all_nodes), len(all_edges_pdf))
+        LOGGER.info(
+            "Graph initialized: %d nodes, %d edges. Running Connected Components...",
+            len(all_nodes),
+            len(all_edges_pdf),
+        )
         vertices_df = spark.createDataFrame(all_nodes_pdf).cache()
         edges_df = spark.createDataFrame(
             all_edges_pdf.rename(columns={"nameOrig": "src", "nameDest": "dst"})
         ).cache()
 
-        comp_df, _ = compute_connected_components(vertices_df, edges_df, max_iter=15)
+        # 1. Connected Components
+        comp_df, cc_info = compute_connected_components(vertices_df, edges_df, max_iter=15)
         comp_pdf = comp_df.toPandas()
+        account_to_cc = dict(zip(comp_pdf["id"], comp_pdf["component_id"]))
+        LOGGER.info("Connected components finished. Info: %s", cc_info)
 
-        account_to_comm = dict(zip(comp_pdf["id"], comp_pdf["component_id"]))
+        # 2. Label Propagation (LPA)
+        LOGGER.info("Running Label Propagation Algorithm (LPA)...")
+        lpa_df, lpa_info = compute_label_propagation(vertices_df, edges_df, max_iter=5)
+        lpa_pdf = lpa_df.toPandas()
+        account_to_lpa = dict(zip(lpa_pdf["id"], lpa_pdf["community_id"]))
+        LOGGER.info("Label propagation finished. Info: %s", lpa_info)
 
     finally:
         spark.stop()
 
-    LOGGER.info("Evaluating recovery against ground truth planted rings...")
-    eval_report = evaluate_ring_recovery(ground_truth, account_to_comm)
+    LOGGER.info("Evaluating Connected Components recovery against ground truth planted rings...")
+    eval_cc = evaluate_ring_recovery(ground_truth, account_to_cc)
+
+    LOGGER.info("Evaluating Label Propagation recovery against ground truth planted rings...")
+    eval_lpa = evaluate_ring_recovery(ground_truth, account_to_lpa)
+
+    eval_report = {
+        "label": "synthetic injection for validation",
+        "sample_size": sample_rows,
+        "total_planted_rings": 60,
+        "spark_config": {
+            "driver_memory": ram_conf["driver_memory"],
+            "shuffle_partitions": ram_conf["shuffle_partitions"],
+        },
+        "algorithms": {
+            "connected_components": eval_cc,
+            "label_propagation": eval_lpa,
+        },
+        "results_by_pattern_and_camouflage": eval_cc["results_by_pattern_and_camouflage"],
+        "results_by_pattern_and_camouflage_lpa": eval_lpa["results_by_pattern_and_camouflage"],
+        "total_recovered_rings": eval_cc["total_recovered_rings"],
+        "overall_recovery_rate": eval_cc["overall_recovery_rate"],
+    }
 
     # Save validation report
     report_file = output_dir / "planted_ring_validation.json"

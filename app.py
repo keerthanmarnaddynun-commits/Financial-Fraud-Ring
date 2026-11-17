@@ -786,6 +786,31 @@ with tab_impact:
         total_fraud_val = float(business_impact_data.get("fraud_value_total", 0.0))
         total_fraud_txns = int(business_impact_data.get("fraud_rows", 0))
 
+        # Headline Operating Table at Validation Thresholds
+        st.markdown("#### Headline Operating Performance (Validation Thresholds)")
+        st.caption(
+            "Operating thresholds chosen on validation set to maximize F1 (from evaluation.json); "
+            "net saving computed at assumption review cost."
+        )
+        headline_rows = business_impact_data.get("headline_operating_table", [])
+        if headline_rows:
+            df_headline = pd.DataFrame([
+                {
+                    "Model": model_names.get(r.get("model_key", ""), r.get("model_key", "")),
+                    "Threshold": f"{r.get('operating_threshold', 0.5):.4f}" if isinstance(r.get("operating_threshold"), float) else str(r.get("operating_threshold")),
+                    "Source": r.get("threshold_source", "validation"),
+                    "Total Alerts": f"{int(r.get('alerts', 0)):,}",
+                    "True Alerts": f"{int(r.get('true_alerts', 0)):,}",
+                    "False Alerts": f"{int(r.get('false_alerts', 0)):,}",
+                    "Alerts/10k": f"{float(r.get('alerts_per_10k', 0.0)):.2f}",
+                    "Fraud Caught": f"{float(r.get('fraud_value_caught', 0.0)):,.2f}",
+                    "Value Caught %": f"{float(r.get('share_fraud_value_caught', 0.0)) * 100:.2f}%",
+                    "Net Saving (units)": f"{float(r.get('net_financial_saving', 0.0)):,.2f}",
+                }
+                for r in headline_rows
+            ])
+            st.dataframe(df_headline, use_container_width=True, hide_index=True)
+
         if not impact_models:
             st.warning("No model threshold grids found in business_impact.json.")
         else:
@@ -800,11 +825,11 @@ with tab_impact:
                 )
             with c_sel2:
                 review_cost = st.number_input(
-                    "Investigation Cost per Alert (simulated currency units)",
+                    "Investigation Cost per Alert (simulated currency units, assumption)",
                     min_value=0.0,
-                    value=50.0,
-                    step=10.0,
-                    help="Manual investigator review cost incurred per flagged transaction alert.",
+                    value=float(business_impact_data.get("default_review_cost", 10000.0)),
+                    step=1000.0,
+                    help="Manual investigator review cost incurred per flagged transaction alert (default assumption: 10,000 units).",
                     key="impact_review_cost",
                 )
 
@@ -847,10 +872,9 @@ with tab_impact:
                 net_saving_val = caught_val - (review_cost * alerts_val)
 
                 # Best operating threshold callout
-                st.success(
-                    f"📌 **Best Operating Threshold for Investigation Cost {review_cost:,.0f}:** `threshold = {best_th:.4f}` | "
-                    f"Maximum Net Saving: **{best_net:,.2f}** simulated currency units "
-                    f"({best_alerts:,} alerts, {best_caught:,.2f} caught)."
+                st.info(
+                    f"🔍 **Hindsight on test rows, not a recommended operating point:** Operating at `threshold = {best_th:.4f}` maximizes net saving on test rows "
+                    f"at review cost {review_cost:,.0f} (**{best_net:,.2f}** simulated currency units net saving, {best_alerts:,} alerts)."
                 )
 
                 # KPI Cards for chosen threshold
@@ -969,7 +993,7 @@ with tab_impact:
                         x=[best_th],
                         y=[best_net],
                         mode="markers+text",
-                        name=f"Best Threshold ({best_th:.4f})",
+                        name=f"Hindsight Test Best ({best_th:.4f}) [Not Recommended Operating Point]",
                         marker=dict(color="#10b981", size=12, symbol="star"),
                         text=[f"Best: {best_net:,.0f}"],
                         textposition="top center",
@@ -1011,6 +1035,27 @@ with tab_impact:
                     legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 )
                 st.plotly_chart(fig_impact, use_container_width=True)
+
+        # Sensitivity Table across review costs 1,000 / 10,000 / 100,000
+        sens_rows = business_impact_data.get("sensitivity_table", [])
+        if sens_rows:
+            st.markdown("#### Review Cost Sensitivity Analysis (1,000 / 10,000 / 100,000 units)")
+            st.caption(
+                "Sensitivity analysis across varied manual review costs comparing validation thresholds against hindsight test-row optimums."
+            )
+            df_sens = pd.DataFrame([
+                {
+                    "Review Cost": f"{float(s.get('review_cost', 0.0)):,.0f}",
+                    "Model": model_names.get(s.get("model_key", ""), s.get("model_key", "")),
+                    "Mode": s.get("mode", ""),
+                    "Threshold": f"{float(s.get('threshold', 0.0)):.4f}" if isinstance(s.get("threshold"), (int, float)) else str(s.get("threshold")),
+                    "Alerts": f"{int(s.get('alerts', 0)):,}",
+                    "Fraud Caught": f"{float(s.get('fraud_value_caught', 0.0)):,.2f}",
+                    "Net Saving (units)": f"{float(s.get('net_financial_saving', 0.0)):,.2f}",
+                }
+                for s in sens_rows
+            ])
+            st.dataframe(df_sens, use_container_width=True, hide_index=True)
 
         with st.expander("Raw file: business_impact.json", expanded=False):
             st.json(business_impact_data)
@@ -1208,26 +1253,52 @@ with tab_rings:
             f"Planted-ring validation not available. Run `python planted_rings.py --output-dir {OUTPUT_DIR}` to generate."
         )
     else:
-        results_list = planted_rings_data.get("results_by_pattern_and_camouflage", [])
+        algo_choice = st.radio(
+            "Select Community Detection Algorithm",
+            options=["Connected Components", "Label Propagation (LPA)"],
+            horizontal=True,
+            key="planted_algo_radio",
+        )
+
+        algo_key = "connected_components" if "Connected" in algo_choice else "label_propagation"
+        algo_data = planted_rings_data.get("algorithms", {}).get(algo_key, {})
+        results_list = algo_data.get("results_by_pattern_and_camouflage", [])
+        if not results_list and algo_key == "connected_components":
+            results_list = planted_rings_data.get("results_by_pattern_and_camouflage", [])
+        elif not results_list and algo_key == "label_propagation":
+            results_list = planted_rings_data.get("results_by_pattern_and_camouflage_lpa", [])
+
         if results_list:
             df_planted = pd.DataFrame(results_list)
             df_display = pd.DataFrame({
                 "Pattern": df_planted["pattern"].str.capitalize(),
                 "Camouflage": df_planted["camouflage"],
                 "Planted": df_planted["planted"],
-                "Recovered": df_planted["recovered"],
-                "Recovery Rate": (df_planted["recovery_rate"] * 100).apply(lambda v: f"{v:.1f}%"),
+                "Strict Recovered": df_planted["recovered"],
+                "Strict Rec Rate": (df_planted["recovery_rate"] * 100).apply(lambda v: f"{v:.1f}%"),
+                "Ring Contained Rate": (df_planted.get("ring_contained_rate", df_planted["recovery_rate"]) * 100).apply(lambda v: f"{v:.1f}%"),
+                "Mean Ring Purity": (df_planted.get("mean_ring_purity", 1.0 - df_planted["contamination"]) * 100).apply(lambda v: f"{v:.2f}%"),
+                "Largest Comp with Planted": df_planted.get("largest_component_size_with_planted", 0).apply(lambda v: f"{int(v):,}"),
                 "Homogeneity": df_planted["homogeneity"].apply(lambda v: f"{v:.4f}"),
                 "Completeness": df_planted["completeness"].apply(lambda v: f"{v:.4f}"),
                 "V-Measure": df_planted["v_measure"].apply(lambda v: f"{v:.4f}"),
                 "Contamination": (df_planted["contamination"] * 100).apply(lambda v: f"{v:.1f}%"),
             })
             st.dataframe(df_display, use_container_width=True, hide_index=True)
-            st.caption(
-                "📌 **Topology Dynamic:** At 0% camouflage (isolated synthetic rings), 100% of planted rings are recovered with 0.0 contamination. "
-                "With camouflage transactions (20% and 50%), normal background accounts are absorbed into the detected components, "
-                "increasing contamination to 62%–81% and reducing isolated community recovery to 0%, while maintaining high clustering homogeneity (0.86–1.0)."
-            )
+
+            if algo_key == "connected_components":
+                st.caption(
+                    "📌 **Connected Components Observations:** 100.0% of planted ring accounts fall into a single detected component across all patterns and camouflage levels (`ring_contained_rate = 1.0000`). "
+                    "At 0% camouflage, strict recovery is 100% with 0.0% contamination. With camouflage transactions (20% and 50%), bridging edges add background accounts into the component, "
+                    "reducing ring purity to 16.7%–38.1% and increasing contamination to 61.9%–83.3%. "
+                    "The largest detected component containing planted accounts has 116 accounts (funnel 50%), 47 accounts (chain 50%), and 44 accounts (cycle 50%)."
+                )
+            else:
+                st.caption(
+                    "📌 **Label Propagation (LPA) Observations:** At 0% camouflage, LPA recovers 11/21 rings (cycle 4/7, funnel 7/7). "
+                    "At 20% and 50% camouflage, LPA limits contamination to 0.0%–55.0% and bounds component sizes tightly "
+                    "(largest component containing planted accounts is 7–18 accounts), though chains tend to fragment along directed hops."
+                )
 
     with st.expander("Explore Raw Dataset Sample Subgraph (from CSV)", expanded=False):
         data_dir = Path("data")

@@ -212,3 +212,33 @@ PRE-FIX QUESTIONS (CHUNK 2)
 10. `python -c 'import json ... with open(r"...", "r")'` (Step Index 1928)
    - Error: `SyntaxError: invalid syntax` due to PowerShell quote stripping.
 ==========================================================================================
+
+[2026-11-17 15:10] DIRECTIVES F1, F2, F3 | ACTION
+1. Business Impact Updates (Directive F1):
+   - Set headline operating thresholds per model strictly to thresholds from evaluation.json (time split).
+   - Set default manual review cost to 10,000.0 simulated currency units, labelled explicitly as assumption.
+   - Added sensitivity table across review costs (1,000 / 10,000 / 100,000) generated directly from threshold grids comparing evaluation threshold to hindsight test-row optimum.
+2. Planted Ring Validation Updates (Directive F2):
+   - Added ring_contained_rate (share of a ring's accounts that fall in one detected component) and mean_ring_purity beside strict recovery rate.
+   - Computed largest_component_size_with_planted directly from detected components containing planted accounts.
+   - Evaluated both Connected Components and Label Propagation Algorithm (LPA) on the 200,000-row sample with SPARK_DRIVER_MEMORY=3g and SPARK_SHUFFLE_PARTITIONS=8.
+   - Raw printed output stored in logs/raw/20261117_F2_planted_metrics.txt.
+3. Dashboard and Visual Updates:
+   - Updated app.py with headline performance table at evaluation thresholds with assumption review cost.
+   - Labelled best-operating-point callout and trace as hindsight on test rows, not a recommended operating point.
+   - Added review cost sensitivity table in app.py.
+   - Added algorithm selector to view both Connected Components and LPA metrics in Fraud Rings tab.
+   - Updated generate_visuals.py with default review cost 10,000.0 units and regenerated visuals in outputs/visuals/.
+4. Programmatic Gate Summary (Directive F3):
+   - Created scripts/generate_gate2_summary.py to programmatically generate logs/GATE_2_SUMMARY.txt reading directly from output JSON files with zero manual typing.
+5. Test Execution:
+   - pytest tests/test_business_impact.py -q passed (2 passed).
+   - pytest tests/test_planted.py -q passed (3 passed).
+   - pytest tests/test_app_smoke.py -q passed (5 passed).
+   - Prohibited vocabulary check passed with zero matches across logs and summary files.
+
+[2026-11-17 15:10] DIRECTIVES F1, F2, F3 | DECISIONS
+- Set headline operating points strictly to thresholds from evaluation.json.
+- Marked all test-row maximum saving points explicitly as hindsight on test rows, not a recommended operating point.
+- Replaced manual Gate summary formatting with automated script generation directly from result files.
+- Stored raw printed script outputs in logs/raw/ and referenced them in accordance with directive F3.

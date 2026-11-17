@@ -214,7 +214,7 @@ def plot_feature_importance(feat_json_path: Path, output_path: Path) -> bool:
     return True
 
 
-def plot_business_impact(impact_json_path: Path, output_path: Path, review_cost: float = 50.0) -> bool:
+def plot_business_impact(impact_json_path: Path, output_path: Path, review_cost: float = 10000.0) -> bool:
     """Plot net financial savings and fraud value caught curves across score thresholds."""
     if not impact_json_path.exists():
         print(f"[-] Missing {impact_json_path}. Run python main.py.")
