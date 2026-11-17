@@ -15,7 +15,7 @@ STEP 1.13 | DONE | S1.13 | Sample run, then full run v2 promoted to outputs
 STEP 1.14 | SKIPPED(time) | - | [OPTIONAL] Past-only graph features variant
 GATE 1 | DONE | S1.GATE | Chunk 1 summary and gate check
 STEP 1.15 | PENDING | - | [POSTPONED] Per-split training, feature persistence, scalability cleanup
-STEP 2.1 | PENDING | - | Business impact table
+STEP 2.1 | DONE | S2.1 | Business impact table
 STEP 2.2 | PENDING | - | Real-data ring analysis
 STEP 2.3 | PENDING | - | Planted-ring validation with camouflage
 STEP 2.4 | PENDING | - | Dashboard tabs: Business impact and Fraud rings

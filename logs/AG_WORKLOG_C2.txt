@@ -1,0 +1,14 @@
+==========================================================================================
+AG WORKLOG CHUNK 2: BUSINESS IMPACT, RINGS, DASHBOARD
+==========================================================================================
+
+[2026-11-17 10:10] STEP 2.1 | ACTION
+1. Created business_impact.py reading outputs/scored_time.parquet (193,939 time-split test transactions, 2,062 fraud transactions, total fraud value 2,933,485,322.25 simulated currency units).
+2. Generated 100-point threshold grid across all models (m1_tabular, m1_tabular_noerr, m2_graph, m3_community_mule) plus the isFlaggedFraud rule baseline.
+3. Computed alerts, true alerts, false alerts, alerts per 10,000, caught value, missed value, and caught share.
+4. Added tests/test_business_impact.py asserting that fraud_value_caught + fraud_value_missed == fraud_value_total for every grid row. Both tests passed in 0.92s.
+5. Saved outputs/business_impact.json and mirrored to results_snapshot/business_impact.json.
+
+[2026-11-17 10:10] STEP 2.1 | DECISIONS
+- Restricted business impact evaluation strictly to the time split test set per instruction A.
+- Used exact PaySim simulated currency units without converting or assuming currency exchange.
