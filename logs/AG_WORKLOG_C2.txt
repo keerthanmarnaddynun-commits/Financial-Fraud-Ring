@@ -80,3 +80,18 @@ AG WORKLOG CHUNK 2: BUSINESS IMPACT, RINGS, DASHBOARD
 - Used time split as primary default view across all charts and tables.
 - Preserved strict honest data layer: no synthesized metrics or confusion counts.
 
+[2026-11-17 11:30] STEP 2.6 | ACTION
+1. Rewrote generate_visuals.py to read strictly from accepted pipeline outputs (default: outputs/) and write PNGs to outputs/visuals/:
+   - pr_curves.png (Precision-Recall curves for all models on the time split)
+   - confusion_matrices.png (Measured confusion matrix subplots on the time split)
+   - feature_importance.png (Top 15 features by XGBoost gain across models)
+   - business_impact.png (Net financial savings and fraud value capture rate across score thresholds)
+   - ring_size_histogram.png (Component size distribution: 8,125 size 2, 44 size 3, 0 size >= 4, with empirical finding callout)
+   - scaling_benchmark.png (Checks scaling_runs.json; logs skip if not yet present)
+2. Configured dynamic axis limits and standard error reporting ("Run python main.py").
+3. Generated all 5 core PNG artifacts in outputs/visuals/ (tested cleanly).
+
+[2026-11-17 11:30] STEP 2.6 | DECISIONS
+- Used time split exclusively for confusion matrices, PR curves, and business impact.
+- Avoided all banned words.
+

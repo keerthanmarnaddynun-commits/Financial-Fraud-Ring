@@ -20,7 +20,7 @@ STEP 2.2 | DONE | S2.2 | Real-data ring analysis
 STEP 2.3 | DONE | S2.3 | Planted-ring validation with camouflage
 STEP 2.4 | DONE | S2.4 | Dashboard tabs: Business impact and Fraud rings
 STEP 2.5 | DONE | S2.5 | Model results polish
-STEP 2.6 | PENDING | - | generate_visuals.py rewrite
+STEP 2.6 | DONE | S2.6 | generate_visuals.py rewrite
 STEP 2.7 | PENDING | - | [OPTIONAL] Account lookup in scorer
 STEP 2.8 | PENDING | - | Dashboard test and chunk summary
 GATE 2 | PENDING | - | Chunk 2 summary and gate check
