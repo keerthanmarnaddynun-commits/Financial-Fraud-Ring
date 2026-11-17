@@ -12,3 +12,8 @@ AG WORKLOG CHUNK 2: BUSINESS IMPACT, RINGS, DASHBOARD
 [2026-11-17 10:10] STEP 2.1 | DECISIONS
 - Restricted business impact evaluation strictly to the time split test set per instruction A.
 - Used exact PaySim simulated currency units without converting or assuming currency exchange.
+
+[2026-11-17 10:14] STEP 2.2 | PRE-FLIGHT CHECK
+- Pre-flight RAM check: Available RAM is 2.19 GB (below the 4.0 GB threshold mandated by instruction D for Spark steps).
+- Status: Halting before launching Spark execution per instruction D stop condition.
+
