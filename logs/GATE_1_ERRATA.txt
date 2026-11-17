@@ -1,0 +1,13 @@
+GATE 1 ERRATA
+=============
+1. Defect in group_dest and random splits:
+   Models evaluated on the group_dest and random test splits were trained once on time-split rows (main.py lines 91-93). Consequently, test rows in group_dest and random overlapped with the time-split training rows. Group_dest and random evaluation metrics are quarantined and not used in any downstream Chunk 2 or Chunk 3 analysis; all business impact, ring analyses, and new text rely strictly on the time split. Per-split retraining is tracked as STEP 1.15.
+
+2. Spark driver memory:
+   `spark.driver.memory` in effect was `6g` (from spark_session.py default `os.getenv("SPARK_DRIVER_MEMORY", "6g")`, recorded in outputs/run_info.json), not 8 GB.
+
+3. System memory pressure during Gate 1:
+   Minimum available RAM recorded during graph stages reached 17,891,328 bytes (~17 MB) during pagerank and 107,921,408 bytes (~108 MB) during components. Gate 1 stage timings were measured under memory pressure.
+
+4. Shuffle totals unit labelling:
+   Total shuffle read was 74,845,291,046 bytes (69.71 GiB) and shuffle write was 67,593,357,090 bytes (62.95 GiB). In GATE_1_SUMMARY.txt, these were binary GiB values labelled as "GB".

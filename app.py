@@ -403,6 +403,8 @@ with tab_models:
             splits_dict = evaluation_data["splits"]
             split_keys = list(splits_dict.keys())
             selected_split = st.selectbox("Evaluation Split Strategy", split_keys)
+            if selected_split in ("group_dest", "random"):
+                st.warning("⚠️ not a valid test: models were trained on time-split rows, retraining pending")
             active_split_data = splits_dict.get(selected_split, {})
         else:
             # Legacy layout: top-level keys like tabular_baseline, graph_features, community_ring

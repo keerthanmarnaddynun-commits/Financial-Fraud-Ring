@@ -312,6 +312,155 @@ Marked STEP 1.14 as SKIPPED(time) to preserve runtime budget for core evaluation
 [2026-11-17 09:17] GATE 1 | ACTION
 Compiled logs/GATE_1_SUMMARY.txt detailing all 15 steps in Chunk 1, empirical evaluation tables across time, destination group, and random splits, Spark-native engines and stage timings, exact failure/retry history, decisions, surprises, and reproducibility commands.
 
+[2026-11-17 09:50] GATE 1 ERRATA & POST-GATE REVIEW
+FAILURES:
+- Defect: Models evaluated on group_dest and random splits were trained on time-split rows (not per-split train rows), resulting in test row overlap with training data for those two splits.
+DECISIONS:
+- Quarantine group_dest and random evaluation metrics: exclude them from any new downstream analysis (business impact, ring analysis, reports). Use time-split results only.
+- Added STEP 1.15 to PROGRESS.txt as PENDING to retrain models per split when plugged in.
+- Documented Gate 1 errata in logs/GATE_1_ERRATA.txt.
+
+
+==========================================================================================
+PRE-CHUNK-2 QUESTIONS
+==========================================================================================
+1. MODEL TRAINING PER SPLIT VS TIME-SPLIT REUSE:
+- Finding: Models are trained ONCE on the time-split training rows, and those same models are reused to score all three splits (time, group_dest, random). Separate models are NOT trained on group_dest or random train partitions.
+- Exact code quotations:
+  * main.py (lines 91-103):
+    "train_df, _, _ = get_dataset_split(enriched, \"time\")
+     training_data = draw_training_sample(train_df, max_training_rows)
+     models, test_data, _ = train_comparative_models(training_data, output_dir=output_dir)
+     timings[\"model_training\"] = time.perf_counter() - started
+
+     started = time.perf_counter()
+     report = run_distributed_evaluation(
+         spark=spark,
+         enriched_df=enriched,
+         models=models,
+         output_dir=output_dir,
+         splits_to_run=[\"time\", \"group_dest\", \"random\"],
+     )"
+  * evaluation.py (lines 231-251):
+    "def run_distributed_evaluation(
+         spark: SparkSession,
+         enriched_df: DataFrame,
+         models: Dict[str, Any],
+         output_dir: Path,
+         splits_to_run: Optional[List[str]] = None,
+     ) -> Dict[str, Any]:
+     ...
+     for split_name in splits_to_run:
+         train_df, val_df, test_df = get_dataset_split(enriched_df, split_name)"
+    Note: In evaluation.py, `train_df` is extracted for group_dest and random at line 251 but never passed to model training. The pre-fitted `models` passed into run_distributed_evaluation are used to evaluate validation and test rows across all splits.
+- Training rows and fraud rows used per split:
+  * time split: 58,223 total training rows (5,293 fraud rows, 52,930 non-fraud rows, drawn at a 10:1 ratio).
+  * group_dest split: 0 rows trained (reused models trained on time split).
+  * random split: 0 rows trained (reused models trained on time split).
+
+2. IDENTICAL THRESHOLD FOR m1_tabular_noerr (0.998314619064331):
+- How thresholds are chosen (evaluation.py lines 257-274):
+  `val_scored_df = score_spark_dataset_map_in_pandas(spark, val_df, models)`
+  For each trainable model:
+  `thresh, _ = find_best_f1_threshold(val_labels, scores)`
+  In splits.py lines 182-206:
+  `precisions, recalls, thresholds = precision_recall_curve(y_true, y_scores)`
+  `best_threshold = float(thresholds[best_idx])`
+- Validation rows used by each split:
+  * group_dest: Rows where `abs(hash(nameDest)) % 4 == 1` (~1.6M rows, disjoint destination accounts).
+  * random: Rows where `abs(hash(transaction_id)) % 4 == 1` (~1.59M rows, pseudo-random transaction hash).
+- Reason for identical float value:
+  `precision_recall_curve` derives thresholds strictly from the discrete predicted probabilities output by the model. Because m1_tabular_noerr excludes continuous balance error signals, its tree ensemble produces a discrete set of leaf probability values. The specific float32 probability 0.998314619064331 happened to be the exact operating threshold that maximized F1 on both validation sets. Continuous graph feature models (m2_graph and m3_community_mule) produce finer-grained probabilities and resulted in differing thresholds across splits (0.98158 vs 0.99697 for M2; 0.98600 vs 0.99779 for M3).
+
+3. SPARK CONFIGURATION IN EFFECT AND MEMORY GUARD CHECK:
+- Spark configuration in effect during full run (from run_info.json and spark_session.py):
+  * spark.driver.memory: "6g" (spark_session.py line 45 default `os.getenv("SPARK_DRIVER_MEMORY", "6g")`, recorded in outputs/run_info.json).
+  * spark.sql.shuffle.partitions: "48" (spark_session.py line 46 default `os.getenv("SPARK_SHUFFLE_PARTITIONS", "48")`, recorded in outputs/run_info.json).
+- Min available RAM and memory guard:
+  * scalability.json recorded `min_available_ram_bytes`: 17,891,328 (~17.06 MB) during pagerank and 107,921,408 (~102.92 MB) during components.
+  * Was any memory guard in the code?
+    NO. In stage_timer.py lines 65-76, `_sample_memory_loop` only passively tracked `avail = psutil.virtual_memory().available` to record the minimum value observed. There was no check halting execution or raising "aborted_low_memory" when available memory dropped below 2 GB. Runbook rule E5 was not implemented as an active guard in the code.
+
+4. NESTED "timings_seconds" AND "model_names" KEYS:
+- Root cause:
+  * "timings_seconds" nesting: stage_timer.py (line 155) stored individual stage timings under `self.results_dict["timings_seconds"]`. Subsequently, collect_spark_metrics in evaluation.py (line 396) nested that dictionary under `metrics["timings_seconds"] = timings`, creating `scalability.json["timings_seconds"]["timings_seconds"]`.
+  * "model_names" list: models.py (lines 213-226) added backward compatibility aliases ('tabular_baseline', 'Baseline', 'graph_features', 'community_ring') into the `models` dictionary, which main.py (line 111) dumped via `metrics["model_names"] = list(models)`.
+- Files that read these keys:
+  * "timings_seconds":
+    1. app.py: line 319 (`scalability_data.get("timings_seconds", {})`), line 630, and line 639 (contains an explicit check `elif isinstance(v, dict) and k == "timings_seconds":` to unpack the nested dictionary).
+    2. tests/test_stage_timer.py: lines 15-17 (asserts presence of "timings_seconds").
+    3. Legacy references: app_mine.py (lines 333, 535), old_app_reference.py (lines 393, 1279, 1281).
+  * "model_names":
+    1. No file in the codebase reads `scalability_data["model_names"]`. app.py loads display mappings exclusively from `model_names.json`.
+
+5. FAILED COMMANDS FROM STEP 1.5 TO 1.13:
+List of commands that exited with code 1, including exact error lines and output/log paths:
+- Step 735 (pytest on graph algorithms):
+  Command: `python -m pytest tests/test_graph_algorithms.py -v`
+  Error line: `AnalysisException: [AMBIGUOUS_REFERENCE] Reference community_id is ambiguous`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/731/output.txt
+- Step 762 (main pipeline sample test):
+  Command: `python main.py --sample-fraction 0.02 --output-dir outputs_test`
+  Error line: `ImportError: cannot import name 'GRAPH_FEATURE_COLUMNS' from 'feature_engineering'`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/762/output.txt
+- Step 794 (git staging in sandbox):
+  Command: `git add feature_engineering.py main.py tests/test_graph_algorithms.py PROGRESS.txt logs/AG_WORKLOG_C1.txt`
+  Error line: `fatal: Unable to create 'C:/Users/Kirthan/Desktop/Financial-Fraud-Ring/.git/index.lock': Permission denied`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/794/output.txt
+- Step 850 (splits test):
+  Command: `python -m pytest tests/test_splits.py -v`
+  Error line: `AssertionError: Requested 990 negatives, but got 963`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/tasks/task-848.log
+- Step 890 (mapInPandas gateway probe in standard sandbox):
+  Command: `python -c "from spark_session import create_spark_session; import pandas as pd; ... df.mapInPandas(...)"`
+  Error line: `Py4JJavaError: An error occurred while calling z:org.apache.spark.api.python.PythonRDD.collectAndServe` (Sandboxed socket connection refused)
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/888/output.txt
+- Step 894 (worker config check):
+  Command: `python -c "import os; ... spark.conf.set('spark.python.worker.faulthandler.enabled', 'true') ..."`
+  Error line: `pyspark.errors.exceptions.captured.AnalysisException: [CANNOT_MODIFY_CONFIG] Cannot modify the value of the Spark config: "spark.python.worker.faulthandler.enabled"`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/tasks/task-892.log
+- Step 902 (inline python generator syntax):
+  Command: `python -c "... def fn(it):\n for pdf in it:\n yield pdf ..."`
+  Error line: `SyntaxError: invalid syntax`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/902/output.txt
+- Step 906 (scratch test path resolution):
+  Command: `python scratch/test_map_in_pandas.py`
+  Error line: `ModuleNotFoundError: No module named 'spark_session'`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/906/output.txt
+- Step 940 (StageTimer attribute check):
+  Command: `python main.py --sample-fraction 0.02 --output-dir outputs_test`
+  Error line: `AttributeError: 'StageTimer' object has no attribute 'summary'`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/938/output.txt
+- Step 1029 (app test data structure probe):
+  Command: `python scratch/test_app_test.py`
+  Error line: `TypeError: float() argument must be a string or a real number, not 'dict'`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/tasks/task-1027.log
+- Steps 1189 & 1193 (git index lock inside standard sandbox):
+  Command: `git add requirements.txt requirements-dev.txt README.md PROGRESS.txt logs/AG_WORKLOG_C1.txt`
+  Error line: `fatal: Unable to create 'C:/Users/Kirthan/Desktop/Financial-Fraud-Ring/.git/index.lock': Permission denied`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/1189/output.txt and steps/1193/output.txt
+- Step 1197 (sandbox filesystem write test):
+  Command: `powershell -Command "New-Item -Path .git\test_lock.txt -ItemType File"`
+  Error line: `New-Item : Access to the path 'C:\Users\Kirthan\Desktop\Financial-Fraud-Ring\.git\test_lock.txt' is denied.`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/1197/output.txt
+- Step 1211 (shell quote escaping in RAM preflight probe):
+  Command: `python -c "... print(f'Battery plugged: {bat.power_plugged if bat else \"N/A (Desktop)\"}')"`
+  Error line: `Desktop : The term 'Desktop' is not recognized as the name of a cmdlet, function, script file, or operable program.`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/1211/output.txt
+- Step 1218 (PowerShell hash variable parsing in process inspection):
+  Command: `powershell -Command "Get-Process | Sort-Object WorkingSet64 -Descending | ... Expression={[math]::Round($_.WorkingSet64 / 1MB, 2)}}"`
+  Error line: `Missing ')' in method call.`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/1218/output.txt
+- Step 1273 (inline test module import path):
+  Command: `python -c "... from tests.test_eval_consistency import verify_split_metrics_consistency ..."`
+  Error line: `ModuleNotFoundError: No module named 'tests.test_eval_consistency'`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/1273/output.txt
+- Step 1300 (metrics extraction dict access key):
+  Command: `python -c "... th = mdata['at_threshold']['threshold'] ..."`
+  Error line: `KeyError: 'threshold'`
+  Log path: file:///C:/Users/Kirthan/.gemini/antigravity/brain/290f357b-f4e1-4181-ab60-6cb1263432bb/.system_generated/steps/1300/output.txt
+
+
 
 
 
