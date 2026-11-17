@@ -41,6 +41,14 @@ RAW: logs/raw/20261118_3.1_storage_benchmark.txt, logs/raw/20261118_3.1_parquet_
 [2026-11-18 00:42] STEP 3.1 | RESULT
 All three storage layouts produced matching row counts and filter counts (see outputs/storage_benchmark.json keys formats.<fmt>.row_count, formats.<fmt>.size_mb, formats.<fmt>.operations.<op>.mean_seconds, and speedup_vs_csv). Parquet ingestion load check exited with code 0.
 
+[2026-11-18 00:45] STEP 3.2 | ACTION
+Created graph_pipeline.py exposing run_graph_stages(spark, df, timer, ...) returning per-stage timings (ingest_validate, graph_build, degrees, pagerank, triangles, components, lpa, behaviour_features, feature_join, total), graph counts (rows, nodes, edges), shuffle_bytes, peak_rss_bytes, and min_available_ram_bytes. Updated main.py to use run_graph_stages directly.
+Checked run_graph_stages on tests/data/sample_1000.csv.
+RAW: logs/raw/20261118_3.2_graph_stages_check.txt
+
+[2026-11-18 00:48] STEP 3.2 | RESULT
+Sample check exited with code 0; all stage timings, graph counts, shuffle bytes, peak RSS, and min_available_ram_bytes were populated cleanly.
+
 ================================================================================
 DECISIONS
 ================================================================================

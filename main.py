@@ -25,11 +25,7 @@ from evaluation import (
     run_distributed_evaluation,
     write_json,
 )
-from feature_engineering import (
-    add_transaction_graph_features,
-    extract_account_features,
-)
-from graph_construction import build_transaction_graph
+from graph_pipeline import run_graph_stages
 from models import train_comparative_models
 from splits import draw_training_sample, get_dataset_split
 
@@ -57,39 +53,38 @@ def run_pipeline(
         },
     )
     spark = create_spark_session()
-    timings: Dict[str, float] = {}
+    timings: Dict[str, Any] = {}
 
     try:
-        started = time.perf_counter()
+        dq_started = time.perf_counter()
         quality_report = build_data_quality_report(spark, input_path, input_format=input_format)
         write_json(quality_report, str(output_dir / "data_quality.json"))
-        transactions = load_and_validate_data(spark, input_path, input_format=input_format)
-        if sample_fraction is not None:
-            transactions = transactions.sample(withReplacement=False, fraction=sample_fraction, seed=42)
-        transactions = transactions.cache()
-        transaction_count = transactions.count()
-        timings["ingestion_and_validation"] = time.perf_counter() - started
-        LOGGER.info("Ingested %s PaySim transactions", f"{transaction_count:,}")
+        dq_seconds = time.perf_counter() - dq_started
 
-        started = time.perf_counter()
-        graph = build_transaction_graph(transactions)
-        graph.vertices.cache()
-        graph.edges.cache()
-        graph.vertices.count()
-        graph.edges.count()
-        timings["graph_construction"] = time.perf_counter() - started
+        graph_res = run_graph_stages(
+            spark,
+            df=None,
+            timer=timings,
+            input_path=input_path,
+            input_format=input_format,
+            sample_fraction=sample_fraction,
+            seed=42,
+            materialize_enriched=False,
+        )
+        transaction_count = graph_res["rows"]
+        account_count = graph_res["account_count"]
+        enriched = graph_res["enriched"]
+        engines = graph_res["engines"]
+        algo_info = graph_res["algo_info"]
 
-        started = time.perf_counter()
-        account_features, engines, algo_info = extract_account_features(
-            graph, transactions=transactions, timer_results=timings, spark=spark
+        timings["ingestion_and_validation"] = dq_seconds + graph_res["seconds"]["ingest_validate"]
+        timings["graph_construction"] = graph_res["seconds"]["graph_build"]
+        timings["graph_feature_engineering"] = graph_res["seconds"]["graph_feature_engineering"]
+        LOGGER.info(
+            "Ingested %s PaySim transactions and computed graph features for %s accounts",
+            f"{transaction_count:,}",
+            f"{account_count:,}",
         )
-        account_features = account_features.cache()
-        account_count = account_features.count()
-        enriched = add_transaction_graph_features(
-            transactions, account_features
-        )
-        timings["graph_feature_engineering"] = time.perf_counter() - started
-        LOGGER.info("Computed graph features for %s accounts", f"{account_count:,}")
 
         # Persist enriched features to Parquet in the run folder
         enriched_parquet_path = output_dir / "enriched_features.parquet"
