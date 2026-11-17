@@ -303,4 +303,11 @@ RESULT: 28 passed, 0 failures, 10 warnings in 2734.70s (0:45:34).
 - Promoted full run 20261117_c1-full to outputs/ as the primary empirical baseline.
 - Retained scored Parquet partitions in outputs/ and runs/ for downstream Chunk 2 business impact analysis.
 
+[2026-11-17 09:15] STEP 1.14 | ACTION
+Marked STEP 1.14 as SKIPPED(time) to preserve runtime budget for core evaluation, benchmark suites, and business impact analysis in subsequent chunks. Limitation text retained in documentation and CARD.md noting account graph features are computed over the full graph rather than train-period only.
+
+[2026-11-17 09:15] STEP 1.14 | DECISIONS
+- Skipped per runbook rule: "If skipped, log SKIPPED(time) and keep the limitation text."
+
+
 
