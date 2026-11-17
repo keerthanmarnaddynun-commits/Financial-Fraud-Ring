@@ -14,7 +14,7 @@ STEP 1.12 | DONE | S1.12 | Pin requirements and fix README facts
 STEP 1.13 | DONE | S1.13 | Sample run, then full run v2 promoted to outputs
 STEP 1.14 | SKIPPED(time) | - | [OPTIONAL] Past-only graph features variant
 GATE 1 | DONE | S1.GATE | Chunk 1 summary and gate check
-STEP 1.15 | PENDING | - | [POSTPONED] Per-split training, feature persistence, scalability cleanup
+STEP 1.15 | DONE | S1.15 | Per-split training, feature persistence, scalability cleanup
 STEP 2.1 | DONE | S2.1 | Business impact table
 STEP 2.2 | DONE | S2.2 | Real-data ring analysis
 STEP 2.3 | DONE | S2.3 | Planted-ring validation with camouflage

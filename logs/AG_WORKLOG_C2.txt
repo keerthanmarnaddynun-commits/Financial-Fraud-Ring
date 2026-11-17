@@ -242,3 +242,27 @@ PRE-FIX QUESTIONS (CHUNK 2)
 - Marked all test-row maximum saving points explicitly as hindsight on test rows, not a recommended operating point.
 - Replaced manual Gate summary formatting with automated script generation directly from result files.
 - Stored raw printed script outputs in logs/raw/ and referenced them in accordance with directive F3.
+
+[2026-11-17 15:35] STEP 1.15 | ACTION
+1. Per-split Model Training and Persistence (Directive F4):
+   - Updated main.py to train comparative models separately for each split (time, group_dest, random) on that split's own train rows.
+   - Updated models.py to save models per split under models/<split>/ (m1_tabular, m1_tabular_noerr, m2_graph, m3_community_mule, feature_names.json, feature_importance.json).
+   - Maintained backward-compatible copies of time-split models under models/ root.
+2. Distributed Evaluation Across Splits:
+   - Updated evaluation.py to score each split's test set using that split's own models.
+3. Feature Persistence to Parquet:
+   - Persisted enriched features to Parquet in the run folder (enriched_features.parquet) so downstream stages avoid recomputing graph features.
+4. Scalability Metrics and Legacy Aliases Cleanup:
+   - Flattened timings_seconds in scalability.json (eliminated nested dictionary).
+   - Removed legacy model aliases from model_names.json, models.py, and scalability.json (retained canonical names only).
+   - Added memory warning logging in scalability.json when available system RAM drops below 2.0 GB without aborting.
+5. Verification on Sample Run:
+   - Executed sample run with sample fraction 0.02 targeting outputs_test directory.
+   - Evaluated exact confusion count equality (tp + fn == fraud_rows, tp + fp + fn + tn == total_rows) across all three splits using scripts/verify_step1_15.py.
+   - Raw verification output saved to logs/raw/20261117_F4_sample_check.txt.
+
+[2026-11-17 15:35] STEP 1.15 | DECISIONS
+- Separated training sets strictly per split to eliminate train-test leakage on group_dest and random splits.
+- Replaced nested timings dictionary with flat dictionary in collect_spark_metrics.
+- Retained only canonical model names across pipeline configuration and outputs.
+- Saved full sample check results directly in logs/raw/.

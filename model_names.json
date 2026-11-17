@@ -1,13 +1,7 @@
 {
   "m0_rule": "M0 Rule Baseline",
   "m1_tabular": "M1 Tabular Baseline",
+  "m1_tabular_noerr": "M1 Tabular (No Error Bal)",
   "m2_graph": "M2 Graph + Structural",
-  "m3_community_mule": "M3 Community + Mule",
-  "tabular_baseline": "Baseline (Tabular)",
-  "graph_features": "Model 1 (Structural Graph)",
-  "community_ring": "Model 2 (Community / Rings)",
-  "Baseline": "Baseline",
-  "Model 1 (Node2Vec)": "Model 1 (Node2Vec)",
-  "Model 2 (Structural GraphX)": "Model 2 (Structural GraphX)",
-  "Model 3 (Community / Rings)": "Model 3 (Community / Rings)"
+  "m3_community_mule": "M3 Community + Mule"
 }

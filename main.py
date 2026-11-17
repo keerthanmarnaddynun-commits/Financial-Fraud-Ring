@@ -65,7 +65,7 @@ def run_pipeline(
         transactions = transactions.cache()
         transaction_count = transactions.count()
         timings["ingestion_and_validation"] = time.perf_counter() - started
-        LOGGER.info("Validated %s PaySim transactions", f"{transaction_count:,}")
+        LOGGER.info("Ingested %s PaySim transactions", f"{transaction_count:,}")
 
         started = time.perf_counter()
         graph = build_transaction_graph(transactions)
@@ -87,19 +87,37 @@ def run_pipeline(
         timings["graph_feature_engineering"] = time.perf_counter() - started
         LOGGER.info("Computed graph features for %s accounts", f"{account_count:,}")
 
+        # Persist enriched features to Parquet in the run folder
+        enriched_parquet_path = output_dir / "enriched_features.parquet"
+        LOGGER.info("Persisting enriched features to %s", enriched_parquet_path)
+        enriched.write.mode("overwrite").parquet(str(enriched_parquet_path))
+        enriched = spark.read.parquet(str(enriched_parquet_path)).cache()
+
+        # Per-split training: call training once per split on each split's own train rows
+        splits_to_run = ["time", "group_dest", "random"]
+        models_by_split = {}
+        total_training_rows = 0
+
         started = time.perf_counter()
-        train_df, _, _ = get_dataset_split(enriched, "time")
-        training_data = draw_training_sample(train_df, max_training_rows)
-        models, test_data, _ = train_comparative_models(training_data, output_dir=output_dir)
+        for split_name in splits_to_run:
+            LOGGER.info("Drawing training sample and training models for split: %s", split_name)
+            split_train_df, _, _ = get_dataset_split(enriched, split_name)
+            split_training_data = draw_training_sample(split_train_df, max_training_rows)
+            total_training_rows += len(split_training_data)
+            split_models, _, _ = train_comparative_models(
+                split_training_data, output_dir=output_dir, split_name=split_name
+            )
+            models_by_split[split_name] = split_models
+
         timings["model_training"] = time.perf_counter() - started
 
         started = time.perf_counter()
         report = run_distributed_evaluation(
             spark=spark,
             enriched_df=enriched,
-            models=models,
+            models=models_by_split,
             output_dir=output_dir,
-            splits_to_run=["time", "group_dest", "random"],
+            splits_to_run=splits_to_run,
         )
         timings["distributed_scoring_and_eval"] = time.perf_counter() - started
 
@@ -107,8 +125,10 @@ def run_pipeline(
         timings["pipeline_total"] = time.perf_counter() - pipeline_started
         metrics["transaction_count"] = transaction_count
         metrics["account_count"] = account_count
-        metrics["sampled_training_rows"] = int(len(training_data))
-        metrics["model_names"] = list(models)
+        metrics["sampled_training_rows"] = total_training_rows
+        # Canonical model names only (no legacy aliases)
+        canonical_models = [m for m in models_by_split.get("time", {}).keys() if not m.startswith("score_")]
+        metrics["model_names"] = canonical_models
         metrics["engines"] = engines
         metrics["algorithm_info"] = algo_info
         write_json(metrics, str(output_dir / "scalability.json"))

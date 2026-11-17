@@ -159,6 +159,7 @@ def sample_training_data(
 def train_comparative_models(
     data: pd.DataFrame,
     output_dir: Optional[Path] = None,
+    split_name: Optional[str] = None,
 ) -> Tuple[Dict[str, Any], pd.DataFrame, Dict[str, Dict[str, float]]]:
     """Train comparative models across the feature ladder."""
     labels = data["isFraud"].astype(int)
@@ -210,25 +211,13 @@ def train_comparative_models(
             else 0.5
         }
 
-    # Backward compatibility aliases
-    if "m1_tabular" in models:
-        models["tabular_baseline"] = models["m1_tabular"]
-        models["Baseline"] = models["m1_tabular"]
-        test["tabular_baseline_probability"] = test["m1_tabular_probability"]
-        test["tabular_baseline_prediction"] = test["m1_tabular_prediction"]
-    if "m2_graph" in models:
-        models["graph_features"] = models["m2_graph"]
-        test["graph_features_probability"] = test["m2_graph_probability"]
-        test["graph_features_prediction"] = test["m2_graph_prediction"]
-    if "m3_community_mule" in models:
-        models["community_ring"] = models["m3_community_mule"]
-        test["community_ring_probability"] = test["m3_community_mule_probability"]
-        test["community_ring_prediction"] = test["m3_community_mule_prediction"]
+    # Backward compatibility aliases dropped per STEP 1.15 specification
 
     if output_dir is not None:
         target_dir = Path(output_dir) / "models"
+        if split_name:
+            target_dir = target_dir / split_name
         target_dir.mkdir(parents=True, exist_ok=True)
-        joblib.dump(models["m1_tabular"], target_dir / "baseline.joblib")
         for m_name in TRAINABLE_MODELS:
             joblib.dump(models[m_name], target_dir / f"{m_name}.joblib")
 
@@ -264,8 +253,20 @@ def train_comparative_models(
             except Exception:
                 importance_dict[m_name] = []
 
-        with open(Path(output_dir) / "feature_importance.json", "w", encoding="utf-8") as f:
+        with open(target_dir / "feature_importance.json", "w", encoding="utf-8") as f:
             json.dump(importance_dict, f, indent=2)
+
+        # Write root models directory for backward compatibility if time split
+        if split_name in ("time", None):
+            root_dir = Path(output_dir) / "models"
+            root_dir.mkdir(parents=True, exist_ok=True)
+            joblib.dump(models["m1_tabular"], root_dir / "baseline.joblib")
+            for m_name in TRAINABLE_MODELS:
+                joblib.dump(models[m_name], root_dir / f"{m_name}.joblib")
+            with open(root_dir / "feature_names.json", "w", encoding="utf-8") as f:
+                json.dump(feature_names_dict, f, indent=2)
+            with open(root_dir / "feature_importance.json", "w", encoding="utf-8") as f:
+                json.dump(importance_dict, f, indent=2)
 
     test["actual"] = test["isFraud"].astype(int)
     return models, test, scores

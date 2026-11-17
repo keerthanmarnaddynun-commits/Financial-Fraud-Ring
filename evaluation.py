@@ -12,6 +12,7 @@ from urllib.request import urlopen
 
 import numpy as np
 import pandas as pd
+import psutil
 from pyspark.sql import DataFrame, SparkSession
 from pyspark.sql import functions as F
 from pyspark.sql.types import (
@@ -250,12 +251,18 @@ def run_distributed_evaluation(
         LOGGER.info("Starting distributed evaluation for split: %s", split_name)
         train_df, val_df, test_df = get_dataset_split(enriched_df, split_name)
 
-        # 1. Validation phase: find optimal F1 thresholds
+        # Determine models to use for this split (per-split models or fallback to shared models)
+        if isinstance(models, dict) and split_name in models and isinstance(models[split_name], dict):
+            split_models = models[split_name]
+        else:
+            split_models = models
+
+        # 1. Validation phase: find best F1 thresholds
         val_thresholds: Dict[str, float] = {}
         val_count = val_df.count()
 
         if val_count > 0:
-            val_scored_df = score_spark_dataset_map_in_pandas(spark, val_df, models)
+            val_scored_df = score_spark_dataset_map_in_pandas(spark, val_df, split_models)
             val_pdf = (
                 val_scored_df.select(
                     "isFraud",
@@ -277,7 +284,7 @@ def run_distributed_evaluation(
 
         # 2. Test phase: score full test rows in Spark with mapInPandas
         with StageTimer(f"scoring_{split_name}") as timer:
-            scored_test_df = score_spark_dataset_map_in_pandas(spark, test_df, models)
+            scored_test_df = score_spark_dataset_map_in_pandas(spark, test_df, split_models)
             scored_test_df = scored_test_df.cache()
 
             # Save scored test set to parquet
@@ -389,17 +396,33 @@ def evaluate_models(test_data: pd.DataFrame) -> Dict[str, Dict[str, Any]]:
 
 
 def collect_spark_metrics(
-    spark: SparkSession, timings: Dict[str, float]
+    spark: SparkSession, timings: Dict[str, Any]
 ) -> Dict[str, Any]:
     """Collect observed executor memory and shuffle bytes from Spark's local REST UI."""
+    flat_timings: Dict[str, float] = {}
+    for k, v in timings.items():
+        if k == "timings_seconds" and isinstance(v, dict):
+            flat_timings.update(v)
+        elif not isinstance(v, dict):
+            flat_timings[k] = float(v)
+
+    avail_bytes = psutil.virtual_memory().available
+    mem_warning = None
+    if avail_bytes < 2 * 1024 * 1024 * 1024:
+        mem_warning = (
+            f"Low memory warning: available RAM ({avail_bytes / (1024**3):.2f} GB) dropped below 2.0 GB threshold."
+        )
+        LOGGER.warning(mem_warning)
+
     metrics: Dict[str, Any] = {
-        "timings_seconds": timings,
+        "timings_seconds": flat_timings,
         "spark_application_id": spark.sparkContext.applicationId,
         "spark_master": spark.sparkContext.master,
         "executor_memory_bytes": None,
         "shuffle_read_bytes": None,
         "shuffle_write_bytes": None,
         "stage_count": None,
+        "memory_warning": mem_warning,
     }
     ui_url = spark.sparkContext.uiWebUrl
     if not ui_url:
