@@ -1,0 +1,178 @@
+{
+  "benchmark": "storage_csv_vs_parquet",
+  "timestamp": "2026-11-18T00:39:21.362943",
+  "repeats": 3,
+  "min_available_ram_bytes": 5293527040,
+  "formats": {
+    "csv": {
+      "path": "C:\\Users\\Kirthan\\Desktop\\Financial-Fraud-Ring\\data\\PS_20174392719_1491204439457_log.csv",
+      "size_bytes": 493534783,
+      "size_mb": 470.67,
+      "compression_ratio_vs_csv": 1.0,
+      "row_count": 6362620,
+      "filter_transfer_fraud_count": 4097,
+      "two_columns_check": {
+        "sum_amount": 1144392944759.7695,
+        "sum_fraud": 8213
+      },
+      "min_available_ram_bytes": 5421633536,
+      "operations": {
+        "count_rows": {
+          "repeats_seconds": [
+            12.2031,
+            1.4882,
+            1.2411
+          ],
+          "mean_seconds": 4.9775,
+          "min_seconds": 1.2411,
+          "max_seconds": 12.2031
+        },
+        "read_two_columns": {
+          "columns": [
+            "amount",
+            "isFraud"
+          ],
+          "method": "select + sum aggregation to force disk/column decode",
+          "repeats_seconds": [
+            7.3681,
+            3.0608,
+            2.8986
+          ],
+          "mean_seconds": 4.4425,
+          "min_seconds": 2.8986,
+          "max_seconds": 7.3681
+        },
+        "filter_transfer_fraud": {
+          "predicate": "type == 'TRANSFER' and isFraud == 1",
+          "repeats_seconds": [
+            3.9365,
+            2.643,
+            2.5654
+          ],
+          "mean_seconds": 3.0483,
+          "min_seconds": 2.5654,
+          "max_seconds": 3.9365
+        }
+      }
+    },
+    "parquet_partitioned": {
+      "path": "C:\\Users\\Kirthan\\Desktop\\Financial-Fraud-Ring\\data\\parquet\\paysim",
+      "size_bytes": 261770936,
+      "size_mb": 249.64,
+      "compression_ratio_vs_csv": 1.885,
+      "row_count": 6362620,
+      "filter_transfer_fraud_count": 4097,
+      "two_columns_check": {
+        "sum_amount": 1144392944759.773,
+        "sum_fraud": 8213
+      },
+      "min_available_ram_bytes": 5293527040,
+      "operations": {
+        "count_rows": {
+          "repeats_seconds": [
+            2.73,
+            1.5372,
+            1.149
+          ],
+          "mean_seconds": 1.8054,
+          "min_seconds": 1.149,
+          "max_seconds": 2.73
+        },
+        "read_two_columns": {
+          "columns": [
+            "amount",
+            "isFraud"
+          ],
+          "method": "select + sum aggregation to force disk/column decode",
+          "repeats_seconds": [
+            2.7653,
+            1.6348,
+            1.1683
+          ],
+          "mean_seconds": 1.8561,
+          "min_seconds": 1.1683,
+          "max_seconds": 2.7653
+        },
+        "filter_transfer_fraud": {
+          "predicate": "type == 'TRANSFER' and isFraud == 1",
+          "repeats_seconds": [
+            1.6805,
+            1.1436,
+            0.7804
+          ],
+          "mean_seconds": 1.2015,
+          "min_seconds": 0.7804,
+          "max_seconds": 1.6805
+        }
+      }
+    },
+    "parquet_unpartitioned": {
+      "path": "C:\\Users\\Kirthan\\Desktop\\Financial-Fraud-Ring\\data\\parquet\\paysim_unpartitioned",
+      "size_bytes": 286377736,
+      "size_mb": 273.11,
+      "compression_ratio_vs_csv": 1.723,
+      "row_count": 6362620,
+      "filter_transfer_fraud_count": 4097,
+      "two_columns_check": {
+        "sum_amount": 1144392944759.7698,
+        "sum_fraud": 8213
+      },
+      "min_available_ram_bytes": 5326389248,
+      "operations": {
+        "count_rows": {
+          "repeats_seconds": [
+            0.6949,
+            0.7498,
+            0.6781
+          ],
+          "mean_seconds": 0.7076,
+          "min_seconds": 0.6781,
+          "max_seconds": 0.7498
+        },
+        "read_two_columns": {
+          "columns": [
+            "amount",
+            "isFraud"
+          ],
+          "method": "select + sum aggregation to force disk/column decode",
+          "repeats_seconds": [
+            0.7427,
+            0.8594,
+            0.727
+          ],
+          "mean_seconds": 0.7764,
+          "min_seconds": 0.727,
+          "max_seconds": 0.8594
+        },
+        "filter_transfer_fraud": {
+          "predicate": "type == 'TRANSFER' and isFraud == 1",
+          "repeats_seconds": [
+            1.4409,
+            0.8314,
+            0.7904
+          ],
+          "mean_seconds": 1.0209,
+          "min_seconds": 0.7904,
+          "max_seconds": 1.4409
+        }
+      }
+    }
+  },
+  "speedup_vs_csv": {
+    "parquet_partitioned": {
+      "count_rows": 2.757,
+      "read_two_columns": 2.393,
+      "filter_transfer_fraud": 2.537
+    },
+    "parquet_unpartitioned": {
+      "count_rows": 7.034,
+      "read_two_columns": 5.722,
+      "filter_transfer_fraud": 2.986
+    }
+  },
+  "caveats": [
+    "Measured on a single Windows laptop using local[*] Spark session with default 6g driver memory and 48 shuffle partitions.",
+    "OS page cache is warm after the first repeat; individual repeat values are retained alongside means.",
+    "read_two_columns uses sum(amount), sum(isFraud) so Spark cannot answer solely from Parquet footer row counts."
+  ]
+}

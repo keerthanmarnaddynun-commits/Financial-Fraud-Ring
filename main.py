@@ -15,6 +15,7 @@ from data_ingestion import (
     build_data_quality_report,
     ensure_dataset,
     load_and_validate_data,
+    resolve_input_path,
 )
 from run_info import write_run_info
 from spark_session import create_spark_session
@@ -40,16 +41,19 @@ def run_pipeline(
     output_dir: Path,
     max_training_rows: int,
     sample_fraction: Optional[float] = None,
+    input_format: str = "csv",
 ) -> Dict[str, Any]:
     pipeline_started = time.perf_counter()
     output_dir.mkdir(parents=True, exist_ok=True)
-    input_path = data_path or ensure_dataset()
+    input_path = resolve_input_path(data_path, input_format=input_format)
     write_run_info(
         output_dir / "run_info.json",
-        dataset_path=input_path,
+        dataset_path=input_path if input_path.is_file() else None,
         config={
             "sample_fraction": sample_fraction,
             "max_training_rows": max_training_rows,
+            "input_format": input_format,
+            "input_path": str(input_path),
         },
     )
     spark = create_spark_session()
@@ -57,9 +61,9 @@ def run_pipeline(
 
     try:
         started = time.perf_counter()
-        quality_report = build_data_quality_report(spark, input_path)
+        quality_report = build_data_quality_report(spark, input_path, input_format=input_format)
         write_json(quality_report, str(output_dir / "data_quality.json"))
-        transactions = load_and_validate_data(spark, input_path)
+        transactions = load_and_validate_data(spark, input_path, input_format=input_format)
         if sample_fraction is not None:
             transactions = transactions.sample(withReplacement=False, fraction=sample_fraction, seed=42)
         transactions = transactions.cache()
@@ -176,6 +180,13 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional sample fraction for fast debugging runs (0.0-1.0).",
     )
+    parser.add_argument(
+        "--input-format",
+        type=str,
+        choices=["csv", "parquet"],
+        default="csv",
+        help="Input storage format: csv (default) or parquet.",
+    )
     return parser.parse_args()
 
 
@@ -187,7 +198,13 @@ def main() -> None:
     args = parse_args()
     if args.sample_fraction is not None and not 0 < args.sample_fraction <= 1:
         raise ValueError("--sample-fraction must be between 0 and 1.")
-    run_pipeline(args.data, args.output_dir, args.max_training_rows, args.sample_fraction)
+    run_pipeline(
+        args.data,
+        args.output_dir,
+        args.max_training_rows,
+        args.sample_fraction,
+        input_format=args.input_format,
+    )
 
 
 if __name__ == "__main__":

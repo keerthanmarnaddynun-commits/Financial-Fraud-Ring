@@ -25,8 +25,8 @@ STEP 2.7 | SKIPPED(time) | - | [OPTIONAL] Account lookup in scorer
 STEP 2.8 | DONE | S2.8 | Dashboard tests for new tabs
 GATE 2 | DONE | S2.GATE | Chunk 2 summary and gate check
 STEP 3.0 | DONE | S3.0 | Pre-flight for long runs (7.27 GB RAM, 115.91 GiB disk, AC power)
-STEP 3.1 | IN_PROGRESS | - | Parquet storage layer and benchmark
-STEP 3.2 | PENDING | - | Graph-stage runner reused by benchmarks
+STEP 3.1 | DONE | S3.1 | Parquet conversion and storage benchmark (runs/20261118-0038_c3-storage)
+STEP 3.2 | IN_PROGRESS | - | Graph-stage runner reused by benchmarks
 STEP 3.3 | PENDING | - | Scaling benchmark
 STEP 3.4 | PENDING | - | pandas/NetworkX vs Spark comparison
 STEP 3.5 | PENDING | - | Aggregation, charts, dashboard

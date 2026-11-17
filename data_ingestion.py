@@ -96,21 +96,53 @@ def ensure_dataset(data_dir: Path = DATA_DIR) -> Path:
     return downloaded_csvs[0]
 
 
-def load_and_validate_data(
-    spark: SparkSession, csv_path: Optional[Path] = None
+def _read_raw_input(
+    spark: SparkSession, path: Path, input_format: str = "csv"
 ) -> DataFrame:
-    """Load the known PaySim schema, remove malformed rows, and preserve merchant edges."""
-    path = csv_path or ensure_dataset()
+    """Read raw PaySim data from CSV (with explicit schema) or Parquet."""
+    fmt = input_format.lower()
+    if fmt == "parquet" or path.is_dir() or path.suffix.lower() == ".parquet":
+        raw = spark.read.parquet(str(path))
+        missing = sorted(set(REQUIRED_COLUMNS) - set(raw.columns))
+        if missing:
+            raise ValueError(f"PaySim Parquet input is missing required columns: {', '.join(missing)}")
+        return raw.select(*REQUIRED_COLUMNS)
     header = spark.read.option("header", True).option("inferSchema", False).csv(str(path))
     missing = sorted(set(REQUIRED_COLUMNS) - set(header.columns))
     if missing:
         raise ValueError(f"PaySim input is missing required columns: {', '.join(missing)}")
-    raw = (
+    return (
         spark.read.option("header", True)
         .option("mode", "PERMISSIVE")
         .schema(PAYMENTS_SCHEMA)
         .csv(str(path))
     )
+
+
+def resolve_input_path(
+    data_path: Optional[Path] = None, input_format: str = "csv"
+) -> Path:
+    """Resolve input path for CSV or Parquet format."""
+    if data_path is not None:
+        return data_path
+    if input_format.lower() == "parquet":
+        parquet_path = DATA_DIR / "parquet" / "paysim"
+        if not parquet_path.exists():
+            raise FileNotFoundError(
+                f"Parquet dataset not found at {parquet_path}. Run `python to_parquet.py` first."
+            )
+        return parquet_path
+    return ensure_dataset()
+
+
+def load_and_validate_data(
+    spark: SparkSession,
+    csv_path: Optional[Path] = None,
+    input_format: str = "csv",
+) -> DataFrame:
+    """Load the known PaySim schema, remove malformed rows, and preserve merchant edges."""
+    path = resolve_input_path(csv_path, input_format=input_format)
+    raw = _read_raw_input(spark, path, input_format=input_format)
 
     valid = raw.dropna(subset=REQUIRED_COLUMNS)
     for column in NUMERIC_COLUMNS:
@@ -131,15 +163,14 @@ def load_and_validate_data(
     return valid.withColumn("transaction_id", F.monotonically_increasing_id())
 
 
-def build_data_quality_report(spark: SparkSession, csv_path: Optional[Path] = None) -> dict:
+def build_data_quality_report(
+    spark: SparkSession,
+    csv_path: Optional[Path] = None,
+    input_format: str = "csv",
+) -> dict:
     """Capture the raw-data quality counts used by the project dashboard and reports."""
-    path = csv_path or ensure_dataset()
-    raw = (
-        spark.read.option("header", True)
-        .option("mode", "PERMISSIVE")
-        .schema(PAYMENTS_SCHEMA)
-        .csv(str(path))
-    ).cache()
+    path = resolve_input_path(csv_path, input_format=input_format)
+    raw = _read_raw_input(spark, path, input_format=input_format).cache()
     try:
         rows_read = int(raw.count())
         required_valid = raw.dropna(subset=REQUIRED_COLUMNS)
