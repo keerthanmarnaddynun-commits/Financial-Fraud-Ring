@@ -23,7 +23,7 @@ STEP 2.5 | DONE | S2.5 | Model results polish
 STEP 2.6 | DONE | S2.6 | generate_visuals.py rewrite
 STEP 2.7 | SKIPPED(time) | - | [OPTIONAL] Account lookup in scorer
 STEP 2.8 | DONE | S2.8 | Dashboard tests for new tabs
-GATE 2 | PENDING | - | Chunk 2 summary and gate check
+GATE 2 | DONE | S2.GATE | Chunk 2 summary and gate check
 STEP 3.0 | PENDING | - | Pre-flight for long runs
 STEP 3.1 | PENDING | - | Parquet storage layer and benchmark
 STEP 3.2 | PENDING | - | Graph-stage runner reused by benchmarks

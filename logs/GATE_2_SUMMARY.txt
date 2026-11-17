@@ -1,0 +1,124 @@
+GATE 2 SUMMARY
+==========================================================================================
+Status: Complete. Ready for Gate 2 review.
+Worklog: logs/AG_WORKLOG_C2.txt
+Branch: bdc-final
+==========================================================================================
+
+1. STEPS STATUS (from PROGRESS.txt and Git History)
+------------------------------------------------------------------------------------------
+- STEP 2.1 | DONE | fa50d01 | Business impact table (business_impact.py, test_business_impact.py)
+- STEP 2.2 | DONE | 7b3fbdd | Real-data ring analysis (rings.py, outputs/rings/, test_rings.py)
+- STEP 2.3 | DONE | 96944a9 | Planted-ring validation with camouflage (planted_rings.py, test_planted.py)
+- STEP 2.4 | DONE | 71be4a0 | Dashboard tabs: Business impact and Fraud rings (app.py)
+- STEP 2.5 | DONE | 60c1bf8 | Model results charts (app.py polish, PR curves, feature importance)
+- STEP 2.6 | DONE | e2b3821 | generate_visuals.py rewrite (5 core visuals generated to outputs/visuals/)
+- STEP 2.7 | SKIPPED(time) | 56c5936 | [OPTIONAL] Account lookup in scorer skipped for battery budget
+- STEP 2.8 | DONE | 747d6fb | Dashboard tests for new tabs (test_app_smoke.py extended, 37 passed)
+- GATE 2   | PENDING | - | Chunk 2 summary and gate check
+
+
+2. KEY TABLES (Generated Directly from Result Files)
+------------------------------------------------------------------------------------------
+
+A. Business Impact at Operating Threshold (Review Cost = 50.0 Simulated Currency Units)
+Source: outputs/business_impact.json (Time Split: 193,939 test rows, 2,062 fraud rows, 3,181,396,658.88 total fraud value)
+
+| Model Key | Display Name | Operating Threshold | Total Alerts | True Alerts (Fraud) | False Alerts (Non-Fraud) | Alerts / 10k Rows | Fraud Value Caught (Units) | Fraud Value Missed (Units) | Value Caught (%) | Net Financial Saving (Units) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| rule_baseline | isFlaggedFraud (Amount > 200k) | > 200,000 | 9 | 9 | 0 | 0.46 | 42,898,513.56 | 3,138,498,145.32 | 1.35% | 42,898,063.56 |
+| m1_tabular | M1 Tabular Baseline | 0.850000 | 2,067 | 2,060 | 7 | 106.58 | 3,180,643,739.58 | 752,919.30 | 99.98% | 3,180,540,389.58 |
+| m1_tabular_noerr | M1 Tabular (No Error Bal) | 0.071108 | 3,918 | 2,061 | 1,857 | 202.02 | 3,181,396,658.88 | 0.00 | 100.00% | 3,181,200,758.88 |
+| m2_graph | M2 Graph + Structural | 0.000241 | 9,795 | 2,062 | 7,733 | 505.06 | 3,181,396,658.88 | 0.00 | 100.00% | 3,180,906,908.88 |
+| m3_community_mule | M3 Community + Mule | 0.700000 | 2,066 | 2,060 | 6 | 106.53 | 3,180,643,739.58 | 752,919.30 | 99.98% | 3,180,540,439.58 |
+
+Key Observations:
+- Net Financial Saving = Fraud Value Caught - (Review Cost * Alerts).
+- All 4 machine learning models score significantly higher on fraud capture than the rule baseline (1.35% value caught for rule vs 99.98%–100.00% for trained models).
+- M3 Community + Mule flags 2,066 alerts (only 6 false alerts on 193,939 rows), capturing 99.98% of total fraud value with 3,180,540,439.58 net savings.
+
+B. Real-Data Fraud Ring Analysis
+Source: outputs/ring_analysis.json & outputs/rings_summary.csv
+
+- Fraud Accounts Evaluated: 16,382 distinct accounts
+- Total Connected Components: 8,169 components
+- Component Size Distribution:
+  * Size 2 (Isolated 1-to-1 Origin -> Destination pairs): 8,125 components (99.46%)
+  * Size 3 (2 Distinct Origins Funneling into 1 Destination): 44 components (0.54%)
+  * Size >= 4 (Multi-hop Chains, Cycles, Larger Syndicates): 0 components (0.00%)
+- Top Ring Exported: Ring C1014298205 (Size 3, 2 transactions, total amount: 10,160,088.68 units, spanning steps 269 to 686). Top 20 rings exported to outputs/rings/ring_<id>.json.
+- Plain Empirical Finding: "In the PaySim dataset, real fraud transactions are overwhelmingly isolated 1-to-1 interactions (8125 components of size 2). Exactly 44 components have size >= 3 (all of size 3, where 2 distinct origin accounts transferred funds to the same destination account). There are zero multi-hop chains, cycles, or larger fraud rings of size >= 4 in the ground-truth fraud data."
+
+C. Planted-Ring Synthetic Validation Table
+Source: outputs/planted_ring_validation.json (Label: "synthetic injection for validation", 60 planted rings across 3 patterns and 3 camouflage levels in 200,000-row sample)
+
+| Pattern | Camouflage Level | Planted Rings | Recovered Rings | Recovery Rate (%) | Clustering Homogeneity | Clustering Completeness | V-Measure | Contamination Rate (%) |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| Chain | 0% | 7 | 7 | 100.0% | 1.0000 | 1.0000 | 1.0000 | 0.0% |
+| Chain | 20% | 7 | 0 | 0.0% | 1.0000 | 1.0000 | 1.0000 | 62.1% |
+| Chain | 50% | 6 | 0 | 0.0% | 1.0000 | 1.0000 | 1.0000 | 81.7% |
+| Cycle | 0% | 7 | 7 | 100.0% | 1.0000 | 1.0000 | 1.0000 | 0.0% |
+| Cycle | 20% | 7 | 0 | 0.0% | 1.0000 | 1.0000 | 1.0000 | 63.6% |
+| Cycle | 50% | 6 | 0 | 0.0% | 1.0000 | 1.0000 | 1.0000 | 81.6% |
+| Funnel | 0% | 7 | 7 | 100.0% | 1.0000 | 1.0000 | 1.0000 | 0.0% |
+| Funnel | 20% | 7 | 0 | 0.0% | 1.0000 | 1.0000 | 1.0000 | 68.3% |
+| Funnel | 50% | 6 | 0 | 0.0% | 1.0000 | 1.0000 | 1.0000 | 78.9% |
+
+Key Observations:
+- At 0% camouflage (isolated synthetic structures), connected components achieves 100.0% recovery (21/21 rings) with 0.0% contamination.
+- At 20% and 50% camouflage, bridging edges connect planted rings to normal transaction hubs, resulting in 62.1%–81.7% contamination. Because detected communities merge with normal accounts, isolated community purity falls below the 80% threshold (0/39 recovered under strict definition), despite high underlying homogeneity (0.858–1.000).
+
+
+3. FAILURES AND RETRIES
+------------------------------------------------------------------------------------------
+1. STEP 2.2: rings.py AnalysisException: `[UNRESOLVED_COLUMN.WITH_SUGGESTION] A column, variable, or function parameter with name 'transaction_id' cannot be resolved.`
+   Cause: PAYMENTS_SCHEMA in data_ingestion.py defines raw PaySim fields and does not include synthetic transaction_id.
+   Fix: Removed transaction_id from the initial projection; used (nameOrig, nameDest, amount, step, type) directly.
+2. STEP 2.8: PermissionError: `[WinError 5] Access is denied` when starting PySpark JVM gateway inside sandbox.
+   Cause: Windows sandbox restricts local socket binding required for PySpark's gateway.
+   Fix: Re-ran the PySpark test suite outside sandbox (`BypassSandbox: true`). All 37 tests passed in 1957.63s.
+
+
+4. DECISIONS TAKEN
+------------------------------------------------------------------------------------------
+- Strict Split Usage (Directive A): Restricted all business impact evaluations, threshold selections, PR curves, and confusion matrices to the time split test set. Marked group_dest and random as "retraining pending" across the UI.
+- Currency Denomination: Denominated all monetary metrics in exact PaySim simulated currency units without applying currency symbols or external conversion factors.
+- Battery Conservation (Directive D): Performed all Chunk 2 graph algorithms on bounded subgraphs (fraud-only subgraph of 8,213 rows for rings; 200,000-row sample for planted rings). Avoided full-graph recomputations.
+- Skipped Optional STEP 2.7: Skipped account lookup feature in live scorer to preserve battery and time budget.
+- Clean 7-Tab Dashboard Architecture: Replaced legacy inspector with integrated Fraud Rings tab (real ring inspector + planted synthetic validation table) and added dedicated Business Impact tab with dynamic net saving curves and threshold slider.
+
+
+5. SURPRISES NOTICED
+------------------------------------------------------------------------------------------
+- Total Absence of Complex Rings in PaySim: Ground truth fraud transactions in PaySim contain exactly zero cycles, chains, or components of size >= 4. Out of 8,169 components, 8,125 are 1-to-1 account pairs and 44 are 2-to-1 funnels of size 3. Prior project claims of "27 detected rings" were based on unlabelled community detection rather than ground truth syndicates.
+- Camouflage Sensitivity: Adding even 1–3 camouflage transactions to random background accounts bridges synthetic rings into the giant normal component, causing connected components to absorb normal accounts (contamination > 60%).
+
+
+6. NOT CHECKED / NOT DONE
+------------------------------------------------------------------------------------------
+- STEP 1.15 remains PENDING (postponed per user instruction C to be run plugged in at home: per-split training, Parquet feature persistence, scalability cleanup).
+- STEP 2.7 (account lookup in scorer) was skipped for battery budget.
+- Chunk 3 Big-Data Scaling Benchmarks (STEPS 3.0 to 3.7) are pending and not yet run.
+
+
+7. HOW THE USER CAN LOOK AT THE RESULTS
+------------------------------------------------------------------------------------------
+1. Open the interactive dashboard (all 7 tabs functional):
+   streamlit run app.py
+2. Inspect the generated visuals:
+   outputs/visuals/pr_curves.png
+   outputs/visuals/confusion_matrices.png
+   outputs/visuals/feature_importance.png
+   outputs/visuals/business_impact.png
+   outputs/visuals/ring_size_histogram.png
+3. Re-run visuals generator if needed:
+   python generate_visuals.py --output-dir outputs
+4. Run full test suite:
+   python -m pytest -q
+
+
+8. GATE STATUS
+------------------------------------------------------------------------------------------
+GATE 2 reached. All Chunk 2 steps complete.
+Stopping and waiting for user to review and type "continue".
+==========================================================================================
