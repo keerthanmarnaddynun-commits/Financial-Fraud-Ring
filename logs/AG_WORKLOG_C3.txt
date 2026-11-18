@@ -134,6 +134,9 @@ Created demo_run.py running the 2% sample graph pipeline with Spark UI enabled, 
 Tested non-interactively via `python -u demo_run.py --no-wait` (exited code 0).
 RAW: logs/raw/20261118_3.7_demo_run_nowait.txt
 
+[2026-11-18 09:10] GATE 3 | ACTION
+Generated logs/GATE_3_SUMMARY.txt programmatically via `python scripts/generate_gate3_summary.py` directly from outputs/storage_benchmark.json, outputs/scaling_runs.json, outputs/pandas_vs_spark.json, PROGRESS.txt, and git log. Stopping at GATE 3 and waiting for user to type "continue" before starting Chunk 4.
+
 ================================================================================
 DECISIONS
 ================================================================================
