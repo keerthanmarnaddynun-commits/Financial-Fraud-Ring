@@ -1415,6 +1415,7 @@ with tab_scaling:
             cs_summary = scaling_runs_data.get("core_scaling_summary", [])
             all_runs = scaling_runs_data.get("runs", [])
             non_ok_scale = scaling_runs_data.get("non_ok_runs", [])
+            superseded_scale = scaling_runs_data.get("superseded_runs", [])
 
             st.markdown("### 1. Spark Data-Size Scaling (Log-Log)")
             if ds_summary:
@@ -1445,7 +1446,9 @@ with tab_scaling:
                         "Repeat": f"Repeat {r.get('repeat')}",
                     }
                     for r in all_runs
-                    if r.get("suite") == "data_scaling" and r.get("status") == "ok"
+                    if r.get("suite") == "data_scaling"
+                    and r.get("status") == "ok"
+                    and not r.get("superseded")
                 ]
                 if ok_ds_pts:
                     df_ds_plot = pd.DataFrame(ok_ds_pts)
@@ -1532,7 +1535,7 @@ with tab_scaling:
                     st.plotly_chart(fig_cs, use_container_width=True)
 
             if non_ok_scale:
-                with st.expander(f"Non-OK Scaling Runs Recorded ({len(non_ok_scale)})", expanded=True):
+                with st.expander(f"Active Non-OK Scaling Runs Recorded ({len(non_ok_scale)})", expanded=True):
                     st.dataframe(
                         pd.DataFrame(
                             [
@@ -1548,6 +1551,31 @@ with tab_scaling:
                                     "Reason": r.get("reason", ""),
                                 }
                                 for r in non_ok_scale
+                            ]
+                        ),
+                        use_container_width=True,
+                    )
+            if superseded_scale:
+                with st.expander(f"Superseded Prior Scaling Attempts Retained ({len(superseded_scale)})", expanded=False):
+                    st.caption(
+                        "Original aborted_low_memory attempts (< 0.5 GiB for 60s guard) retained in scaling_runs.jsonl and scaling_runs.json; "
+                        "re-run with < 0.2 GiB for 120s guard."
+                    )
+                    st.dataframe(
+                        pd.DataFrame(
+                            [
+                                {
+                                    "Suite": r.get("suite"),
+                                    "Fraction": r.get("fraction"),
+                                    "Master": r.get("master"),
+                                    "Repeat": r.get("repeat"),
+                                    "Status": r.get("status"),
+                                    "Wall (s)": r.get("wall_seconds"),
+                                    "Peak RSS": format_bytes(r.get("peak_rss_bytes")),
+                                    "Min Avail RAM": format_bytes(r.get("min_available_ram_bytes")),
+                                    "Note": r.get("superseded_note") or r.get("reason", ""),
+                                }
+                                for r in superseded_scale
                             ]
                         ),
                         use_container_width=True,

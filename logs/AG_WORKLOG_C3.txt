@@ -137,6 +137,28 @@ RAW: logs/raw/20261118_3.7_demo_run_nowait.txt
 [2026-11-18 09:10] GATE 3 | ACTION
 Generated logs/GATE_3_SUMMARY.txt programmatically via `python scripts/generate_gate3_summary.py` directly from outputs/storage_benchmark.json, outputs/scaling_runs.json, outputs/pandas_vs_spark.json, PROGRESS.txt, and git log. Stopping at GATE 3 and waiting for user to type "continue" before starting Chunk 4.
 
+[2026-11-18 11:24] STEP 3B | ACTION
+Seeded runs/20261118-1120_c3-scaling-v2/scaling_runs.jsonl with all 18 records from runs/20261118-0057_c3-scaling (15 active ok + 3 aborted_low_memory marked superseded=True).
+Launched background re-run (task-3473) of ONLY the 3 superseded data_scaling units (0.25 r1, 0.25 r2, 0.50 r1) with default 6g / 48 partitions and relaxed memory guard (< 0.2 GiB for 120s).
+RAW: logs/raw/20261118_3B_scaling_rerun.txt, runs/20261118-1120_c3-scaling-v2/orchestrator.log
+
+[2026-11-18 11:51] STEP 3B | POLL
+19/21 records in scaling_runs.jsonl (data_scaling f=0.25 r1 finished status=ok); data_scaling f=0.25 r2 in progress.
+
+[2026-11-18 12:15] STEP 3B | POLL
+20/21 records in scaling_runs.jsonl (data_scaling f=0.25 r2 finished status=ok); final re-run unit data_scaling f=0.50 r1 in progress.
+
+[2026-11-18 12:20] STEP 3B | RESULT
+Completed scaling re-run in runs/20261118-1120_c3-scaling-v2: all 3 re-run units (0.25 r1, 0.25 r2, 0.50 r1) finished status=ok under the < 0.2 GiB / 120s memory guard; all 3 prior aborted_low_memory records retained as superseded=True (21 records total: 18 active ok + 3 superseded).
+Aggregated via aggregate_scaling.py --finalize and promoted to outputs/ and results_snapshot/ (fixed read-only overwrite PermissionError by writing writable copies to outputs/ and results_snapshot/ while keeping runs/ read-only).
+RAW: runs/20261118-1120_c3-scaling-v2/orchestrator.log, outputs/scaling_runs.json
+
+[2026-11-18 12:32] STEP 3B | RESULT
+Completed full-dataset (6,362,620 rows from Parquet) pandas_networkx degree and components runs (2 repeats each) in runs/20261118-1120_c3-pandas-vs-spark-v2: 4/4 finished status=ok; total 49 runs (48 ok, 1 timeout) aggregated into outputs/pandas_vs_spark.json and results_snapshot/.
+Regenerated all visuals via generate_visuals.py, updated app.py Scaling tab to display superseded prior records separately, updated results_snapshot/SHA256SUMS.txt, and ran tests/test_app_smoke.py (5 passed in 14.77s).
+Generated logs/GATE_3B_SUMMARY.txt programmatically via scripts/generate_gate3b_summary.py.
+RAW: runs/20261118-1120_c3-pandas-vs-spark-v2/orchestrator.log, outputs/pandas_vs_spark.json
+
 ================================================================================
 DECISIONS
 ================================================================================

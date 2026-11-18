@@ -100,6 +100,8 @@ def _load_completed_keys(jsonl_path: Path) -> Set[Tuple[str, float, str, int]]:
                 continue
             try:
                 rec = json.loads(line)
+                if rec.get("superseded"):
+                    continue
                 keys.add(_run_key(rec))
             except Exception:
                 continue
@@ -395,6 +397,10 @@ def execute_single_unit(
             "finished_at": finished_iso,
             "worker_log": worker_log.name,
         }
+
+    record["superseded"] = False
+    record["memory_guard_bytes"] = int(low_mem_bytes)
+    record["memory_guard_duration_seconds"] = float(low_mem_duration)
 
     LOGGER.info(
         "Finished unit %s: status=%s wall=%.2fs peak_rss=%.1fMiB min_avail_ram=%.1fMiB",

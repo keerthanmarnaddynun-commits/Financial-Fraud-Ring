@@ -623,14 +623,21 @@ def aggregate_pandas_vs_spark(
         make_readonly(run_dir)
 
     if copy_to_outputs:
+        import stat
+        def _copy_to(src: Path, dst: Path) -> None:
+            if dst.exists():
+                dst.chmod(stat.S_IWRITE | stat.S_IREAD)
+            shutil.copyfile(src, dst)
+            dst.chmod(stat.S_IWRITE | stat.S_IREAD)
+
         outputs_dir = Path("outputs")
         outputs_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(out_json, outputs_dir / "pandas_vs_spark.json")
-        shutil.copy2(out_csv, outputs_dir / "pandas_vs_spark.csv")
+        _copy_to(out_json, outputs_dir / "pandas_vs_spark.json")
+        _copy_to(out_csv, outputs_dir / "pandas_vs_spark.csv")
         snap_dir = Path("results_snapshot")
         if snap_dir.exists():
-            shutil.copy2(out_json, snap_dir / "pandas_vs_spark.json")
-            shutil.copy2(out_csv, snap_dir / "pandas_vs_spark.csv")
+            _copy_to(out_json, snap_dir / "pandas_vs_spark.json")
+            _copy_to(out_csv, snap_dir / "pandas_vs_spark.csv")
 
     return payload
 
@@ -642,9 +649,20 @@ def run_orchestrator(args: argparse.Namespace) -> None:
     fh.setFormatter(logging.Formatter("%(asctime)s %(levelname)s %(name)s: %(message)s"))
     logging.getLogger().addHandler(fh)
 
-    sizes = [100_000] if args.test_tiny else DEFAULT_SIZES
-    repeats = 1 if args.test_tiny else args.repeats
     source_parquet = args.source_parquet or (DATA_DIR / "parquet" / "paysim_unpartitioned")
+    if args.extra_full_pandas:
+        full_rows = 6_362_620
+        sizes = [full_rows]
+        tools = ["pandas_networkx"]
+        tasks = ["degree", "components"]
+        sample_paths = {full_rows: source_parquet}
+    else:
+        sizes = [100_000] if args.test_tiny else DEFAULT_SIZES
+        tools = ["pandas_networkx", "spark"]
+        tasks = ["degree", "components"]
+        sample_paths = prepare_samples(run_dir, sizes, source_parquet, seed=42)
+
+    repeats = 1 if args.test_tiny else args.repeats
 
     run_info_path = run_dir / "run_info.json"
     if not run_info_path.exists():
@@ -661,16 +679,13 @@ def run_orchestrator(args: argparse.Namespace) -> None:
                 "low_mem_duration_seconds": args.low_mem_duration,
                 "max_rss_bytes": args.max_rss_bytes,
                 "test_tiny": bool(args.test_tiny),
+                "extra_full_pandas": bool(args.extra_full_pandas),
             },
         )
 
-    sample_paths = prepare_samples(run_dir, sizes, source_parquet, seed=42)
     jsonl_path = run_dir / "pandas_vs_spark.jsonl"
     existing = _load_jsonl(jsonl_path)
     completed: Dict[Tuple[str, str, int, int], Dict[str, Any]] = {_unit_key(r): r for r in existing}
-
-    tools = ["pandas_networkx", "spark"]
-    tasks = ["degree", "components"]
 
     for tool in tools:
         for task in tasks:
@@ -742,6 +757,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--low-mem-duration", type=float, default=DEFAULT_LOW_MEM_DURATION_SECONDS)
     parser.add_argument("--max-rss-bytes", type=int, default=DEFAULT_MAX_RSS_BYTES)
     parser.add_argument("--test-tiny", action="store_true", help="Smoke test at 100k rows, 1 repeat.")
+    parser.add_argument(
+        "--extra-full-pandas",
+        action="store_true",
+        help="Run only pandas_networkx degree and components on the full 6,362,620-row Parquet dataset and append to jsonl.",
+    )
 
     # Internal worker arguments
     parser.add_argument("--worker", action="store_true", help=argparse.SUPPRESS)

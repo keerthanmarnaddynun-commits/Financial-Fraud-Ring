@@ -1,10 +1,10 @@
 {
   "benchmark": "pandas_networkx_vs_spark",
-  "generated_at": "2026-11-18T08:48:53.871292",
-  "total_runs_recorded": 45,
-  "ok_runs_count": 44,
+  "generated_at": "2026-11-18T12:32:04.847504",
+  "total_runs_recorded": 49,
+  "ok_runs_count": 48,
   "non_ok_runs_count": 1,
-  "total_benchmark_wall_seconds": 3015.9059,
+  "total_benchmark_wall_seconds": 3209.1721,
   "summary": [
     {
       "tool": "pandas_networkx",
@@ -347,6 +347,38 @@
       "min_available_ram_bytes": 4024160256,
       "nodes": 5862727,
       "edges": 4000000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 6362620,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.1789,
+      "individual_load_seconds": [
+        0.188,
+        0.1698
+      ],
+      "mean_compute_seconds": 49.936,
+      "individual_compute_seconds": [
+        50.7347,
+        49.1373
+      ],
+      "mean_total_seconds": 50.1149,
+      "individual_total_seconds": [
+        50.9227,
+        49.3071
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 5805404160,
+      "max_peak_rss_bytes": 5817982976,
+      "min_available_ram_bytes": 3121250304,
+      "nodes": 9073900,
+      "edges": 6362620
     },
     {
       "tool": "pandas_networkx",
@@ -731,6 +763,38 @@
       "min_available_ram_bytes": 3287109632,
       "nodes": 5862727,
       "edges": 4000000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 6362620,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.5848,
+      "individual_load_seconds": [
+        0.9836,
+        0.1861
+      ],
+      "mean_compute_seconds": 35.3315,
+      "individual_compute_seconds": [
+        35.8767,
+        34.7863
+      ],
+      "mean_total_seconds": 35.9164,
+      "individual_total_seconds": [
+        36.8603,
+        34.9724
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 2749057024,
+      "max_peak_rss_bytes": 2750464000,
+      "min_available_ram_bytes": 6007185408,
+      "nodes": 9073900,
+      "edges": 6362620
     }
   ],
   "non_ok_runs": [
@@ -1869,6 +1933,102 @@
       "started_at": "2026-11-18T08:38:49.770308",
       "finished_at": "2026-11-18T08:48:51.842716",
       "worker_log": "_worker_spark_components_2000000_r1.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.9836,
+      "compute_seconds": 35.8767,
+      "seconds": 36.8603,
+      "extra": {
+        "sum_in_degree": 6362620.0,
+        "sum_out_degree": 6362620.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 6362620,
+      "repeat": 1,
+      "peak_rss_bytes": 2747650048,
+      "min_available_ram_bytes": 6031339520,
+      "wall_seconds": 40.5583,
+      "started_at": "2026-11-18T12:28:43.499966",
+      "finished_at": "2026-11-18T12:29:24.058261",
+      "worker_log": "_worker_pandas_networkx_degree_6362620_r1.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1861,
+      "compute_seconds": 34.7863,
+      "seconds": 34.9724,
+      "extra": {
+        "sum_in_degree": 6362620.0,
+        "sum_out_degree": 6362620.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 6362620,
+      "repeat": 2,
+      "peak_rss_bytes": 2750464000,
+      "min_available_ram_bytes": 6007185408,
+      "wall_seconds": 38.5441,
+      "started_at": "2026-11-18T12:29:26.077039",
+      "finished_at": "2026-11-18T12:30:04.621141",
+      "worker_log": "_worker_pandas_networkx_degree_6362620_r2.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.188,
+      "compute_seconds": 50.7347,
+      "seconds": 50.9227,
+      "extra": {
+        "component_count": 2711280,
+        "max_component_size": 121
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 6362620,
+      "repeat": 1,
+      "peak_rss_bytes": 5817982976,
+      "min_available_ram_bytes": 3121250304,
+      "wall_seconds": 57.8226,
+      "started_at": "2026-11-18T12:30:06.641088",
+      "finished_at": "2026-11-18T12:31:04.463690",
+      "worker_log": "_worker_pandas_networkx_components_6362620_r1.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1698,
+      "compute_seconds": 49.1373,
+      "seconds": 49.3071,
+      "extra": {
+        "component_count": 2711280,
+        "max_component_size": 121
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 6362620,
+      "repeat": 2,
+      "peak_rss_bytes": 5792825344,
+      "min_available_ram_bytes": 3177541632,
+      "wall_seconds": 56.3412,
+      "started_at": "2026-11-18T12:31:06.483540",
+      "finished_at": "2026-11-18T12:32:02.824799",
+      "worker_log": "_worker_pandas_networkx_components_6362620_r2.log"
     }
   ],
   "caveats": [

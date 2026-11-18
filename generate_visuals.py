@@ -372,13 +372,17 @@ def plot_scaling_data_size(scaling_json_path: Path, output_path: Path) -> bool:
 
     fig, ax = plt.subplots(figsize=(8.5, 5.5), dpi=300)
 
-    # Individual OK repeats
+    # Individual OK repeats (active runs only; superseded prior attempts noted separately)
     ok_x, ok_y = [], []
     non_ok_notes = []
+    superseded_notes = []
     for r in runs:
         if r.get("suite") != "data_scaling":
             continue
         frac = float(r.get("fraction", 0))
+        if r.get("superseded"):
+            superseded_notes.append(f"f={frac:.2f} r{r.get('repeat')}: {r.get('status')} (superseded)")
+            continue
         if r.get("status") == "ok":
             tot = float((r.get("seconds") or {}).get("total", r.get("wall_seconds", 0)))
             ok_x.append(frac)
@@ -393,11 +397,11 @@ def plot_scaling_data_size(scaling_json_path: Path, output_path: Path) -> bool:
             mean_y.append(float(row["mean_total_seconds"]))
 
     if mean_x:
-        ax.plot(mean_x, mean_y, color="#0284c7", linewidth=2.4, marker="s", markersize=7, label="Mean (status=ok)")
+        ax.plot(mean_x, mean_y, color="#0284c7", linewidth=2.4, marker="s", markersize=7, label="Mean (active status=ok)")
     if ok_x:
         ax.scatter(ok_x, ok_y, color="#38bdf8", edgecolor="#0f172a", s=55, zorder=5, label="Individual repeats (ok)")
 
-    # Annotate aborted fractions along x-axis reference
+    # Annotate any active aborted fractions along x-axis reference
     aborted_fracs = sorted({float(row["fraction"]) for row in summary if row.get("ok_count", 0) < row.get("total_count", 0)})
     for af in aborted_fracs:
         ax.axvline(af, color="#ef4444", linestyle=":", alpha=0.65, linewidth=1.4)
@@ -412,7 +416,9 @@ def plot_scaling_data_size(scaling_json_path: Path, output_path: Path) -> bool:
 
     note_parts = ["Single machine (15.37 GiB RAM), uniform sampling changes graph density, 2 repeats."]
     if non_ok_notes:
-        note_parts.append("Non-ok runs (vertical dotted lines): " + "; ".join(non_ok_notes))
+        note_parts.append("Active non-ok runs: " + "; ".join(non_ok_notes))
+    if superseded_notes:
+        note_parts.append("Superseded prior attempts (<0.5 GiB/60s guard, retained in log): " + "; ".join(superseded_notes))
     ax.text(
         0.5, -0.22,
         "\n".join(note_parts),

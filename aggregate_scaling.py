@@ -53,14 +53,26 @@ def _mean_or_none(vals: List[float]) -> float | None:
 
 
 def aggregate_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Build structured scaling summary preserving every individual run and non-ok status."""
+    """Build structured scaling summary preserving every individual run, non-ok status, and superseded record."""
     data_groups: Dict[float, List[Dict[str, Any]]] = defaultdict(list)
+    data_superseded: Dict[float, List[Dict[str, Any]]] = defaultdict(list)
     core_groups: Dict[int, List[Dict[str, Any]]] = defaultdict(list)
     non_ok_runs: List[Dict[str, Any]] = []
+    superseded_runs: List[Dict[str, Any]] = []
     total_wall = 0.0
+    active_wall = 0.0
 
     for rec in records:
-        total_wall += float(rec.get("wall_seconds") or (rec.get("seconds") or {}).get("total") or 0.0)
+        w = float(rec.get("wall_seconds") or (rec.get("seconds") or {}).get("total") or 0.0)
+        total_wall += w
+        is_sup = bool(rec.get("superseded", False))
+        if is_sup:
+            superseded_runs.append(rec)
+            if rec.get("suite") == "data_scaling":
+                data_superseded[round(float(rec["fraction"]), 4)].append(rec)
+            continue
+
+        active_wall += w
         if rec.get("status") != "ok":
             non_ok_runs.append(rec)
         suite = rec.get("suite")
@@ -70,8 +82,9 @@ def aggregate_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
             core_groups[int(rec["cores"])].append(rec)
 
     data_size_summary: List[Dict[str, Any]] = []
-    for frac in sorted(data_groups.keys()):
-        grp = sorted(data_groups[frac], key=lambda r: int(r.get("repeat", 0)))
+    for frac in sorted(set(data_groups.keys()) | set(data_superseded.keys())):
+        grp = sorted(data_groups.get(frac, []), key=lambda r: int(r.get("repeat", 0)))
+        sup_grp = sorted(data_superseded.get(frac, []), key=lambda r: int(r.get("repeat", 0)))
         ok_grp = [r for r in grp if r.get("status") == "ok"]
         totals = [float(r["seconds"]["total"]) for r in ok_grp if isinstance(r.get("seconds"), dict) and "total" in r["seconds"]]
         stage_means: Dict[str, float | None] = {}
@@ -92,6 +105,8 @@ def aggregate_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
                 "ok_count": len(ok_grp),
                 "total_count": len(grp),
                 "statuses": [r.get("status") for r in grp],
+                "superseded_count": len(sup_grp),
+                "superseded_statuses": [r.get("status") for r in sup_grp],
                 "mean_rows": round(statistics.mean([int(r["rows"]) for r in ok_grp]), 1) if ok_grp else None,
                 "mean_nodes": round(statistics.mean([int(r["nodes"]) for r in ok_grp]), 1) if ok_grp else None,
                 "mean_edges": round(statistics.mean([int(r["edges"]) for r in ok_grp]), 1) if ok_grp else None,
@@ -158,18 +173,25 @@ def aggregate_records(records: List[Dict[str, Any]]) -> Dict[str, Any]:
             }
         )
 
+    active_runs_count = len(records) - len(superseded_runs)
+    ok_runs_count = active_runs_count - len(non_ok_runs)
+
     return {
         "benchmark": "spark_scaling",
         "generated_at": datetime.datetime.now().isoformat(),
         "total_runs_recorded": len(records),
-        "ok_runs_count": len(records) - len(non_ok_runs),
+        "active_runs_count": active_runs_count,
+        "superseded_runs_count": len(superseded_runs),
+        "ok_runs_count": ok_runs_count,
         "non_ok_runs_count": len(non_ok_runs),
         "total_benchmark_wall_seconds": round(total_wall, 4),
+        "active_benchmark_wall_seconds": round(active_wall, 4),
         "core_scaling_fraction": core_scaling_summary[0]["fraction"] if core_scaling_summary else 0.10,
         "core_scaling_baseline_local1_seconds": round(base_1_mean, 4) if base_1_mean else None,
         "data_size_summary": data_size_summary,
         "core_scaling_summary": core_scaling_summary,
         "non_ok_runs": non_ok_runs,
+        "superseded_runs": superseded_runs,
         "runs": records,
         "caveats": DEFAULT_CAVEATS,
     }
@@ -183,6 +205,7 @@ def _write_csv(records: List[Dict[str, Any]], csv_path: Path) -> None:
         "cores",
         "repeat",
         "status",
+        "superseded",
         "rows",
         "nodes",
         "edges",
@@ -216,6 +239,7 @@ def _write_csv(records: List[Dict[str, Any]], csv_path: Path) -> None:
                     "cores": rec.get("cores"),
                     "repeat": rec.get("repeat"),
                     "status": rec.get("status"),
+                    "superseded": bool(rec.get("superseded", False)),
                     "rows": rec.get("rows"),
                     "nodes": rec.get("nodes"),
                     "edges": rec.get("edges"),
@@ -312,14 +336,21 @@ def aggregate_run_dir(
         make_readonly(run_dir)
 
     if copy_to_outputs:
+        import stat
+        def _copy_to(src: Path, dst: Path) -> None:
+            if dst.exists():
+                dst.chmod(stat.S_IWRITE | stat.S_IREAD)
+            shutil.copyfile(src, dst)
+            dst.chmod(stat.S_IWRITE | stat.S_IREAD)
+
         outputs_dir = Path("outputs")
         outputs_dir.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(out_json, outputs_dir / "scaling_runs.json")
-        shutil.copy2(out_csv, outputs_dir / "scaling_runs.csv")
+        _copy_to(out_json, outputs_dir / "scaling_runs.json")
+        _copy_to(out_csv, outputs_dir / "scaling_runs.csv")
         snap_dir = Path("results_snapshot")
         if snap_dir.exists():
-            shutil.copy2(out_json, snap_dir / "scaling_runs.json")
-            shutil.copy2(out_csv, snap_dir / "scaling_runs.csv")
+            _copy_to(out_json, snap_dir / "scaling_runs.json")
+            _copy_to(out_csv, snap_dir / "scaling_runs.csv")
 
     return summary
 
