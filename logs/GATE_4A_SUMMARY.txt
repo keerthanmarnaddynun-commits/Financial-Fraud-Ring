@@ -1,0 +1,78 @@
+# GATE 4A SUMMARY (Chunk 4 Battery Scope - Pre-Final Tests)
+
+Generated programmatically by `scripts/generate_gate4a_summary.py` from `PROGRESS.txt`, `git log`, `results_snapshot/SHA256SUMS.txt`, and `logs/raw/20261118_4.7_check_docs.txt`.
+
+## 1. Chunk 4 Steps Status (from `PROGRESS.txt`)
+- STEP 4.1 | DONE | S4.1 | Report generator (make_report.py), docs/RESULTS_TABLES.md, docs/FACTS_FOR_PAPER.md, results_snapshot
+- STEP 4.2 | DONE | S4.2 | README.md generated from docs/templates/README.md.tmpl via make_report.py
+- STEP 4.3 | SKIPPED(by user, later) | - | Paper rewrite from template and claims trace
+- STEP 4.4 | SKIPPED(by user, later) | - | Architecture diagram
+- STEP 4.5 | SKIPPED(by user, later) | - | Demo script and viva questions
+- STEP 4.6 | DONE | S4.6 | Archived legacy web dashboard (web/, web_app.py) to archive/web_legacy/
+- STEP 4.7 | DONE | S4.7 | Strict read-only check_docs.py passed (0 mismatches, 0 banned words, 0 broken links)
+- STEP 4.8 | PENDING | - | Final summary and last push (waits for plugged-in at home)
+- GATE 4 | PENDING | - | Final gate (Gate 4a after 4.7; Gate 4 after 4.8)
+
+### Chunk 4 Commits (from `git log`)
+- `0c11435 S4.7: strict read-only document check`
+- `e786590 S4.6: archive legacy web dashboard`
+- `431baf9 S4.2: README from template`
+- `96eea2e S4.1: report generator, facts for paper, and results snapshot`
+
+## 2. Generated Documentation and Snapshot Artifacts
+`results_snapshot/SHA256SUMS.txt` covers `25` snapshot files.
+
+| Artifact | Size (Bytes) | SHA-256 (prefix) |
+| --- | --- | --- |
+| README.md | 21,999 | 943f25d1046ddcb7... |
+| docs/RESULTS_TABLES.md | 24,847 | 2727bd584184c3b0... |
+| docs/FACTS_FOR_PAPER.md | 34,736 | a20f234a738a939a... |
+| docs/templates/README.md.tmpl | 13,733 | 0729d9e7e36024cc... |
+| results_snapshot/SHA256SUMS.txt | 2,261 | cb7a45ecdfc074a6... |
+
+## 3. Archived Legacy Web Dashboard (Disk Copy Under Gitignored `archive/`)
+Untracked from git via `git rm --cached -r web web_app.py`; files preserved on disk:
+- `archive/web_legacy/web/app.js`
+- `archive/web_legacy/web/index.html`
+- `archive/web_legacy/web/styles.css`
+- `archive/web_legacy/web_app.py`
+
+## 4. Read-Only Consistency Check (`python check_docs.py`)
+Raw output (`logs/raw/20261118_4.7_check_docs.txt`):
+```text
+=== CHECK_DOCS (READ-ONLY CONSISTENCY CHECK) ===
+
+[A] Byte-for-byte template regeneration (3 files):
+    - README.md
+    - docs/FACTS_FOR_PAPER.md
+    - docs/RESULTS_TABLES.md
+    STATUS: PASS (0 byte differences)
+
+[B] Banned vocabulary scan (32 targets):
+    STATUS: PASS (0 banned-word hits)
+
+[C] Relative Markdown link check (4 files):
+    STATUS: PASS (0 broken relative links)
+
+[D] COVERAGE
+  Checked:
+    1. Byte-for-byte identity between make_report.py temp regeneration and workspace files: README.md, docs/FACTS_FOR_PAPER.md, docs/RESULTS_TABLES.md
+    2. Banned words (optimal, sweet spot, robust, decisively, catastrophic, proves, guarantees, perfect, state-of-the-art, outperforms, verified, confirmed, audited) in README.md, docs/*.(md|txt|tmpl), app.py string literals, and Python comments across active project modules.
+    3. Local existence of all relative Markdown links in README.md and docs/**/*.md.
+  NOT Checked:
+    1. Does NOT re-run Spark pipelines, benchmarks, or pytest tests to recompute JSON values in outputs/.
+    2. Does NOT inspect deferred/unwritten docs (docs/paper_final.md, docs/ARCHITECTURE.md, docs/DEMO_SCRIPT.txt, docs/VIVA_QA.txt) or legacy research_paper_draft.md.
+    3. Does NOT inspect check_docs.py itself, tests/, scratch/, archive/, runs/, logs/, old_app_reference.py, or app_mine.py.
+    4. Does NOT check external HTTP/HTTPS URLs or PNG chart pixel contents.
+    5. Does NOT flag standard technical terms 'validation'/'validate' in code identifiers or filenames.
+
+OVERALL: PASS (total_issues=0)
+```
+
+## 5. Battery Constraints & Deferred Items
+- Executed on battery: zero Spark runs and zero full pytest runs executed during Chunk 4a.
+- `STEP 4.3` (paper), `STEP 4.4` (architecture diagram), and `STEP 4.5` (demo script and viva Q&A) logged as `SKIPPED(by user, later)`.
+- `STEP 4.8` (final full pytest suite and `logs/AG_FINAL_SUMMARY.txt`) remains `PENDING` until plugged in at home.
+
+---
+READY FOR FINAL TESTS AT HOME

@@ -25,6 +25,9 @@ Created strict read-only check_docs.py checking byte-for-byte temp regeneration 
 Ran `python -u check_docs.py`: exit code 0 (0 byte differences, 0 banned-word hits, 0 broken relative links).
 RAW: logs/raw/20261118_4.7_check_docs.txt
 
+[2026-11-18 14:18] GATE 4A | ACTION
+Generated logs/GATE_4A_SUMMARY.txt programmatically via `python scripts/generate_gate4a_summary.py`. Stopping before STEP 4.8 and posting READY FOR FINAL TESTS AT HOME.
+
 ================================================================================
 DECISIONS
 ================================================================================
