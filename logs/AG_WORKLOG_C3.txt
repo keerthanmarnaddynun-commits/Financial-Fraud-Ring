@@ -129,6 +129,11 @@ Updated app.py Scaling tab to display all four benchmark sections with stated ca
 Copied PNG charts into results_snapshot/visuals/ and regenerated results_snapshot/SHA256SUMS.txt.
 Ran `python -m pytest tests/test_app_smoke.py -v`: 5 passed in 11.08s.
 
+[2026-11-18 08:59] STEP 3.7 | ACTION
+Created demo_run.py running the 2% sample graph pipeline with Spark UI enabled, printing "Spark UI: http://localhost:4040", saving summary to outputs_test/demo_run/demo_run_summary.json, and waiting for Enter unless --no-wait is passed.
+Tested non-interactively via `python -u demo_run.py --no-wait` (exited code 0).
+RAW: logs/raw/20261118_3.7_demo_run_nowait.txt
+
 ================================================================================
 DECISIONS
 ================================================================================
