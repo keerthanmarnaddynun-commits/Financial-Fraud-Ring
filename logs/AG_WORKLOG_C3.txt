@@ -49,6 +49,59 @@ RAW: logs/raw/20261118_3.2_graph_stages_check.txt
 [2026-11-18 00:48] STEP 3.2 | RESULT
 Sample check exited with code 0; all stage timings, graph counts, shuffle bytes, peak RSS, and min_available_ram_bytes were populated cleanly.
 
+[2026-11-18 00:53] STEP 3.3 | ACTION
+Created benchmark_scaling.py and aggregate_scaling.py.
+Ran tiny smoke test (`fraction=0.01`, `local[4]`, 1 repeat) in runs/20261118_c3-scaling-smoke; exited 0, resumability and aggregation checks passed.
+RAW: logs/raw/20261118_3.3_smoke.txt
+
+[2026-11-18 00:59] STEP 3.3 | ACTION
+Launched full 18-unit scaling benchmark orchestrator in background (task-3237) into runs/20261118-0057_c3-scaling:
+- Data-size scaling: fractions 0.10, 0.25, 0.50, 1.00 (local[*], 2 repeats)
+- Core scaling: fraction 0.10, local[1,2,4,8,16] (2 repeats)
+- Default Spark settings (6g, 48 partitions), per-run timeout 75 min, memory guard < 0.5 GiB for 60s continuous.
+RAW: logs/raw/20261118_3.3_scaling.txt, runs/20261118-0057_c3-scaling/orchestrator.log
+
+[2026-11-18 01:26] STEP 3.3 | POLL
+2/18 units recorded (both status=ok); unit 3/18 (core_scaling f=0.10 local[1] r=1) in progress; available RAM healthy.
+
+[2026-11-18 01:51] STEP 3.3 | POLL
+4/18 units recorded (all status=ok); unit 5/18 (core_scaling f=0.10 local[2] r=1) in progress.
+
+[2026-11-18 02:17] STEP 3.3 | POLL
+6/18 units recorded (all status=ok); unit 7/18 (core_scaling f=0.10 local[4] r=1) in progress.
+
+[2026-11-18 02:43] STEP 3.3 | POLL
+8/18 units recorded (all status=ok); unit 9/18 (core_scaling f=0.10 local[8] r=1) in progress.
+
+[2026-11-18 03:09] STEP 3.3 | POLL
+10/18 units recorded (all status=ok); unit 11/18 (core_scaling f=0.10 local[16] r=1) in progress.
+
+[2026-11-18 03:35] STEP 3.3 | POLL
+13/18 units recorded (12 ok including all 10 core_scaling units; unit 13 data_scaling f=0.25 r1 recorded status=aborted_low_memory after 60.4s below 0.5 GiB); unit 14/18 (data_scaling f=0.25 r2) in progress.
+
+[2026-11-18 04:01] STEP 3.3 | POLL
+14/18 units recorded (unit 14 data_scaling f=0.25 r2 recorded status=aborted_low_memory after 60.6s below 0.5 GiB); unit 15/18 (data_scaling f=0.50 r1) in progress near memory guard threshold.
+
+[2026-11-18 04:27] STEP 3.3 | POLL
+15/18 units recorded (unit 15 data_scaling f=0.50 r1 recorded status=aborted_low_memory after 60.1s below 0.5 GiB); unit 16/18 (data_scaling f=0.50 r2) in progress.
+
+[2026-11-18 04:54] STEP 3.3 | POLL
+16/18 units recorded (unit 16 data_scaling f=0.50 r2 finished status=ok); unit 17/18 (data_scaling f=1.00 r1) in progress.
+
+[2026-11-18 05:22] STEP 3.3 | POLL
+17/18 units recorded (unit 17 data_scaling f=1.00 r1 finished status=ok); final unit 18/18 (data_scaling f=1.00 r2) in progress.
+
+[2026-11-18 05:49] STEP 3.3 | POLL
+17/18 units recorded; final unit 18/18 (data_scaling f=1.00 r2) still running cleanly (~34 min elapsed).
+
+[2026-11-18 06:02] STEP 3.3 | RESULT
+All 18/18 units completed or recorded in runs/20261118-0057_c3-scaling/scaling_runs.jsonl:
+- 15 status=ok (all 10 core_scaling units at f=0.10, data_scaling f=0.10 r1/r2, f=0.50 r2, f=1.00 r1/r2)
+- 3 status=aborted_low_memory (data_scaling f=0.25 r1/r2, f=0.50 r1) — recorded, not dropped.
+Aggregated via `python aggregate_scaling.py --run-dir runs/20261118-0057_c3-scaling --finalize` writing scaling_runs.json, scaling_runs.csv, CARD.md, SHA256SUMS.txt (marked read-only) and copying JSON/CSV to outputs/ and results_snapshot/.
+Ran `python -m pytest tests/test_app_smoke.py -v`: 5 passed in 11.88s (Scaling tab renders scaling_runs.json without error).
+RAW: runs/20261118-0057_c3-scaling/orchestrator.log, outputs/scaling_runs.json
+
 ================================================================================
 DECISIONS
 ================================================================================
@@ -63,6 +116,7 @@ FAILURES
 SURPRISES
 ================================================================================
 - Untracked file `to_run.txt` present in workspace root (left untouched).
+- In STEP 3.3, `data_scaling f=0.25` (both repeats) and `f=0.50` (r1) tripped the sustained `<0.5 GiB for 60s` memory guard (`status=aborted_low_memory`), whereas `f=0.50` (r2) and both `f=1.00` repeats completed with `status=ok` (see `outputs/scaling_runs.json` `non_ok_runs` and `data_size_summary`). All non-ok records are retained honestly without re-running or dropping.
 
 ================================================================================
 OPEN QUESTIONS
