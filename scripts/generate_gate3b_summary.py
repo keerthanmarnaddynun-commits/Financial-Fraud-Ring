@@ -348,6 +348,14 @@ def main() -> None:
         ],
     )
 
+    # Read exact numbers for section 10 from JSON rather than hardcoding
+    ds_025_active = [r for r in scaling.get("runs", []) if r.get("suite") == "data_scaling" and round(float(r.get("fraction", 0)), 2) == 0.25 and not r.get("superseded")]
+    ds_025_active.sort(key=lambda r: int(r.get("repeat", 0)))
+    r025_1 = ds_025_active[0] if len(ds_025_active) > 0 else {}
+    r025_2 = ds_025_active[1] if len(ds_025_active) > 1 else {}
+    pvs_full_deg = next((r for r in pvs.get("summary", []) if r.get("rows") == 6362620 and r.get("task") == "degree"), {})
+    pvs_full_cmp = next((r for r in pvs.get("summary", []) if r.get("rows") == 6362620 and r.get("task") == "components"), {})
+
     steps_block = "\n".join(f"- {line}" for line in progress_lines)
     commits_block = "\n".join(f"- `{line}`" for line in commits)
 
@@ -402,8 +410,8 @@ Settings: uniform Parquet samples (`100,000` to `4,000,000` rows, seed=42) plus 
 
 ## 10. Failures, Retries, and Surprises
 - During `aggregate_scaling.py --finalize` for `c3-scaling-v2`, copying over `outputs/scaling_runs.json` hit `PermissionError: [Errno 13] Permission denied` because the earlier `shutil.copy2` had propagated the read-only attribute from `runs/`. Fixed both `aggregate_scaling.py` and `pandas_vs_spark.py` to keep `runs/` read-only while writing writable copies to `outputs/` and `results_snapshot/`.
-- At `fraction=0.25`, repeat 1 dipped to `76.7 MiB` available RAM and took `1157.96s` wall (`1141.73s` graph total), whereas repeat 2 stayed at `299.9 MiB` minimum available RAM and finished in `739.96s` wall (`723.70s` graph total), directly showing memory-pressure sensitivity on a shared 15.37 GiB laptop.
-- On the full `6,362,620`-row dataset (`9,073,900` nodes, `6,362,620` edges) read directly from Parquet, single-process `pandas`/`NetworkX` completed both `degree` (`mean compute 35.332s`, `peak RSS 2.56 GiB`) and `components` (`mean compute 49.936s`, `peak RSS 5.41 GiB`) within the 9 GiB RSS cap and 600s timeout — a direct single-machine empirical contrast against Spark's iterative DataFrame shuffle overhead on this dataset size.
+- At `fraction=0.25`, repeat 1 dipped to `{fmt_bytes(r025_1.get("min_available_ram_bytes"))}` available RAM and took `{fmt_num(r025_1.get("wall_seconds"), 2)}s` wall (`{fmt_num((r025_1.get("seconds") or {}).get("total"), 2)}s` graph total), whereas repeat 2 stayed at `{fmt_bytes(r025_2.get("min_available_ram_bytes"))}` minimum available RAM and finished in `{fmt_num(r025_2.get("wall_seconds"), 2)}s` wall (`{fmt_num((r025_2.get("seconds") or {}).get("total"), 2)}s` graph total), directly showing memory-pressure sensitivity on a shared 15.37 GiB laptop.
+- On the full `{fmt_int(pvs_full_deg.get("rows"))}`-row dataset (`{fmt_int(pvs_full_deg.get("nodes"))}` nodes, `{fmt_int(pvs_full_deg.get("edges"))}` edges) read directly from Parquet, single-process `pandas`/`NetworkX` completed both `degree` (mean compute `{fmt_num(pvs_full_deg.get("mean_compute_seconds"), 3)}s`, peak RSS `{fmt_bytes(pvs_full_deg.get("mean_peak_rss_bytes"))}`) and `components` (mean compute `{fmt_num(pvs_full_cmp.get("mean_compute_seconds"), 3)}s`, peak RSS `{fmt_bytes(pvs_full_cmp.get("mean_peak_rss_bytes"))}`) within the 9 GiB RSS cap and 600s timeout — a direct single-machine empirical contrast against Spark's iterative DataFrame shuffle overhead on this dataset size.
 
 ## 11. How the User Can Inspect the Results (Exact PowerShell Commands)
 ```powershell
