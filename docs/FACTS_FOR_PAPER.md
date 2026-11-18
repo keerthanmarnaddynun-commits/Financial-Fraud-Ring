@@ -46,7 +46,7 @@ Dataset SHA256: 16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b
 ### 2a. Time Split (Primary) — `outputs/evaluation.json: splits.time.*`
 | Model | Threshold | Threshold Source | Precision | Recall | F1 | PR-AUC (AP) | ROC-AUC | False Alarms / 10k | TP | FP | FN | TN |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_rule | 0.500000 | validation | 1.0000 | 0.0044 | 0.0087 | 0.0150 | 0.502182 | 0.00 | 9 | 0 | 2,053 | 191,877 |
+| m0_rule | 0.500000 | rule_definition | 1.0000 | 0.0044 | 0.0087 | 0.0150 | 0.502182 | 0.00 | 9 | 0 | 2,053 | 191,877 |
 | m1_tabular | 0.998236 | validation | 0.9971 | 0.9981 | 0.9976 | 0.9997 | 0.999997 | 0.31 | 2,058 | 6 | 4 | 191,871 |
 | m1_tabular_noerr | 0.984859 | validation | 0.9331 | 0.9001 | 0.9163 | 0.9835 | 0.999812 | 6.86 | 1,856 | 133 | 206 | 191,744 |
 | m2_graph | 0.996715 | validation | 0.9971 | 0.9976 | 0.9973 | 0.9995 | 0.999995 | 0.31 | 2,057 | 6 | 5 | 191,871 |
@@ -55,7 +55,7 @@ Dataset SHA256: 16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b
 ### 2b. Destination-Group Split (`nameDest`, Secondary) — `outputs/evaluation.json: splits.group_dest.*`
 | Model | Threshold | Threshold Source | Precision | Recall | F1 | PR-AUC (AP) | ROC-AUC | False Alarms / 10k | TP | FP | FN | TN |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_rule | 0.500000 | validation | 1.0000 | 0.0010 | 0.0019 | 0.0023 | 0.500481 | 0.00 | 2 | 0 | 2,076 | 1,598,114 |
+| m0_rule | 0.500000 | rule_definition | 1.0000 | 0.0010 | 0.0019 | 0.0023 | 0.500481 | 0.00 | 2 | 0 | 2,076 | 1,598,114 |
 | m1_tabular | 0.996006 | validation | 0.9741 | 0.9947 | 0.9843 | 0.9945 | 0.999269 | 0.34 | 2,067 | 55 | 11 | 1,598,059 |
 | m1_tabular_noerr | 0.997866 | validation | 0.9244 | 0.7478 | 0.8268 | 0.9068 | 0.998554 | 0.79 | 1,554 | 127 | 524 | 1,597,987 |
 | m2_graph | 0.985269 | validation | 0.9718 | 0.9952 | 0.9834 | 0.9940 | 0.999433 | 0.37 | 2,068 | 60 | 10 | 1,598,054 |
@@ -64,7 +64,7 @@ Dataset SHA256: 16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b
 ### 2c. Random Split (Reference) — `outputs/evaluation.json: splits.random.*`
 | Model | Threshold | Threshold Source | Precision | Recall | F1 | PR-AUC (AP) | ROC-AUC | False Alarms / 10k | TP | FP | FN | TN |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_rule | 0.500000 | validation | 1.0000 | 0.0014 | 0.0029 | 0.0027 | 0.500714 | 0.00 | 3 | 0 | 2,098 | 1,586,968 |
+| m0_rule | 0.500000 | rule_definition | 1.0000 | 0.0014 | 0.0029 | 0.0027 | 0.500714 | 0.00 | 3 | 0 | 2,098 | 1,586,968 |
 | m1_tabular | 0.996603 | validation | 0.9817 | 0.9957 | 0.9887 | 0.9954 | 0.999397 | 0.25 | 2,092 | 39 | 9 | 1,586,929 |
 | m1_tabular_noerr | 0.997947 | validation | 0.9013 | 0.7692 | 0.8300 | 0.9062 | 0.999090 | 1.11 | 1,616 | 177 | 485 | 1,586,791 |
 | m2_graph | 0.997427 | validation | 0.9817 | 0.9952 | 0.9884 | 0.9953 | 0.999571 | 0.25 | 2,091 | 39 | 10 | 1,586,929 |
@@ -268,6 +268,10 @@ Exact finding text (`outputs/ring_analysis.json: finding`):
 | degree | spark | 4,000,000 | ok, ok | 11.946 | 23.252 | 22.480, 24.024 | 4.12 GiB | 3.06 GiB |
 | degree | pandas_networkx | 6,362,620 | ok, ok | 0.585 | 35.331 | 35.877, 34.786 | 2.56 GiB | 5.59 GiB |
 
+**Reading guide (`outputs/pandas_vs_spark.json: summary`):**
+- **Connected components**: `pandas_networkx` finishes faster than Spark at every size where both ran (`100,000` to `1,000,000` rows; at `1,000,000` rows, compute mean is `8.30 s` vs `294.05 s`), and Spark recorded `timeout` at `2,000,000` rows (`600 s` limit). `pandas_networkx` completed `6,362,620` rows (`49.94 s` compute mean, `5.41 GiB` peak RSS).
+- **Degree counts**: At `4,000,000` rows, compute means are `23.25 s` (Spark) and `23.33 s` (`pandas_networkx`), with Spark load time listed separately (`11.95 s` vs `0.17 s`). Spark was not run at `6,362,620` rows in this comparison (`pandas_networkx` compute mean `35.33 s`). Consequently, `pandas_networkx` is not faster than Spark for degree compute at every size.
+
 ### 7b. Non-OK Runs (`outputs/pandas_vs_spark.json: non_ok_runs`)
 | Tool | Task | Rows | Repeat | Status | Wall (s) | Peak RSS | Min Avail RAM | Reason |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -277,11 +281,19 @@ Exact finding text (`outputs/ring_analysis.json: finding`):
 - Repeats per query: `3` (`outputs/storage_benchmark.json: repeats`)
 - Minimum available RAM recorded: `4.93 GiB` (`outputs/storage_benchmark.json: min_available_ram_bytes`)
 
-| Format | Size (MiB) | Compression vs CSV | Count Rows Mean s (3 repeats) | Read 2 Cols Mean s (3 repeats) | Filter TRANSFER+Fraud Mean s (3 repeats) | Speedup vs CSV (Count / 2-Col / Filter) |
-| --- | --- | --- | --- | --- | --- | --- |
-| csv | 470.67 | 1.000x | 4.9775 (12.20, 1.49, 1.24) | 4.4425 (7.37, 3.06, 2.90) | 3.0483 (3.94, 2.64, 2.57) | 1.00x |
-| parquet_partitioned | 249.64 | 1.885x | 1.8054 (2.73, 1.54, 1.15) | 1.8561 (2.77, 1.63, 1.17) | 1.2015 (1.68, 1.14, 0.78) | 2.76x / 2.39x / 2.54x |
-| parquet_unpartitioned | 273.11 | 1.723x | 0.7076 (0.69, 0.75, 0.68) | 0.7764 (0.74, 0.86, 0.73) | 1.0209 (1.44, 0.83, 0.79) | 7.03x / 5.72x / 2.99x |
+| Format | Size (MiB) | Compression vs CSV | Operation | All-3 Mean (s) | Repeats 1-3 (s) | Warm Mean (Repeats 2-3) (s) | All-3 Speedup vs CSV | Warm Speedup vs CSV |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| csv | 470.67 | 1.000x | count_rows | 4.9775 | 12.20, 1.49, 1.24 | 1.3647 | 1.00x | 1.00x |
+| csv | 470.67 | 1.000x | read_two_columns | 4.4425 | 7.37, 3.06, 2.90 | 2.9797 | 1.00x | 1.00x |
+| csv | 470.67 | 1.000x | filter_transfer_fraud | 3.0483 | 3.94, 2.64, 2.57 | 2.6042 | 1.00x | 1.00x |
+| parquet_partitioned | 249.64 | 1.885x | count_rows | 1.8054 | 2.73, 1.54, 1.15 | 1.3431 | 2.76x | 1.02x |
+| parquet_partitioned | 249.64 | 1.885x | read_two_columns | 1.8561 | 2.77, 1.63, 1.17 | 1.4015 | 2.39x | 2.13x |
+| parquet_partitioned | 249.64 | 1.885x | filter_transfer_fraud | 1.2015 | 1.68, 1.14, 0.78 | 0.9620 | 2.54x | 2.71x |
+| parquet_unpartitioned | 273.11 | 1.723x | count_rows | 0.7076 | 0.69, 0.75, 0.68 | 0.7140 | 7.03x | 1.91x |
+| parquet_unpartitioned | 273.11 | 1.723x | read_two_columns | 0.7764 | 0.74, 0.86, 0.73 | 0.7932 | 5.72x | 3.76x |
+| parquet_unpartitioned | 273.11 | 1.723x | filter_transfer_fraud | 1.0209 | 1.44, 0.83, 0.79 | 0.8109 | 2.99x | 3.21x |
+
+*Cold-cache note (`outputs/storage_benchmark.json`): the first CSV repeat is a cold-cache read (`count_rows` repeat 1 = `12.20 s` vs repeats 2-3 = `1.49 s`, `1.24 s`; `read_two_columns` repeat 1 = `7.37 s` vs `3.06 s`, `2.90 s`), which inflates the all-3 CSV means and all-3 speedups; warm means (repeats 2-3) and warm speedups are therefore shown beside them.*
 
 ## 9. Spark Engines, Full-Run Telemetry, Machine and Software Versions
 ### 9a. Graph Algorithm Engines (`outputs/scalability.json: engines, algorithm_info`)
@@ -346,12 +358,14 @@ Exact finding text (`outputs/ring_analysis.json: finding`):
 - **peak_rss**: Largest sum of resident memory over the Python process and its child processes (including Spark JVM worker/executor processes), sampled once per second.
 
 ## 11. Limitations (Must Accompany All Claims)
-1. **Single machine**: All Spark runs and benchmarks execute in `local[*]` or `local[n]` mode on one Windows 11 laptop (`15.37 GiB` RAM, local NTFS disk); measurements do not represent multi-node network shuffle, HDFS/S3 I/O, or YARN/Kubernetes cluster scheduling.
-2. **Shared RAM, memory pressure, and repeat spread**: The host OS shares `15.37 GiB` RAM with the Spark JVM (`6g` driver heap plus off-heap/shuffle buffers). `3` initial scaling runs hit the `< 0.5 GiB / 60s` memory guard and were re-run under `< 0.2 GiB / 120s` (original aborts retained as superseded); even among `ok` runs, memory pressure creates measurable repeat spread (at `fraction=0.25`, minimum available RAM dipped to `76.73 MiB`).
-3. **Hybrid CPU cores**: The Intel Core Ultra 7 155H mixes performance and efficiency cores (`16` physical / `22` logical), causing uneven thread scaling across `local[1..16]`.
-4. **Simulated data**: PaySim is a synthetic mobile-money simulator whose fraud mechanism concentrates on isolated 1-to-1 `TRANSFER` and `CASH_OUT` pairs (zero real rings of size >= 4) and exhibits strong balance-accounting signals (`errorBalanceOrig`, `errorBalanceDest`). Accordingly, `m1_tabular_noerr` is reported alongside `m1_tabular`, `m2_graph`, and `m3_community_mule`.
-5. **Transductive, label-free graph features**: Account-level graph features (degrees, PageRank, triangle count, connected components, LPA, flow ratios) are label-free but computed across the full transaction graph rather than strictly past-only per split.
-6. **Uniform transaction sampling in scaling benchmarks**: Sampling transactions uniformly (`seed=42`) changes graph edge density and component connectivity across fractions; node and edge counts are reported per run alongside runtime.
-7. **Two repeats in long benchmarks**: Scaling and pandas-vs-Spark benchmarks use 2 repeats per configuration (3 repeats for storage); individual repeat values are always reported beside means.
-8. **Planted-ring evaluation uses one `200,000`-row sample**: Synthetic ring recovery results (`outputs/planted_ring_validation.json`) come from injecting `60` rings into a single `200,000`-row PaySim sample rather than multiple independent background samples or the full `6,362,620`-row graph.
-9. **pandas/NetworkX comparison scope**: The single-node comparison covers only `degree` counts and `connected_components`; it does not benchmark PageRank, triangle counting, LPA, feature joins, or end-to-end model scoring in NetworkX.
+1. **Single machine**: All Spark runs and benchmarks execute in `local[*]` or `local[n]` mode on one laptop (`15.37 GiB` total RAM, `16` physical / `22` logical cores, local disk); measurements do not represent multi-node network shuffle, HDFS/S3 I/O, or YARN/Kubernetes cluster scheduling.
+2. **Shared RAM, memory guard, and repeat spread**: The host OS shares `15.37 GiB` RAM with the Spark JVM (`6g` driver heap plus shuffle/off-heap buffers). `3` initial scaling runs hit the `< 0.5 GiB / 60 s` memory guard and were retained as `superseded: true`; the relaxed memory guard aborts only when available RAM stays below `0.2 GiB` for `120 s` continuously, so shorter dips still occur in `ok` runs (the minimum observed in an `ok` run was `76.73 MiB` at `fraction=0.25`, `outputs/scaling_runs.json: data_size_summary.1.min_available_ram_bytes`), contributing to spread between repeats.
+3. **Hybrid CPU cores**: The machine's `16` physical / `22` logical cores (`outputs/run_info.json: cores`) mix performance and efficiency cores, producing uneven speedup across `local[1..16]`.
+4. **Single training run per model and split**: Each model is trained once per split with fixed `random_state=42` (`configs/model_config.json: xgboost.random_state`); no multi-seed confidence intervals are computed.
+5. **Training sampling**: Per `splits.py` (`draw_training_sample`), each split's training set keeps training-split fraud rows plus sampled non-fraud rows at a 10:1 negative-to-positive ratio capped at `max_training_rows=100,000` per split (`outputs/run_info.json: config.max_training_rows`), totaling `sampled_training_rows=147,532` rows across the three splits (`outputs/scalability.json: sampled_training_rows`), while validation threshold selection and test evaluation run on all validation and test rows at true prevalence.
+6. **Simulated data and balance-accounting signal**: PaySim is a synthetic mobile-money simulator whose ground-truth fraud consists almost entirely of isolated 1-to-1 `TRANSFER` and `CASH_OUT` pairs (zero real components of size >= 4) and carries strong balance-accounting signals (`errorBalanceOrig`, `errorBalanceDest`). `m1_tabular_noerr` is reported alongside `m1_tabular`, `m2_graph`, and `m3_community_mule`.
+7. **Transductive, label-free graph features**: Account-level graph features (degrees, PageRank, triangle count, connected components, LPA, flow ratios) are label-free but computed across the full transaction graph rather than strictly past-only per split.
+8. **Uniform transaction sampling in scaling benchmarks**: Sampling transactions uniformly (`seed=42`) changes graph edge density and component connectivity across fractions; node and edge counts are reported per run alongside runtime.
+9. **Two repeats in long benchmarks**: Scaling and pandas-vs-Spark benchmarks use 2 repeats per configuration (3 repeats for storage); individual repeat values are reported alongside means.
+10. **Planted-ring evaluation uses one `200,000`-row sample**: Synthetic ring recovery results (`outputs/planted_ring_validation.json`) come from injecting `60` rings into a single `200,000`-row PaySim sample rather than multiple independent samples or the full `6,362,620`-row graph.
+11. **pandas/NetworkX comparison scope**: The single-node comparison covers only `degree` counts and `connected_components`; it does not benchmark PageRank, triangle counting, LPA, feature joins, or end-to-end model scoring in NetworkX.

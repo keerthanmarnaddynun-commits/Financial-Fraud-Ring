@@ -43,7 +43,7 @@ Source: `outputs/evaluation.json` (`splits.time.*`).
 
 | Model | Threshold | Threshold Source | Precision | Recall | F1 | PR-AUC (AP) | ROC-AUC | False Alarms / 10k | TP | FP | FN | TN |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_rule | 0.500000 | validation | 1.0000 | 0.0044 | 0.0087 | 0.0150 | 0.502182 | 0.00 | 9 | 0 | 2,053 | 191,877 |
+| m0_rule | 0.500000 | rule_definition | 1.0000 | 0.0044 | 0.0087 | 0.0150 | 0.502182 | 0.00 | 9 | 0 | 2,053 | 191,877 |
 | m1_tabular | 0.998236 | validation | 0.9971 | 0.9981 | 0.9976 | 0.9997 | 0.999997 | 0.31 | 2,058 | 6 | 4 | 191,871 |
 | m1_tabular_noerr | 0.984859 | validation | 0.9331 | 0.9001 | 0.9163 | 0.9835 | 0.999812 | 6.86 | 1,856 | 133 | 206 | 191,744 |
 | m2_graph | 0.996715 | validation | 0.9971 | 0.9976 | 0.9973 | 0.9995 | 0.999995 | 0.31 | 2,057 | 6 | 5 | 191,871 |
@@ -54,7 +54,7 @@ Source: `outputs/evaluation.json` (`splits.group_dest.*`).
 
 | Model | Threshold | Threshold Source | Precision | Recall | F1 | PR-AUC (AP) | ROC-AUC | False Alarms / 10k | TP | FP | FN | TN |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_rule | 0.500000 | validation | 1.0000 | 0.0010 | 0.0019 | 0.0023 | 0.500481 | 0.00 | 2 | 0 | 2,076 | 1,598,114 |
+| m0_rule | 0.500000 | rule_definition | 1.0000 | 0.0010 | 0.0019 | 0.0023 | 0.500481 | 0.00 | 2 | 0 | 2,076 | 1,598,114 |
 | m1_tabular | 0.996006 | validation | 0.9741 | 0.9947 | 0.9843 | 0.9945 | 0.999269 | 0.34 | 2,067 | 55 | 11 | 1,598,059 |
 | m1_tabular_noerr | 0.997866 | validation | 0.9244 | 0.7478 | 0.8268 | 0.9068 | 0.998554 | 0.79 | 1,554 | 127 | 524 | 1,597,987 |
 | m2_graph | 0.985269 | validation | 0.9718 | 0.9952 | 0.9834 | 0.9940 | 0.999433 | 0.37 | 2,068 | 60 | 10 | 1,598,054 |
@@ -65,7 +65,7 @@ Source: `outputs/evaluation.json` (`splits.random.*`).
 
 | Model | Threshold | Threshold Source | Precision | Recall | F1 | PR-AUC (AP) | ROC-AUC | False Alarms / 10k | TP | FP | FN | TN |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| m0_rule | 0.500000 | validation | 1.0000 | 0.0014 | 0.0029 | 0.0027 | 0.500714 | 0.00 | 3 | 0 | 2,098 | 1,586,968 |
+| m0_rule | 0.500000 | rule_definition | 1.0000 | 0.0014 | 0.0029 | 0.0027 | 0.500714 | 0.00 | 3 | 0 | 2,098 | 1,586,968 |
 | m1_tabular | 0.996603 | validation | 0.9817 | 0.9957 | 0.9887 | 0.9954 | 0.999397 | 0.25 | 2,092 | 39 | 9 | 1,586,929 |
 | m1_tabular_noerr | 0.997947 | validation | 0.9013 | 0.7692 | 0.8300 | 0.9062 | 0.999090 | 1.11 | 1,616 | 177 | 485 | 1,586,791 |
 | m2_graph | 0.997427 | validation | 0.9817 | 0.9952 | 0.9884 | 0.9953 | 0.999571 | 0.25 | 2,091 | 39 | 10 | 1,586,929 |
@@ -220,14 +220,26 @@ Source: `outputs/pandas_vs_spark.json` (`summary`).
 | degree | spark | 4,000,000 | ok, ok | 11.946 | 23.252 | 22.480, 24.024 | 4.12 GiB | 3.06 GiB |
 | degree | pandas_networkx | 6,362,620 | ok, ok | 0.585 | 35.331 | 35.877, 34.786 | 2.56 GiB | 5.59 GiB |
 
+**Reading guide (`outputs/pandas_vs_spark.json: summary`):**
+- **Connected components**: `pandas_networkx` finishes faster than Spark at every size where both ran (`100,000` to `1,000,000` rows; at `1,000,000` rows, compute mean is `8.30 s` vs `294.05 s`), and Spark recorded `timeout` at `2,000,000` rows (`600 s` limit). `pandas_networkx` completed `6,362,620` rows (`49.94 s` compute mean, `5.41 GiB` peak RSS).
+- **Degree counts**: At `4,000,000` rows, compute means are `23.25 s` (Spark) and `23.33 s` (`pandas_networkx`), with Spark load time listed separately (`11.95 s` vs `0.17 s`). Spark was not run at `6,362,620` rows in this comparison (`pandas_networkx` compute mean `35.33 s`). Consequently, `pandas_networkx` is not faster than Spark for degree compute at every size.
+
 ## 14. Storage Benchmark: CSV vs Parquet
 Source: `outputs/storage_benchmark.json` (`formats`, `speedup_vs_csv`).
 
-| Format | Size (MiB) | Compression vs CSV | Count Rows Mean s (3 repeats) | Read 2 Cols Mean s (3 repeats) | Filter TRANSFER+Fraud Mean s (3 repeats) | Speedup vs CSV (Count / 2-Col / Filter) |
-| --- | --- | --- | --- | --- | --- | --- |
-| csv | 470.67 | 1.000x | 4.9775 (12.20, 1.49, 1.24) | 4.4425 (7.37, 3.06, 2.90) | 3.0483 (3.94, 2.64, 2.57) | 1.00x |
-| parquet_partitioned | 249.64 | 1.885x | 1.8054 (2.73, 1.54, 1.15) | 1.8561 (2.77, 1.63, 1.17) | 1.2015 (1.68, 1.14, 0.78) | 2.76x / 2.39x / 2.54x |
-| parquet_unpartitioned | 273.11 | 1.723x | 0.7076 (0.69, 0.75, 0.68) | 0.7764 (0.74, 0.86, 0.73) | 1.0209 (1.44, 0.83, 0.79) | 7.03x / 5.72x / 2.99x |
+| Format | Size (MiB) | Compression vs CSV | Operation | All-3 Mean (s) | Repeats 1-3 (s) | Warm Mean (Repeats 2-3) (s) | All-3 Speedup vs CSV | Warm Speedup vs CSV |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| csv | 470.67 | 1.000x | count_rows | 4.9775 | 12.20, 1.49, 1.24 | 1.3647 | 1.00x | 1.00x |
+| csv | 470.67 | 1.000x | read_two_columns | 4.4425 | 7.37, 3.06, 2.90 | 2.9797 | 1.00x | 1.00x |
+| csv | 470.67 | 1.000x | filter_transfer_fraud | 3.0483 | 3.94, 2.64, 2.57 | 2.6042 | 1.00x | 1.00x |
+| parquet_partitioned | 249.64 | 1.885x | count_rows | 1.8054 | 2.73, 1.54, 1.15 | 1.3431 | 2.76x | 1.02x |
+| parquet_partitioned | 249.64 | 1.885x | read_two_columns | 1.8561 | 2.77, 1.63, 1.17 | 1.4015 | 2.39x | 2.13x |
+| parquet_partitioned | 249.64 | 1.885x | filter_transfer_fraud | 1.2015 | 1.68, 1.14, 0.78 | 0.9620 | 2.54x | 2.71x |
+| parquet_unpartitioned | 273.11 | 1.723x | count_rows | 0.7076 | 0.69, 0.75, 0.68 | 0.7140 | 7.03x | 1.91x |
+| parquet_unpartitioned | 273.11 | 1.723x | read_two_columns | 0.7764 | 0.74, 0.86, 0.73 | 0.7932 | 5.72x | 3.76x |
+| parquet_unpartitioned | 273.11 | 1.723x | filter_transfer_fraud | 1.0209 | 1.44, 0.83, 0.79 | 0.8109 | 2.99x | 3.21x |
+
+*Cold-cache note (`outputs/storage_benchmark.json`): the first CSV repeat is a cold-cache read (`count_rows` repeat 1 = `12.20 s` vs repeats 2-3 = `1.49 s`, `1.24 s`; `read_two_columns` repeat 1 = `7.37 s` vs `3.06 s`, `2.90 s`), which inflates the all-3 CSV means and all-3 speedups; warm means (repeats 2-3) and warm speedups are therefore shown beside them.*
 
 ## 15. Spark Graph Engines and Full-Run Pipeline Telemetry
 Source: `outputs/scalability.json`.

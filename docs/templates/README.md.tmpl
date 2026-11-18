@@ -11,7 +11,7 @@ All metrics, tables, and environment details in this README are generated progra
 Rule-based fraud filters (`isFlaggedFraud` on `TRANSFER` transactions above 200,000 units) evaluate transactions in isolation and miss the majority of fraudulent value (`{{num:outputs/business_impact.json:rule_baseline.alerts:int}}` alerts catching `{{num:outputs/business_impact.json:rule_baseline.share_fraud_value_caught:pct2}}` of fraud value on the primary time-split test set). This project evaluates:
 
 1. **Spark-native distributed graph feature engineering**: in/out degrees, iterative PageRank, undirected triangle counts, iterative connected components, iterative label propagation (LPA), and account-level flow features computed natively on Spark DataFrames (see [docs/engine_findings.txt](docs/engine_findings.txt)).
-2. **Leakage-free model comparison (`M0`–`M3`)**: per-split XGBoost training on each split's own training rows (`time`, `group_dest`, `random`), with score cutoffs chosen strictly on validation rows (maximising F1 at true prevalence) and scored distributively across all test rows via Spark `mapInPandas`.
+2. **Per-split model comparison (`M0`–`M3`)**: models are trained per split (`time`, `group_dest`, `random`) on each split's own training rows, score thresholds are chosen on validation rows only (maximising F1 at true prevalence), test rows are scored distributively via Spark `mapInPandas`, and graph features are label-free but transductive (computed over the full graph).
 3. **Real-data vs synthetic ring structure**: empirical connected-component analysis on PaySim's ground-truth fraud subgraph paired with a controlled synthetic ring injection test (`outputs/planted_ring_validation.json`) across `0%`, `20%`, and `50%` camouflage for both connected components and LPA.
 4. **Big-data systems benchmarks**: CSV vs Parquet storage benchmark, Spark data-size and core-scaling benchmarks, and single-node `pandas`/NetworkX versus Spark comparisons.
 
@@ -104,7 +104,7 @@ python -m pytest -q
 Measured on the project machine (`outputs/run_info.json`):
 - **Python**: `{{num:outputs/run_info.json:python}}`
 - **Java**: `{{num:outputs/run_info.json:java}}`
-- **CPU**: `{{num:outputs/run_info.json:cores.physical}}` physical / `{{num:outputs/run_info.json:cores.logical}}` logical cores (Intel Core Ultra 7 155H)
+- **CPU**: `{{num:outputs/run_info.json:cores.physical}}` physical / `{{num:outputs/run_info.json:cores.logical}}` logical cores
 - **RAM**: `{{num:outputs/run_info.json:ram_gb.total:2f}} GiB` total
 - **Default Spark Settings**: `spark.driver.memory={{num:outputs/run_info.json:config.SPARK_DRIVER_MEMORY}}`, `spark.sql.shuffle.partitions={{num:outputs/run_info.json:config.SPARK_SHUFFLE_PARTITIONS}}`
 
@@ -146,13 +146,17 @@ Financial-Fraud-Ring/
 
 For full tables across all three splits (`time`, `group_dest`, `random`), review-cost sensitivity, per-run benchmark logs, and metric definitions, see [docs/RESULTS_TABLES.md](docs/RESULTS_TABLES.md), [docs/FACTS_FOR_PAPER.md](docs/FACTS_FOR_PAPER.md), and [docs/GLOSSARY.md](docs/GLOSSARY.md).
 
+### 6.0 What the results do and do not show
+
+{{table:what_results_show}}
+
 ### 6.1 Primary Time-Split Model Results (`outputs/evaluation.json: splits.time`)
-Test set size: `{{num:outputs/evaluation.json:splits.time.m1_tabular.rows:int}}` rows, fraud prevalence `{{num:outputs/evaluation.json:splits.time.m1_tabular.prevalence:pct4}}`. Thresholds selected strictly on validation rows.
+Test set size: `{{num:outputs/evaluation.json:splits.time.m1_tabular.rows:int}}` rows, fraud prevalence `{{num:outputs/evaluation.json:splits.time.m1_tabular.prevalence:pct4}}`. Thresholds for `m1_tabular`–`m3_community_mule` are selected strictly on validation rows; `m0_rule` uses its fixed `rule_definition`.
 
 {{table:models_time}}
 
 ### 6.2 Business Impact at Validation Operating Thresholds (`outputs/business_impact.json`)
-Time-split test set total fraud value: `{{num:outputs/business_impact.json:fraud_value_total:2f}}` `{{num:outputs/business_impact.json:currency}}` across `{{num:outputs/business_impact.json:fraud_rows:int}}` fraud transactions. Default review cost: `{{num:outputs/business_impact.json:default_review_cost:int}}` (`{{num:outputs/business_impact.json:review_cost_label}}`).
+Time-split test set total fraud value: `{{num:outputs/business_impact.json:fraud_value_total:comma2f}}` `{{num:outputs/business_impact.json:currency}}` across `{{num:outputs/business_impact.json:fraud_rows:int}}` fraud transactions. Default review cost: `{{num:outputs/business_impact.json:default_review_cost:int}}` (`{{num:outputs/business_impact.json:review_cost_label}}`).
 
 {{table:business_impact_headline}}
 
@@ -173,7 +177,7 @@ Label: `{{num:outputs/planted_ring_validation.json:label}}`; `{{num:outputs/plan
 {{table:planted_rings_lpa}}
 
 ### 6.5 Spark Data-Size Scaling (`outputs/scaling_runs.json: data_size_summary`)
-Default Spark settings (`{{num:outputs/run_info.json:config.SPARK_DRIVER_MEMORY}}` driver memory, `{{num:outputs/run_info.json:config.SPARK_SHUFFLE_PARTITIONS}}` shuffle partitions, `local[*]`, 2 repeats). `{{num:outputs/scaling_runs.json:superseded_runs_count:int}}` initial runs hit the `< 0.5 GiB / 60s` memory guard, were retained as `superseded: true`, and were re-run under `< 0.2 GiB / 120s`.
+Default Spark settings (`{{num:outputs/run_info.json:config.SPARK_DRIVER_MEMORY}}` driver memory, `{{num:outputs/run_info.json:config.SPARK_SHUFFLE_PARTITIONS}}` shuffle partitions, `local[*]`, 2 repeats). `{{num:outputs/scaling_runs.json:superseded_runs_count:int}}` initial runs hit the `< 0.5 GiB / 60 s` memory guard, were retained as `superseded: true`, and were re-run under `< 0.2 GiB / 120 s`.
 
 {{table:data_scaling}}
 
@@ -187,6 +191,8 @@ Uniform Parquet samples (`100,000`–`4,000,000` rows, `seed=42`) plus full PayS
 
 {{table:pandas_vs_spark}}
 
+{{table:pandas_vs_spark_guide}}
+
 ### 6.8 Storage Benchmark: CSV vs Parquet (`outputs/storage_benchmark.json`)
 3 repeats each on the full `{{num:outputs/data_quality.json:rows_kept:int}}`-row dataset.
 
@@ -196,12 +202,4 @@ Uniform Parquet samples (`100,000`–`4,000,000` rows, `seed=42`) plus full PayS
 
 ## 7. Limitations
 
-1. **Single-machine execution**: All Spark runs use `local[*]` or `local[n]` on one Windows 11 laptop (`{{num:outputs/run_info.json:ram_gb.total:2f}} GiB` shared RAM, local NTFS disk); results do not measure multi-node network shuffle, HDFS/S3 I/O, or cluster scheduling.
-2. **Shared RAM, memory pressure, and repeat spread**: The host OS shares RAM with the Spark JVM (`{{num:outputs/run_info.json:config.SPARK_DRIVER_MEMORY}}` heap plus shuffle/off-heap buffers). Three initial scaling runs hit the `< 0.5 GiB / 60s` memory guard and were retained as superseded after re-running under `< 0.2 GiB / 120s`; memory pressure also causes spread between repeats.
-3. **Hybrid CPU cores**: Intel Core Ultra 7 155H mixes performance and efficiency cores (`{{num:outputs/run_info.json:cores.physical}}` physical / `{{num:outputs/run_info.json:cores.logical}}` logical), producing uneven speedup across thread counts.
-4. **Simulated data and balance-accounting signal**: PaySim is a synthetic simulator whose ground-truth fraud consists almost entirely of isolated 1-to-1 pairs (zero real rings of size >= 4) and carries strong balance-error identities; `m1_tabular_noerr` is reported alongside `m1_tabular`, `m2_graph`, and `m3_community_mule`.
-5. **Transductive label-free graph features**: Account graph metrics are label-free but computed over the full transaction graph rather than strictly past-only per split.
-6. **Uniform transaction sampling in scaling benchmarks**: Uniformly sampling transactions (`seed=42`) alters graph edge density and component sizes across fractions; node and edge counts are reported per run.
-7. **Repeat count**: Long benchmarks use 2 repeats per configuration (3 repeats for storage); individual repeat values are reported alongside means.
-8. **Planted-ring sample scope**: Synthetic ring injection covers `{{num:outputs/planted_ring_validation.json:total_planted_rings:int}}` rings injected into a single `{{num:outputs/planted_ring_validation.json:sample_size:int}}`-row sample, not the full `{{num:outputs/data_quality.json:rows_kept:int}}`-row graph.
-9. **pandas/NetworkX benchmark scope**: The single-node comparison measures `degree` and `connected_components` only, not PageRank, triangles, LPA, or distributed batch scoring.
+{{table:limitations}}

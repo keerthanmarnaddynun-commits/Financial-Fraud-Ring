@@ -93,6 +93,8 @@ def _format_value(val: Any, fmt: str | None) -> str:
         return _fmt_int(val)
     if fmt == "2f":
         return _fmt_num(val, 2)
+    if fmt == "comma2f":
+        return f"{float(val):,.2f}"
     if fmt == "3f":
         return _fmt_num(val, 3)
     if fmt == "4f":
@@ -206,11 +208,12 @@ class ReportContext:
             md = sp_data[m]
             at = md.get("at_threshold", {})
             conf = at.get("confusion", {})
+            th_source = "rule_definition" if m == "m0_rule" else str(md.get("threshold_source"))
             rows.append(
                 [
                     m,
                     _fmt_num(md.get("threshold"), 6),
-                    str(md.get("threshold_source")),
+                    th_source,
                     _fmt_num(at.get("precision"), 4),
                     _fmt_num(at.get("recall"), 4),
                     _fmt_num(at.get("f1"), 4),
@@ -490,9 +493,43 @@ class ReportContext:
             rows,
         )
 
+    def _build_pandas_vs_spark_guide(self) -> str:
+        summary = self.pandas_vs_spark.get("summary", [])
+        def _find(tool: str, task: str, rows: int) -> Dict[str, Any]:
+            return next((r for r in summary if r.get("tool") == tool and r.get("task") == task and int(r.get("rows", 0)) == rows), {})
+
+        sp_deg_4m = _find("spark", "degree", 4_000_000)
+        pd_deg_4m = _find("pandas_networkx", "degree", 4_000_000)
+        pd_deg_full = _find("pandas_networkx", "degree", 6_362_620)
+        pd_cmp_full = _find("pandas_networkx", "components", 6_362_620)
+        sp_cmp_2m = _find("spark", "components", 2_000_000)
+        sp_cmp_1m = _find("spark", "components", 1_000_000)
+        pd_cmp_1m = _find("pandas_networkx", "components", 1_000_000)
+
+        return "\n".join([
+            "**Reading guide (`outputs/pandas_vs_spark.json: summary`):**",
+            f"- **Connected components**: `pandas_networkx` finishes faster than Spark at every size where both ran (`100,000` to `{_fmt_int(sp_cmp_1m.get('rows'))}` rows; at `{_fmt_int(sp_cmp_1m.get('rows'))}` rows, compute mean is `{_fmt_num(pd_cmp_1m.get('mean_compute_seconds'), 2)} s` vs `{_fmt_num(sp_cmp_1m.get('mean_compute_seconds'), 2)} s`), and Spark recorded `{', '.join(sp_cmp_2m.get('statuses', []))}` at `{_fmt_int(sp_cmp_2m.get('rows'))}` rows (`600 s` limit). `pandas_networkx` completed `{_fmt_int(pd_cmp_full.get('rows'))}` rows (`{_fmt_num(pd_cmp_full.get('mean_compute_seconds'), 2)} s` compute mean, `{_fmt_bytes(pd_cmp_full.get('mean_peak_rss_bytes'))}` peak RSS).",
+            f"- **Degree counts**: At `4,000,000` rows, compute means are `{_fmt_num(sp_deg_4m.get('mean_compute_seconds'), 2)} s` (Spark) and `{_fmt_num(pd_deg_4m.get('mean_compute_seconds'), 2)} s` (`pandas_networkx`), with Spark load time listed separately (`{_fmt_num(sp_deg_4m.get('mean_load_seconds'), 2)} s` vs `{_fmt_num(pd_deg_4m.get('mean_load_seconds'), 2)} s`). Spark was not run at `{_fmt_int(pd_deg_full.get('rows'))}` rows in this comparison (`pandas_networkx` compute mean `{_fmt_num(pd_deg_full.get('mean_compute_seconds'), 2)} s`). Consequently, `pandas_networkx` is not faster than Spark for degree compute at every size.",
+        ])
+
     def _build_storage_table(self) -> str:
         fmts = self.storage_benchmark.get("formats", {})
         speedups = self.storage_benchmark.get("speedup_vs_csv", {})
+        ops_order = [
+            ("count_rows", "count_rows"),
+            ("read_two_columns", "read_two_columns"),
+            ("filter_transfer_fraud", "filter_transfer_fraud"),
+        ]
+
+        # Compute warm means (repeats 2-3) from stored repeats_seconds[1:]
+        warm_means: Dict[str, Dict[str, float]] = {}
+        for fmt_key, f_obj in fmts.items():
+            warm_means[fmt_key] = {}
+            for op_key, _ in ops_order:
+                reps = [float(x) for x in f_obj["operations"][op_key].get("repeats_seconds", [])]
+                warm_reps = reps[1:] if len(reps) > 1 else reps
+                warm_means[fmt_key][op_key] = sum(warm_reps) / len(warm_reps) if warm_reps else 0.0
+
         rows: List[List[str]] = []
         for fmt_key in ("csv", "parquet_partitioned", "parquet_unpartitioned"):
             if fmt_key not in fmts:
@@ -500,29 +537,111 @@ class ReportContext:
             f_obj = fmts[fmt_key]
             ops = f_obj.get("operations", {})
             sp = speedups.get(fmt_key, {})
-            rows.append(
-                [
-                    fmt_key,
-                    _fmt_num(f_obj.get("size_mb"), 2),
-                    f"{_fmt_num(f_obj.get('compression_ratio_vs_csv'), 3)}x",
-                    f"{_fmt_num(ops['count_rows']['mean_seconds'], 4)} ({', '.join(_fmt_num(x, 2) for x in ops['count_rows']['repeats_seconds'])})",
-                    f"{_fmt_num(ops['read_two_columns']['mean_seconds'], 4)} ({', '.join(_fmt_num(x, 2) for x in ops['read_two_columns']['repeats_seconds'])})",
-                    f"{_fmt_num(ops['filter_transfer_fraud']['mean_seconds'], 4)} ({', '.join(_fmt_num(x, 2) for x in ops['filter_transfer_fraud']['repeats_seconds'])})",
-                    "1.00x" if fmt_key == "csv" else f"{_fmt_num(sp.get('count_rows'), 2)}x / {_fmt_num(sp.get('read_two_columns'), 2)}x / {_fmt_num(sp.get('filter_transfer_fraud'), 2)}x",
-                ]
-            )
-        return _md_table(
+            for op_key, op_lbl in ops_order:
+                op_obj = ops[op_key]
+                reps = [float(x) for x in op_obj.get("repeats_seconds", [])]
+                warm_m = warm_means[fmt_key][op_key]
+                csv_warm_m = warm_means.get("csv", {}).get(op_key, 0.0)
+                warm_sp = (csv_warm_m / warm_m) if (warm_m > 0 and csv_warm_m > 0) else 0.0
+                all_sp = 1.0 if fmt_key == "csv" else float(sp.get(op_key, 0.0))
+                rows.append(
+                    [
+                        fmt_key,
+                        _fmt_num(f_obj.get("size_mb"), 2),
+                        f"{_fmt_num(f_obj.get('compression_ratio_vs_csv'), 3)}x",
+                        op_lbl,
+                        _fmt_num(op_obj.get("mean_seconds"), 4),
+                        ", ".join(_fmt_num(x, 2) for x in reps),
+                        _fmt_num(warm_m, 4),
+                        f"{_fmt_num(all_sp, 2)}x",
+                        f"{_fmt_num(warm_sp, 2)}x",
+                    ]
+                )
+
+        csv_cnt_reps = fmts["csv"]["operations"]["count_rows"]["repeats_seconds"]
+        csv_2c_reps = fmts["csv"]["operations"]["read_two_columns"]["repeats_seconds"]
+        note = (
+            f"\n\n*Cold-cache note (`outputs/storage_benchmark.json`): the first CSV repeat is a cold-cache read "
+            f"(`count_rows` repeat 1 = `{_fmt_num(csv_cnt_reps[0], 2)} s` vs repeats 2-3 = `{_fmt_num(csv_cnt_reps[1], 2)} s`, `{_fmt_num(csv_cnt_reps[2], 2)} s`; "
+            f"`read_two_columns` repeat 1 = `{_fmt_num(csv_2c_reps[0], 2)} s` vs `{_fmt_num(csv_2c_reps[1], 2)} s`, `{_fmt_num(csv_2c_reps[2], 2)} s`), "
+            f"which inflates the all-3 CSV means and all-3 speedups; warm means (repeats 2-3) and warm speedups are therefore shown beside them.*"
+        )
+        table = _md_table(
             [
                 "Format",
                 "Size (MiB)",
                 "Compression vs CSV",
-                "Count Rows Mean s (3 repeats)",
-                "Read 2 Cols Mean s (3 repeats)",
-                "Filter TRANSFER+Fraud Mean s (3 repeats)",
-                "Speedup vs CSV (Count / 2-Col / Filter)",
+                "Operation",
+                "All-3 Mean (s)",
+                "Repeats 1-3 (s)",
+                "Warm Mean (Repeats 2-3) (s)",
+                "All-3 Speedup vs CSV",
+                "Warm Speedup vs CSV",
             ],
             rows,
         )
+        return table + note
+
+    def _build_what_results_show(self) -> str:
+        t_split = self.evaluation["splits"]["time"]
+        m1 = t_split["m1_tabular"]
+        m1_no = t_split["m1_tabular_noerr"]
+        m2 = t_split["m2_graph"]
+        m3 = t_split["m3_community_mule"]
+        c1 = m1["at_threshold"]["confusion"]
+        c1_no = m1_no["at_threshold"]["confusion"]
+        c2 = m2["at_threshold"]["confusion"]
+        c3 = m3["at_threshold"]["confusion"]
+        seed = self.model_config["xgboost"]["random_state"]
+
+        ra = self.ring_analysis
+        by_sz = ra.get("number_of_components_by_size", {})
+        ge4 = sum(int(v) for k, v in by_sz.items() if int(k) >= 4)
+
+        sc_t = self.scalability["timings_seconds"]
+        comp_sec = sc_t["components"]
+        gfe_sec = sc_t["graph_feature_engineering"]
+
+        cc_rows = self.planted_rings["algorithms"]["connected_components"]["results_by_pattern_and_camouflage"]
+        cell_counts = sorted({int(r["planted"]) for r in cc_rows})
+        cell_counts_str = " or ".join(str(x) for x in cell_counts)
+
+        return "\n".join([
+            f"- **Tree models with balance-error features (`m1_tabular`, `m2_graph`, `m3_community_mule`)**: On the primary `time` split (Table 6.1, `outputs/evaluation.json: splits.time`), the three models differ by only a few test rows (`m1_tabular`: TP `{_fmt_int(c1['tp'])}`, FP `{_fmt_int(c1['fp'])}`, FN `{_fmt_int(c1['fn'])}`; `m2_graph`: TP `{_fmt_int(c2['tp'])}`, FP `{_fmt_int(c2['fp'])}`, FN `{_fmt_int(c2['fn'])}`; `m3_community_mule`: TP `{_fmt_int(c3['tp'])}`, FP `{_fmt_int(c3['fp'])}`, FN `{_fmt_int(c3['fn'])}`). Each model was trained once (`random_state={seed}`, `configs/model_config.json`), so no performance difference among these three models is claimed.",
+            f"- **Role of balance-error features (`m1_tabular_noerr`)**: Removing `errorBalanceOrig` and `errorBalanceDest` drops `time`-split F1 from `{_fmt_num(m1['at_threshold']['f1'], 4)}` (`m1_tabular`) to `{_fmt_num(m1_no['at_threshold']['f1'], 4)}` (`m1_tabular_noerr`), with false positives rising from `{_fmt_int(c1['fp'])}` to `{_fmt_int(c1_no['fp'])}` and false negatives rising from `{_fmt_int(c1['fn'])}` to `{_fmt_int(c1_no['fn'])}` (Table 6.1), showing that the balance-error features carry most of the predictive signal in PaySim.",
+            f"- **Real PaySim fraud subgraph structure**: The ground-truth fraud subgraph contains `{_fmt_int(ge4)}` components of size 4 or more (`{_fmt_int(by_sz.get('2', 0))}` isolated pairs of size 2 and `{_fmt_int(by_sz.get('3', 0))}` components of size 3; Table 6.3, `outputs/ring_analysis.json`).",
+            f"- **Graph-feature runtime bottleneck**: In the full pipeline run (`outputs/scalability.json`), iterative connected components take `{_fmt_num(comp_sec, 2)} s` of the `{_fmt_num(gfe_sec, 2)} s` `graph_feature_engineering` phase (`{_fmt_pct(comp_sec / gfe_sec, 1)}`).",
+            f"- **Planted-ring sample size per cell**: The planted-ring tables (Table 6.4, `outputs/planted_ring_validation.json`) contain `{cell_counts_str}` planted rings per `(pattern, camouflage)` cell (`{_fmt_int(self.planted_rings['total_planted_rings'])}` rings total injected into one `{_fmt_int(self.planted_rings['sample_size'])}`-row sample).",
+            "- **Strict ring recovery definition**: Strict recovery (`docs/GLOSSARY.md`) requires at least `80%` of a planted ring's accounts in one detected community AND at least `80%` of that community's accounts belonging to that ring; rings whose accounts stay together in a larger noisy component show high `ring_contained_rate` with lower `mean_ring_purity` and lower strict recovery.",
+        ])
+
+    def _build_limitations_md(self) -> str:
+        ri = self.run_info
+        sc = self.scalability
+        seed = self.model_config["xgboost"]["random_state"]
+        ds_025_row = next((r for r in self.scaling_runs.get("data_size_summary", []) if round(float(r.get("fraction", 0)), 2) == 0.25), {})
+        ds_025_min_ram = _fmt_bytes(ds_025_row.get("min_available_ram_bytes"))
+        sup_cnt = _fmt_int(self.scaling_runs.get("superseded_runs_count"))
+        planted_n = _fmt_int(self.planted_rings.get("total_planted_rings"))
+        planted_sample = _fmt_int(self.planted_rings.get("sample_size"))
+        full_rows_str = _fmt_int(self.data_quality.get("rows_kept"))
+        max_train = _fmt_int(ri["config"]["max_training_rows"])
+        sampled_train = _fmt_int(sc.get("sampled_training_rows"))
+
+        lines = [
+            f"1. **Single machine**: All Spark runs and benchmarks execute in `local[*]` or `local[n]` mode on one laptop (`{ri['ram_gb']['total']:.2f} GiB` total RAM, `{ri['cores']['physical']}` physical / `{ri['cores']['logical']}` logical cores, local disk); measurements do not represent multi-node network shuffle, HDFS/S3 I/O, or YARN/Kubernetes cluster scheduling.",
+            f"2. **Shared RAM, memory guard, and repeat spread**: The host OS shares `{ri['ram_gb']['total']:.2f} GiB` RAM with the Spark JVM (`{ri['config']['SPARK_DRIVER_MEMORY']}` driver heap plus shuffle/off-heap buffers). `{sup_cnt}` initial scaling runs hit the `< 0.5 GiB / 60 s` memory guard and were retained as `superseded: true`; the relaxed memory guard aborts only when available RAM stays below `0.2 GiB` for `120 s` continuously, so shorter dips still occur in `ok` runs (the minimum observed in an `ok` run was `{ds_025_min_ram}` at `fraction=0.25`, `outputs/scaling_runs.json: data_size_summary.1.min_available_ram_bytes`), contributing to spread between repeats.",
+            f"3. **Hybrid CPU cores**: The machine's `{ri['cores']['physical']}` physical / `{ri['cores']['logical']}` logical cores (`outputs/run_info.json: cores`) mix performance and efficiency cores, producing uneven speedup across `local[1..16]`.",
+            f"4. **Single training run per model and split**: Each model is trained once per split with fixed `random_state={seed}` (`configs/model_config.json: xgboost.random_state`); no multi-seed confidence intervals are computed.",
+            f"5. **Training sampling**: Per `splits.py` (`draw_training_sample`), each split's training set keeps training-split fraud rows plus sampled non-fraud rows at a 10:1 negative-to-positive ratio capped at `max_training_rows={max_train}` per split (`outputs/run_info.json: config.max_training_rows`), totaling `sampled_training_rows={sampled_train}` rows across the three splits (`outputs/scalability.json: sampled_training_rows`), while validation threshold selection and test evaluation run on all validation and test rows at true prevalence.",
+            "6. **Simulated data and balance-accounting signal**: PaySim is a synthetic mobile-money simulator whose ground-truth fraud consists almost entirely of isolated 1-to-1 `TRANSFER` and `CASH_OUT` pairs (zero real components of size >= 4) and carries strong balance-accounting signals (`errorBalanceOrig`, `errorBalanceDest`). `m1_tabular_noerr` is reported alongside `m1_tabular`, `m2_graph`, and `m3_community_mule`.",
+            "7. **Transductive, label-free graph features**: Account-level graph features (degrees, PageRank, triangle count, connected components, LPA, flow ratios) are label-free but computed across the full transaction graph rather than strictly past-only per split.",
+            "8. **Uniform transaction sampling in scaling benchmarks**: Sampling transactions uniformly (`seed=42`) changes graph edge density and component connectivity across fractions; node and edge counts are reported per run alongside runtime.",
+            "9. **Two repeats in long benchmarks**: Scaling and pandas-vs-Spark benchmarks use 2 repeats per configuration (3 repeats for storage); individual repeat values are reported alongside means.",
+            f"10. **Planted-ring evaluation uses one `{planted_sample}`-row sample**: Synthetic ring recovery results (`outputs/planted_ring_validation.json`) come from injecting `{planted_n}` rings into a single `{planted_sample}`-row PaySim sample rather than multiple independent samples or the full `{full_rows_str}`-row graph.",
+            "11. **pandas/NetworkX comparison scope**: The single-node comparison covers only `degree` counts and `connected_components`; it does not benchmark PageRank, triangle counting, LPA, feature joins, or end-to-end model scoring in NetworkX.",
+        ]
+        return "\n".join(lines)
 
     def _build_spark_engines_table(self) -> str:
         info = self.scalability.get("algorithm_info", {})
@@ -577,6 +696,12 @@ class ReportContext:
             ["pandas", str(ri.get("pandas")), "outputs/run_info.json", "pandas"],
             ["scikit-learn", str(ri.get("sklearn")), "outputs/run_info.json", "sklearn"],
             ["XGBoost", str(ri.get("xgboost")), "outputs/run_info.json", "xgboost"],
+        ]
+        # Only include CPU model / OS rows if outputs/run_info.json holds them
+        for key, label in (("cpu_model", "CPU model"), ("cpu", "CPU model"), ("os", "OS"), ("platform", "OS")):
+            if key in ri and ri[key]:
+                rows.append([label, str(ri[key]), "outputs/run_info.json", key])
+        rows.extend([
             ["CPU cores (physical / logical)", f"{ri['cores']['physical']} / {ri['cores']['logical']}", "outputs/run_info.json", "cores.physical, cores.logical"],
             ["Total RAM (GiB)", _fmt_num(ri["ram_gb"]["total"], 2), "outputs/run_info.json", "ram_gb.total"],
             ["Spark driver memory", str(ri["config"]["SPARK_DRIVER_MEMORY"]), "outputs/run_info.json", "config.SPARK_DRIVER_MEMORY"],
@@ -585,7 +710,7 @@ class ReportContext:
             ["Dataset SHA-256", str(ri["dataset"]["sha256"]), "outputs/run_info.json", "dataset.sha256"],
             ["Full-run git commit", str(ri.get("git_commit")), "outputs/run_info.json", "git_commit"],
             ["Pinned packages (`requirements.txt`)", ", ".join(req_lines), "requirements.txt", "all non-comment lines"],
-        ]
+        ])
         return _md_table(["Component", "Measured Value", "Source File", "Key"], rows)
 
     def _build_all_tables(self) -> Dict[str, str]:
@@ -604,7 +729,10 @@ class ReportContext:
             "core_scaling": self._build_core_scaling_table(),
             "scaling_superseded": self._build_scaling_superseded_table(),
             "pandas_vs_spark": self._build_pandas_vs_spark_table(),
+            "pandas_vs_spark_guide": self._build_pandas_vs_spark_guide(),
             "storage_benchmark": self._build_storage_table(),
+            "what_results_show": self._build_what_results_show(),
+            "limitations": self._build_limitations_md(),
             "spark_engines": self._build_spark_engines_table(),
             "pipeline_timings": self._build_pipeline_timings_table(),
             "environment": self._build_environment_table(),
@@ -711,6 +839,8 @@ Source: `outputs/scaling_runs.json` (`core_scaling_summary`).
 Source: `outputs/pandas_vs_spark.json` (`summary`).
 
 {ctx.tables["pandas_vs_spark"]}
+
+{ctx.tables["pandas_vs_spark_guide"]}
 
 ## 14. Storage Benchmark: CSV vs Parquet
 Source: `outputs/storage_benchmark.json` (`formats`, `speedup_vs_csv`).
@@ -883,6 +1013,8 @@ Exact finding text (`outputs/ring_analysis.json: finding`):
 ### 7a. Summary Table Including Full `{_fmt_int(ctx.data_quality["rows_kept"])}`-Row pandas Run (`outputs/pandas_vs_spark.json: summary`)
 {ctx.tables["pandas_vs_spark"]}
 
+{ctx.tables["pandas_vs_spark_guide"]}
+
 ### 7b. Non-OK Runs (`outputs/pandas_vs_spark.json: non_ok_runs`)
 {pvs_non_ok_table}
 
@@ -906,15 +1038,7 @@ Exact finding text (`outputs/ring_analysis.json: finding`):
 {glossary_text}
 
 ## 11. Limitations (Must Accompany All Claims)
-1. **Single machine**: All Spark runs and benchmarks execute in `local[*]` or `local[n]` mode on one Windows 11 laptop (`{ctx.run_info["ram_gb"]["total"]:.2f} GiB` RAM, local NTFS disk); measurements do not represent multi-node network shuffle, HDFS/S3 I/O, or YARN/Kubernetes cluster scheduling.
-2. **Shared RAM, memory pressure, and repeat spread**: The host OS shares `{ctx.run_info["ram_gb"]["total"]:.2f} GiB` RAM with the Spark JVM (`{ctx.run_info["config"]["SPARK_DRIVER_MEMORY"]}` driver heap plus off-heap/shuffle buffers). `{sup_cnt}` initial scaling runs hit the `< 0.5 GiB / 60s` memory guard and were re-run under `< 0.2 GiB / 120s` (original aborts retained as superseded); even among `ok` runs, memory pressure creates measurable repeat spread (at `fraction=0.25`, minimum available RAM dipped to `{ds_025_min_ram}`).
-3. **Hybrid CPU cores**: The Intel Core Ultra 7 155H mixes performance and efficiency cores (`{ctx.run_info["cores"]["physical"]}` physical / `{ctx.run_info["cores"]["logical"]}` logical), causing uneven thread scaling across `local[1..16]`.
-4. **Simulated data**: PaySim is a synthetic mobile-money simulator whose fraud mechanism concentrates on isolated 1-to-1 `TRANSFER` and `CASH_OUT` pairs (zero real rings of size >= 4) and exhibits strong balance-accounting signals (`errorBalanceOrig`, `errorBalanceDest`). Accordingly, `m1_tabular_noerr` is reported alongside `m1_tabular`, `m2_graph`, and `m3_community_mule`.
-5. **Transductive, label-free graph features**: Account-level graph features (degrees, PageRank, triangle count, connected components, LPA, flow ratios) are label-free but computed across the full transaction graph rather than strictly past-only per split.
-6. **Uniform transaction sampling in scaling benchmarks**: Sampling transactions uniformly (`seed=42`) changes graph edge density and component connectivity across fractions; node and edge counts are reported per run alongside runtime.
-7. **Two repeats in long benchmarks**: Scaling and pandas-vs-Spark benchmarks use 2 repeats per configuration (3 repeats for storage); individual repeat values are always reported beside means.
-8. **Planted-ring evaluation uses one `{planted_sample}`-row sample**: Synthetic ring recovery results (`outputs/planted_ring_validation.json`) come from injecting `{planted_n}` rings into a single `{planted_sample}`-row PaySim sample rather than multiple independent background samples or the full `{full_rows_str}`-row graph.
-9. **pandas/NetworkX comparison scope**: The single-node comparison covers only `degree` counts and `connected_components`; it does not benchmark PageRank, triangle counting, LPA, feature joins, or end-to-end model scoring in NetworkX.
+{ctx.tables["limitations"]}
 """
 
 
