@@ -41,7 +41,7 @@ STEP 4.4 | SKIPPED(by user, later) | - | Architecture diagram
 STEP 4.5 | SKIPPED(by user, later) | - | Demo script and viva questions
 STEP 4.6 | DONE | S4.6 | Archived legacy web dashboard (web/, web_app.py) to archive/web_legacy/
 STEP 4.7 | DONE | S4.7 | Strict read-only check_docs.py passed (0 mismatches, 0 banned words, 0 broken links)
-STEP 4.8 | PENDING | - | Final summary and last push (waits for plugged-in at home)
-GATE 4 | PENDING | - | Final gate (Gate 4a after 4.7; Gate 4 after 4.8)
+STEP 4.8 | DONE | S4.8 | Full pytest passed (37 passed, 0 failed), check_docs PASS, logs/AG_FINAL_SUMMARY.txt generated
+GATE 4 | DONE | S4.8 | Final gate complete (all 37 tests passed; 4.3/4.4/4.5 deferred by user)
 
 

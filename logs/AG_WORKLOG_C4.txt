@@ -41,6 +41,14 @@ Applied 8 doc fixes in make_report.py and docs/templates/README.md.tmpl (docs on
 Ran `python make_report.py` and `python check_docs.py`: exit code 0 (0 byte differences, 0 banned-word hits, 0 broken relative links).
 RAW: logs/raw/20261118_4.1b_check_docs.txt
 
+[2026-11-18 17:46] STEP 4.8 | ACTION
+Laptop plugged in; ran full test suite (`python -u -m pytest -q`) saving UTF-8 output to logs/raw/20261118-1710_4.8_pytest.txt.
+Outcome: 37 passed, 0 failed, 10 warnings in 2027.13s (0:33:47).
+Re-ran `python make_report.py` and `python check_docs.py` (logs/raw/20261118-1747_4.8_check_docs.txt): OVERALL PASS (0 byte differences, 0 banned-word hits, 0 broken relative links); `git status --short` showed zero changes in README.md, docs/, or results_snapshot/.
+Generated logs/AG_FINAL_SUMMARY.txt programmatically via scripts/generate_final_summary.py.
+Marked STEP 4.8 DONE and GATE 4 DONE in PROGRESS.txt (keeping STEP 4.3, 4.4, 4.5 as SKIPPED(by user, later)).
+RAW: logs/raw/20261118-1710_4.8_pytest.txt, logs/raw/20261118-1747_4.8_check_docs.txt
+
 ================================================================================
 DECISIONS
 ================================================================================
@@ -61,4 +69,4 @@ SURPRISES
 ================================================================================
 OPEN QUESTIONS
 ================================================================================
-- Waiting for user confirmation that laptop is plugged in at home before running STEP 4.8 (final full pytest suite + logs/AG_FINAL_SUMMARY.txt).
+- Deferred by user for later: STEP 4.3 (paper rewrite), STEP 4.4 (architecture diagram), STEP 4.5 (demo script & viva Q&A), and interactive Spark UI screenshots via `python demo_run.py`.
