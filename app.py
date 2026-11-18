@@ -309,6 +309,8 @@ evaluation_data = load_output_json("evaluation.json")
 data_quality_data = load_output_json("data_quality.json")
 run_info_data = load_output_json("run_info.json")
 scaling_runs_data = load_output_json("scaling_runs.json")
+pandas_vs_spark_data = load_output_json("pandas_vs_spark.json")
+storage_benchmark_data = load_output_json("storage_benchmark.json")
 business_impact_data = load_output_json("business_impact.json")
 ring_analysis_data = load_output_json("ring_analysis.json")
 planted_rings_data = load_output_json("planted_ring_validation.json")
@@ -1386,24 +1388,312 @@ with tab_rings:
 # TAB 6: SCALING
 # =========================================================================
 with tab_scaling:
-    st.subheader("Distributed Systems Scaling Benchmarks")
-    if not scaling_runs_data:
-        st.info("Run the scaling benchmark (`python benchmark_scaling.py`) to generate scaling results.")
+    st.subheader("Distributed Systems Scaling & Storage Benchmarks")
+    if not any([scaling_runs_data, pandas_vs_spark_data, storage_benchmark_data]):
+        st.info(
+            "No benchmark outputs found. Run `python storage_benchmark.py`, "
+            "`python benchmark_scaling.py`, and `python pandas_vs_spark.py` to generate results."
+        )
     else:
-        st.write("Scaling benchmark data loaded from `scaling_runs.json`.")
-        try:
-            if isinstance(scaling_runs_data, list):
-                df_scale = pd.DataFrame(scaling_runs_data)
-                st.dataframe(df_scale, use_container_width=True)
-                if "fraction" in df_scale.columns and "seconds" in df_scale.columns:
-                    st.line_chart(df_scale.set_index("fraction")["seconds"])
-            elif isinstance(scaling_runs_data, dict):
-                st.json(scaling_runs_data)
-        except Exception as e:
-            st.error(f"Error rendering scaling data: {e}")
+        st.markdown(
+            """
+            <div class="caveat-box">
+                <b>Measurement Caveats:</b> All benchmarks were executed on a single Windows 11 laptop
+                (15.37 GiB shared RAM, Intel Core Ultra 7 155H with mixed performance and efficiency cores,
+                local NTFS disk) using default Spark settings (<code>spark.driver.memory=6g</code>,
+                <code>spark.sql.shuffle.partitions=48</code>). Uniform transaction sampling (seed=42)
+                changes graph density across sample fractions; node/edge counts, individual repeat values,
+                and any timeout or low-memory guard aborts are shown alongside means.
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
-        with st.expander("Raw file: scaling_runs.json"):
-            st.json(scaling_runs_data)
+        # ---- 1. Data-Size & Core Scaling ----
+        if scaling_runs_data and isinstance(scaling_runs_data, dict):
+            ds_summary = scaling_runs_data.get("data_size_summary", [])
+            cs_summary = scaling_runs_data.get("core_scaling_summary", [])
+            all_runs = scaling_runs_data.get("runs", [])
+            non_ok_scale = scaling_runs_data.get("non_ok_runs", [])
+
+            st.markdown("### 1. Spark Data-Size Scaling (Log-Log)")
+            if ds_summary:
+                ds_rows = []
+                for row in ds_summary:
+                    indiv = ", ".join(f"{v:.2f}s" for v in row.get("individual_total_seconds", [])) or "none"
+                    ds_rows.append(
+                        {
+                            "Fraction": row.get("fraction"),
+                            "OK / Total": f"{row.get('ok_count', 0)}/{row.get('total_count', 0)}",
+                            "Statuses": ", ".join(row.get("statuses", [])),
+                            "Rows": int(row["mean_rows"]) if row.get("mean_rows") is not None else "n/a",
+                            "Nodes": int(row["mean_nodes"]) if row.get("mean_nodes") is not None else "n/a",
+                            "Edges": int(row["mean_edges"]) if row.get("mean_edges") is not None else "n/a",
+                            "Mean Total (s)": f"{row['mean_total_seconds']:.2f}" if row.get("mean_total_seconds") is not None else "n/a",
+                            "Individual Repeats": indiv,
+                            "Mean Peak RSS": format_bytes(row.get("mean_peak_rss_bytes")),
+                            "Min Avail RAM": format_bytes(row.get("min_available_ram_bytes")),
+                            "Mean Shuffle": format_bytes(row.get("mean_shuffle_bytes")),
+                        }
+                    )
+                st.dataframe(pd.DataFrame(ds_rows), use_container_width=True)
+
+                ok_ds_pts = [
+                    {
+                        "Fraction": float(r["fraction"]),
+                        "Total Seconds": float((r.get("seconds") or {}).get("total", r.get("wall_seconds", 0))),
+                        "Repeat": f"Repeat {r.get('repeat')}",
+                    }
+                    for r in all_runs
+                    if r.get("suite") == "data_scaling" and r.get("status") == "ok"
+                ]
+                if ok_ds_pts:
+                    df_ds_plot = pd.DataFrame(ok_ds_pts)
+                    fig_ds = px.scatter(
+                        df_ds_plot,
+                        x="Fraction",
+                        y="Total Seconds",
+                        color="Repeat",
+                        log_x=True,
+                        log_y=True,
+                        title="Graph-Stage Runtime vs Sample Fraction (Log-Log, Individual Repeats)",
+                        height=360,
+                    )
+                    mean_pts = [r for r in ds_summary if r.get("mean_total_seconds") is not None]
+                    if mean_pts:
+                        fig_ds.add_trace(
+                            go.Scatter(
+                                x=[float(r["fraction"]) for r in mean_pts],
+                                y=[float(r["mean_total_seconds"]) for r in mean_pts],
+                                mode="lines+markers",
+                                name="Mean (ok)",
+                                line=dict(color="#38bdf8", width=2.5),
+                            )
+                        )
+                    fig_ds.update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                        font=dict(color="#edf7f4"),
+                    )
+                    st.plotly_chart(fig_ds, use_container_width=True)
+
+            st.markdown("### 2. Spark Core-Scaling Speedup")
+            if cs_summary:
+                core_frac = scaling_runs_data.get("core_scaling_fraction", 0.10)
+                st.caption(
+                    f"Measured at sample fraction `{core_frac}` across `local[1..16]` (2 repeats each); "
+                    "speedup = mean_time(local[1]) / mean_time(local[n])."
+                )
+                cs_rows = []
+                for row in cs_summary:
+                    indiv_t = ", ".join(f"{v:.2f}s" for v in row.get("individual_total_seconds", [])) or "none"
+                    indiv_sp = ", ".join(f"{v:.2f}x" for v in row.get("individual_speedups", [])) or "none"
+                    cs_rows.append(
+                        {
+                            "Master": row.get("master"),
+                            "Cores": row.get("cores"),
+                            "Statuses": ", ".join(row.get("statuses", [])),
+                            "Mean Total (s)": f"{row['mean_total_seconds']:.2f}" if row.get("mean_total_seconds") is not None else "n/a",
+                            "Individual Repeats (s)": indiv_t,
+                            "Speedup": f"{row['speedup']:.3f}x" if row.get("speedup") is not None else "n/a",
+                            "Individual Speedups": indiv_sp,
+                            "Efficiency": f"{row['efficiency']:.3f}" if row.get("efficiency") is not None else "n/a",
+                            "Mean Peak RSS": format_bytes(row.get("mean_peak_rss_bytes")),
+                            "Min Avail RAM": format_bytes(row.get("min_available_ram_bytes")),
+                        }
+                    )
+                st.dataframe(pd.DataFrame(cs_rows), use_container_width=True)
+
+                df_cs_plot = pd.DataFrame(
+                    [
+                        {
+                            "Cores": int(r["cores"]),
+                            "Speedup": float(r["speedup"]),
+                            "Mean Seconds": float(r["mean_total_seconds"]),
+                        }
+                        for r in cs_summary
+                        if r.get("speedup") is not None
+                    ]
+                )
+                if not df_cs_plot.empty:
+                    fig_cs = px.line(
+                        df_cs_plot,
+                        x="Cores",
+                        y="Speedup",
+                        markers=True,
+                        title=f"Speedup vs Spark Local Threads (Fraction = {core_frac:.2f})",
+                        height=340,
+                    )
+                    fig_cs.update_layout(
+                        paper_bgcolor="rgba(0,0,0,0)",
+                        plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                        font=dict(color="#edf7f4"),
+                    )
+                    st.plotly_chart(fig_cs, use_container_width=True)
+
+            if non_ok_scale:
+                with st.expander(f"Non-OK Scaling Runs Recorded ({len(non_ok_scale)})", expanded=True):
+                    st.dataframe(
+                        pd.DataFrame(
+                            [
+                                {
+                                    "Suite": r.get("suite"),
+                                    "Fraction": r.get("fraction"),
+                                    "Master": r.get("master"),
+                                    "Repeat": r.get("repeat"),
+                                    "Status": r.get("status"),
+                                    "Wall (s)": r.get("wall_seconds"),
+                                    "Peak RSS": format_bytes(r.get("peak_rss_bytes")),
+                                    "Min Avail RAM": format_bytes(r.get("min_available_ram_bytes")),
+                                    "Reason": r.get("reason", ""),
+                                }
+                                for r in non_ok_scale
+                            ]
+                        ),
+                        use_container_width=True,
+                    )
+        elif scaling_runs_data and isinstance(scaling_runs_data, list):
+            st.dataframe(pd.DataFrame(scaling_runs_data), use_container_width=True)
+
+        # ---- 2. pandas/NetworkX vs Spark ----
+        st.markdown("### 3. pandas/NetworkX vs Spark-Native Comparison")
+        if not pandas_vs_spark_data:
+            st.info("Run `python pandas_vs_spark.py` to populate the single-node vs Spark comparison.")
+        else:
+            pvs_summary = pandas_vs_spark_data.get("summary", [])
+            if pvs_summary:
+                pvs_rows = []
+                for row in pvs_summary:
+                    indiv_c = ", ".join(f"{v:.3f}s" for v in row.get("individual_compute_seconds", [])) or "none"
+                    pvs_rows.append(
+                        {
+                            "Task": row.get("task"),
+                            "Tool": row.get("tool"),
+                            "Rows": int(row.get("rows", 0)),
+                            "Statuses": ", ".join(row.get("statuses", [])),
+                            "Load Mean (s)": f"{row['mean_load_seconds']:.3f}" if row.get("mean_load_seconds") is not None else "n/a",
+                            "Compute Mean (s)": f"{row['mean_compute_seconds']:.3f}" if row.get("mean_compute_seconds") is not None else "n/a",
+                            "Compute Repeats": indiv_c,
+                            "Peak RSS": format_bytes(row.get("mean_peak_rss_bytes") or row.get("max_peak_rss_bytes")),
+                            "Min Avail RAM": format_bytes(row.get("min_available_ram_bytes")),
+                        }
+                    )
+                st.dataframe(pd.DataFrame(pvs_rows), use_container_width=True)
+
+                df_pvs_ok = pd.DataFrame(
+                    [
+                        {
+                            "Rows": int(r["rows"]),
+                            "Series": f"{r['tool']} ({r['task']})",
+                            "Compute Seconds": float(r["mean_compute_seconds"]),
+                            "Peak RSS (GiB)": float(r["mean_peak_rss_bytes"]) / (1024 ** 3),
+                        }
+                        for r in pvs_summary
+                        if r.get("mean_compute_seconds") is not None
+                    ]
+                )
+                if not df_pvs_ok.empty:
+                    c1, c2 = st.columns(2)
+                    with c1:
+                        fig_pvs_t = px.line(
+                            df_pvs_ok,
+                            x="Rows",
+                            y="Compute Seconds",
+                            color="Series",
+                            markers=True,
+                            log_x=True,
+                            log_y=True,
+                            title="Compute Time vs Rows (Log-Log)",
+                            height=350,
+                        )
+                        fig_pvs_t.update_layout(
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                            font=dict(color="#edf7f4"),
+                        )
+                        st.plotly_chart(fig_pvs_t, use_container_width=True)
+                    with c2:
+                        fig_pvs_m = px.line(
+                            df_pvs_ok,
+                            x="Rows",
+                            y="Peak RSS (GiB)",
+                            color="Series",
+                            markers=True,
+                            log_x=True,
+                            title="Peak Process-Tree RSS (GiB)",
+                            height=350,
+                        )
+                        fig_pvs_m.update_layout(
+                            paper_bgcolor="rgba(0,0,0,0)",
+                            plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                            font=dict(color="#edf7f4"),
+                        )
+                        st.plotly_chart(fig_pvs_m, use_container_width=True)
+
+        # ---- 3. Storage Benchmark: CSV vs Parquet ----
+        st.markdown("### 4. Storage Benchmark: CSV vs Parquet")
+        if not storage_benchmark_data:
+            st.info("Run `python storage_benchmark.py` to populate CSV vs Parquet measurements.")
+        else:
+            fmts = storage_benchmark_data.get("formats", {})
+            if fmts:
+                st_rows = []
+                chart_rows = []
+                for fmt_key, fmt_val in fmts.items():
+                    ops = fmt_val.get("operations", {})
+                    st_rows.append(
+                        {
+                            "Format": fmt_key,
+                            "Size (MiB)": fmt_val.get("size_mb"),
+                            "Compression vs CSV": f"{fmt_val.get('compression_ratio_vs_csv', 1.0):.2f}x",
+                            "Count Mean (s)": ops.get("count_rows", {}).get("mean_seconds"),
+                            "Count Repeats": ", ".join(str(x) for x in ops.get("count_rows", {}).get("repeats_seconds", [])),
+                            "2-Col Read Mean (s)": ops.get("read_two_columns", {}).get("mean_seconds"),
+                            "2-Col Repeats": ", ".join(str(x) for x in ops.get("read_two_columns", {}).get("repeats_seconds", [])),
+                            "Filter Mean (s)": ops.get("filter_transfer_fraud", {}).get("mean_seconds"),
+                            "Filter Repeats": ", ".join(str(x) for x in ops.get("filter_transfer_fraud", {}).get("repeats_seconds", [])),
+                        }
+                    )
+                    for op_k, op_lbl in [
+                        ("count_rows", "Count Rows"),
+                        ("read_two_columns", "Read 2 Columns"),
+                        ("filter_transfer_fraud", "Filter TRANSFER + Fraud"),
+                    ]:
+                        chart_rows.append(
+                            {
+                                "Format": fmt_key,
+                                "Operation": op_lbl,
+                                "Mean Seconds": ops.get(op_k, {}).get("mean_seconds", 0.0),
+                            }
+                        )
+                st.dataframe(pd.DataFrame(st_rows), use_container_width=True)
+                fig_st = px.bar(
+                    pd.DataFrame(chart_rows),
+                    x="Operation",
+                    y="Mean Seconds",
+                    color="Format",
+                    barmode="group",
+                    text_auto=".2f",
+                    title="CSV vs Parquet Mean Query Latency (3 Repeats)",
+                    height=330,
+                )
+                fig_st.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(17, 26, 24, 0.6)",
+                    font=dict(color="#edf7f4"),
+                )
+                st.plotly_chart(fig_st, use_container_width=True)
+
+        with st.expander("Raw Benchmark JSON Files"):
+            if scaling_runs_data:
+                st.markdown("**scaling_runs.json**")
+                st.json(scaling_runs_data)
+            if pandas_vs_spark_data:
+                st.markdown("**pandas_vs_spark.json**")
+                st.json(pandas_vs_spark_data)
+            if storage_benchmark_data:
+                st.markdown("**storage_benchmark.json**")
+                st.json(storage_benchmark_data)
 
 
 # =========================================================================

@@ -29,9 +29,9 @@ STEP 3.1 | DONE | S3.1 | Parquet conversion and storage benchmark (runs/20261118
 STEP 3.2 | DONE | S3.2 | Reusable run_graph_stages runner shared by main.py and benchmarks
 STEP 3.3 | DONE | S3.3 | Scaling benchmark completed (runs/20261118-0057_c3-scaling; 18/18 units recorded)
 STEP 3.4 | DONE | S3.4 | pandas/NetworkX vs Spark comparison (runs/20261118-0756_c3-pandas-vs-spark; 44 ok, 1 timeout)
-STEP 3.5 | IN_PROGRESS | - | Aggregation, charts, dashboard
+STEP 3.5 | DONE | S3.5 | Benchmark charts (generate_visuals.py) and Scaling tab updated (5/5 dashboard tests pass)
 STEP 3.6 | SKIPPED(time) | - | [OPTIONAL] Spark settings comparison (skipped per user instruction)
-STEP 3.7 | PENDING | - | Demo run helper for Spark UI screenshots
+STEP 3.7 | IN_PROGRESS | - | Demo run helper for Spark UI screenshots
 GATE 3 | PENDING | - | Chunk 3 summary and gate check
 STEP 4.1 | PENDING | - | Report generator and results snapshot
 STEP 4.2 | PENDING | - | README rewrite from template

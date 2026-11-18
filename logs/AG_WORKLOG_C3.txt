@@ -119,6 +119,16 @@ RAW: runs/20261118-0756_c3-pandas-vs-spark/orchestrator.log, outputs/pandas_vs_s
 [2026-11-18 08:49] STEP 3.6 | DECISION
 Skipped STEP 3.6 ([OPTIONAL] Spark settings comparison) with status SKIPPED(time) per user instruction.
 
+[2026-11-18 08:52] STEP 3.5 | ACTION
+Updated generate_visuals.py to render all four Chunk 3 benchmark figures:
+- scaling_data_size.png (and scaling_benchmark.png): log-log time vs sample fraction with individual repeats and non-ok annotations
+- scaling_cores_speedup.png: speedup and wall time vs local[1..16] cores at fraction 0.10
+- pandas_vs_spark.png: compute time (log-log) and peak RSS (GiB) across 100k..4M rows
+- storage_benchmark.png: CSV vs Parquet sizes and 3-repeat query read latencies
+Updated app.py Scaling tab to display all four benchmark sections with stated caveats, individual repeat values, and non-ok run records.
+Copied PNG charts into results_snapshot/visuals/ and regenerated results_snapshot/SHA256SUMS.txt.
+Ran `python -m pytest tests/test_app_smoke.py -v`: 5 passed in 11.08s.
+
 ================================================================================
 DECISIONS
 ================================================================================
