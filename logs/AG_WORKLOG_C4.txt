@@ -13,6 +13,10 @@ Created make_report.py reading strictly from outputs/, docs/raw_data_facts.json,
 Ran `python make_report.py` generating docs/RESULTS_TABLES.md and docs/FACTS_FOR_PAPER.md (every table and key number with source file and JSON key, plus glossary and limitations), and syncing small JSON/CSV/PNG files into results_snapshot/ with updated SHA256SUMS.txt.
 Checked generated files for banned words and unresolved placeholders: zero matches.
 
+[2026-11-18 14:08] STEP 4.2 | ACTION
+Created docs/templates/README.md.tmpl using {{table:...}}, {{num:...}}, and {{text:...}} placeholders only (no hand-typed numbers, no file counts, no legacy web dashboard mentions, no broken link to deferred docs/ARCHITECTURE.md).
+Ran `python make_report.py --no-snapshot` generating README.md (21,999 bytes). Checked README.md for banned words and unresolved placeholders: zero matches.
+
 ================================================================================
 DECISIONS
 ================================================================================
