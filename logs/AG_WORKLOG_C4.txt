@@ -20,6 +20,11 @@ Ran `python make_report.py --no-snapshot` generating README.md (21,999 bytes). C
 [2026-11-18 14:11] STEP 4.6 | ACTION
 Moved legacy web dashboard files (`web/` and `web_app.py`) to `archive/web_legacy/` (kept on disk under gitignored `archive/`) and removed the old tracked paths via `git rm --cached -r web web_app.py`. Checked README.md: zero mentions of `web/` or `web_app.py`.
 
+[2026-11-18 14:15] STEP 4.7 | ACTION
+Created strict read-only check_docs.py checking byte-for-byte temp regeneration against workspace files (README.md, docs/RESULTS_TABLES.md, docs/FACTS_FOR_PAPER.md), banned words across README/docs/app.py strings/active Python comments, broken relative links, and printing explicit COVERAGE.
+Ran `python -u check_docs.py`: exit code 0 (0 byte differences, 0 banned-word hits, 0 broken relative links).
+RAW: logs/raw/20261118_4.7_check_docs.txt
+
 ================================================================================
 DECISIONS
 ================================================================================
