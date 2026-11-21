@@ -49,6 +49,16 @@ Generated logs/AG_FINAL_SUMMARY.txt programmatically via scripts/generate_final_
 Marked STEP 4.8 DONE and GATE 4 DONE in PROGRESS.txt (keeping STEP 4.3, 4.4, 4.5 as SKIPPED(by user, later)).
 RAW: logs/raw/20261118-1710_4.8_pytest.txt, logs/raw/20261118-1747_4.8_check_docs.txt
 
+[2026-11-21 11:00] STEP 4.9 | ACTION
+Completed dashboard polish in app.py across 4 items (docs and tests unchanged; no Spark runs, no full pytest suite):
+1. Metric cards HTML rendering: reconstructed render_metric_card to output clean unindented HTML so markdown parsers do not treat it as an indented code block, properly applying .metric-subtext styling on Overview, Business Impact, Fraud Rings, and all tabs.
+2. Business Impact tab: added dynamic one-line captions above headline operating table (fixed at validation threshold and default review cost read from business_impact.json) and sensitivity table (fixed at review costs read from business_impact.json), stating they do not follow interactive controls.
+3. Business Impact tab: initialized Operating Score Threshold slider at selected model's validation threshold from outputs/evaluation.json (fallback to business_impact.json), adding the headline validation point to candidate points so live cards start matching headline table, while preserving slider range [0.0, 1.0] and hindsight comparison view.
+4. Live Scorer tab: updated 5 transaction and balance input labels from "($)" to "(simulated currency units)".
+Verification:
+- python -m pytest tests/test_app_smoke.py -q: 5 passed in 11.28s.
+- python check_docs.py: PASS (0 byte differences, 0 banned-word hits, 0 broken relative links, 0 total issues).
+
 ================================================================================
 DECISIONS
 ================================================================================

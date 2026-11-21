@@ -194,17 +194,15 @@ def render_metric_card(
     if ratio is not None:
         clamped_pct = max(0.0, min(100.0, float(ratio) * 100.0))
         progress_html = f'<div class="metric-bar"><span style="width:{clamped_pct:.1f}%;"></span></div>'
-    st.markdown(
-        f"""
-        <div class="metric-card">
-            <div class="metric-label">{label}</div>
-            <div class="metric-val">{value}</div>
-            {progress_html}
-            <div class="metric-subtext">{subtitle}</div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    card_html = (
+        f'<div class="metric-card">'
+        f'<div class="metric-label">{label}</div>'
+        f'<div class="metric-val">{value}</div>'
+        f'{progress_html}'
+        f'<div class="metric-subtext">{subtitle}</div>'
+        f'</div>'
     )
+    st.markdown(card_html, unsafe_allow_html=True)
 
 
 @st.cache_resource
@@ -849,9 +847,9 @@ with tab_impact:
 
         # Headline Operating Table at Validation Thresholds
         st.markdown("#### Headline Operating Performance (Validation Thresholds)")
+        def_cost_val = int(business_impact_data.get("default_review_cost", 10000))
         st.caption(
-            "Operating thresholds chosen on validation set to maximize F1 (from evaluation.json); "
-            "net saving computed at assumption review cost."
+            f"Fixed at the validation threshold and review cost {def_cost_val:,} and does not follow the controls."
         )
         headline_rows = business_impact_data.get("headline_operating_table", [])
         if headline_rows:
@@ -900,7 +898,7 @@ with tab_impact:
             if not grid:
                 st.warning("Threshold grid is empty for the selected model.")
             else:
-                # Find best threshold maximizing net saving = fraud_value_caught - review_cost * alerts
+                # Find best threshold maximizing net saving = fraud_value_caught - review_cost * alerts (hindsight view)
                 best_point = max(
                     grid,
                     key=lambda p: float(p.get("fraud_value_caught", 0.0)) - review_cost * float(p.get("alerts", 0)),
@@ -910,18 +908,41 @@ with tab_impact:
                 best_alerts = int(best_point.get("alerts", 0))
                 best_net = best_caught - (review_cost * best_alerts)
 
+                # Lookup validation threshold from evaluation.json (falling back to business_impact.json)
+                val_th = None
+                if evaluation_data and isinstance(evaluation_data, dict):
+                    time_split_eval = evaluation_data.get("splits", {}).get("time", {})
+                    if selected_impact_model in time_split_eval:
+                        val_th = time_split_eval[selected_impact_model].get("threshold")
+                    elif selected_impact_model in evaluation_data:
+                        val_th = evaluation_data[selected_impact_model].get("threshold")
+                if val_th is None:
+                    val_th = m_data.get("validation_threshold", 0.5)
+                val_th = float(val_th)
+
+                # Ensure slider resets to the selected model's validation threshold on model change
+                if st.session_state.get("_last_impact_model") != selected_impact_model:
+                    st.session_state["_last_impact_model"] = selected_impact_model
+                    st.session_state["impact_threshold_slider"] = float(round(val_th, 4))
+
                 st.slider(
                     "Operating Score Threshold",
                     min_value=0.0,
                     max_value=1.0,
-                    value=float(round(best_th, 4)),
+                    value=float(round(val_th, 4)),
                     step=0.01,
                     key="impact_threshold_slider",
                 )
-                user_th = st.session_state.get("impact_threshold_slider", best_th)
+                user_th = float(st.session_state.get("impact_threshold_slider", val_th))
 
-                # Find closest grid point to chosen slider value
-                chosen_point = min(grid, key=lambda p: abs(float(p.get("threshold", 0.0)) - user_th))
+                # Candidate points include the grid and exact headline validation point
+                candidate_points = list(grid)
+                headline_point = m_data.get("headline_operating_point")
+                if headline_point and headline_point not in candidate_points:
+                    candidate_points.append(headline_point)
+
+                # Find closest point to chosen slider value
+                chosen_point = min(candidate_points, key=lambda p: abs(float(p.get("threshold", 0.0)) - user_th))
                 th_val = float(chosen_point.get("threshold", 0.0))
                 alerts_val = int(chosen_point.get("alerts", 0))
                 true_alerts_val = int(chosen_point.get("true_alerts", 0))
@@ -1100,9 +1121,11 @@ with tab_impact:
         # Sensitivity Table across review costs 1,000 / 10,000 / 100,000
         sens_rows = business_impact_data.get("sensitivity_table", [])
         if sens_rows:
-            st.markdown("#### Review Cost Sensitivity Analysis (1,000 / 10,000 / 100,000 units)")
+            sens_costs = business_impact_data.get("sensitivity_review_costs", [1000.0, 10000.0, 100000.0])
+            sens_costs_str = " / ".join(f"{int(c):,}" for c in sens_costs)
+            st.markdown(f"#### Review Cost Sensitivity Analysis ({sens_costs_str} units)")
             st.caption(
-                "Sensitivity analysis across varied manual review costs comparing validation thresholds against hindsight test-row optimums."
+                f"Fixed at review costs {sens_costs_str} and does not follow the controls."
             )
             df_sens = pd.DataFrame([
                 {
@@ -1784,12 +1807,12 @@ with tab_scorer:
                 type_idx = ["CASH_OUT", "TRANSFER", "PAYMENT", "CASH_IN", "DEBIT"].index(cur_type) if cur_type in ["CASH_OUT", "TRANSFER", "PAYMENT", "CASH_IN", "DEBIT"] else 0
                 in_type = st.selectbox("Transaction Type", ["CASH_OUT", "TRANSFER", "PAYMENT", "CASH_IN", "DEBIT"], index=type_idx)
                 in_step = st.number_input("Time Step (Hour 1-744)", min_value=1, max_value=744, value=int(st.session_state.get("sc_step", 45)))
-                in_amt = st.number_input("Transaction Amount ($)", min_value=0.01, value=float(st.session_state.get("sc_amt", 250000.0)), step=1000.0)
+                in_amt = st.number_input("Transaction Amount (simulated currency units)", min_value=0.01, value=float(st.session_state.get("sc_amt", 250000.0)), step=1000.0)
             with col_f2:
-                in_old_orig = st.number_input("Sender Old Balance ($)", min_value=0.0, value=float(st.session_state.get("sc_old_orig", 250000.0)), step=1000.0)
-                in_new_orig = st.number_input("Sender New Balance ($)", min_value=0.0, value=float(st.session_state.get("sc_new_orig", 0.0)), step=1000.0)
-                in_old_dest = st.number_input("Receiver Old Balance ($)", min_value=0.0, value=float(st.session_state.get("sc_old_dest", 0.0)), step=1000.0)
-                in_new_dest = st.number_input("Receiver New Balance ($)", min_value=0.0, value=float(st.session_state.get("sc_new_dest", 250000.0)), step=1000.0)
+                in_old_orig = st.number_input("Sender Old Balance (simulated currency units)", min_value=0.0, value=float(st.session_state.get("sc_old_orig", 250000.0)), step=1000.0)
+                in_new_orig = st.number_input("Sender New Balance (simulated currency units)", min_value=0.0, value=float(st.session_state.get("sc_new_orig", 0.0)), step=1000.0)
+                in_old_dest = st.number_input("Receiver Old Balance (simulated currency units)", min_value=0.0, value=float(st.session_state.get("sc_old_dest", 0.0)), step=1000.0)
+                in_new_dest = st.number_input("Receiver New Balance (simulated currency units)", min_value=0.0, value=float(st.session_state.get("sc_new_dest", 250000.0)), step=1000.0)
 
             score_submitted = st.form_submit_button("⚡ Score Transaction Risk")
 
