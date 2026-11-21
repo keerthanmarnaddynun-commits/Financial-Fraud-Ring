@@ -1,0 +1,18 @@
+{
+  "rows_read": 6362620,
+  "rows_kept": 6362620,
+  "dropped_by_rule": {
+    "missing_required_columns_or_nulls": 0,
+    "non_numeric_values": 0,
+    "invalid_type_or_account_filter": 0
+  },
+  "by_type": {
+    "CASH_IN": 1399284,
+    "CASH_OUT": 2237500,
+    "DEBIT": 41432,
+    "PAYMENT": 2151495,
+    "TRANSFER": 532909
+  },
+  "fraud_rows": 8213,
+  "distinct_accounts": 9073900
+}

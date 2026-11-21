@@ -24,15 +24,7 @@ from pyspark.sql.types import (
 DATASET_ID = "ealaxi/paysim1"
 DATA_DIR = Path(__file__).resolve().parent / "data"
 
-import pyspark
-_spark_major = int(pyspark.__version__.split(".")[0])
-_scala_version = "s_2.13" if _spark_major >= 4 else "s_2.12"
-_default_gf_pkg = (
-    f"graphframes:graphframes:0.8.3-spark3.5-{_scala_version}"
-    if _spark_major >= 4
-    else "io.graphframes:graphframes-spark3_2.12:0.9.3"
-)
-GRAPHFRAMES_PACKAGE = os.getenv("GRAPHFRAMES_PACKAGE", _default_gf_pkg)
+from spark_session import GRAPHFRAMES_PACKAGE, create_spark_session
 
 PAYMENTS_SCHEMA = StructType(
     [
@@ -61,31 +53,6 @@ NUMERIC_COLUMNS = [
     "isFraud",
     "isFlaggedFraud",
 ]
-
-
-def create_spark_session(app_name: str = "PaySimFraudAnalytics") -> SparkSession:
-    """Start a local Spark session, loading the matching GraphFrames JVM package."""
-    builder = (
-        SparkSession.builder.master("local[*]")
-        .appName(app_name)
-        .config("spark.jars.packages", GRAPHFRAMES_PACKAGE)
-        .config("spark.driver.memory", os.getenv("SPARK_DRIVER_MEMORY", "8g"))
-        .config(
-            "spark.jars.excludes",
-            "org.slf4j:slf4j-api,org.scala-lang:scala-library",
-        )
-        .config(
-            "spark.default.parallelism",
-            os.getenv("SPARK_DEFAULT_PARALLELISM", "48"),
-        )
-        .config(
-            "spark.sql.shuffle.partitions",
-            os.getenv("SPARK_SHUFFLE_PARTITIONS", "48"),
-        )
-        .config("spark.ui.enabled", "true")
-        .config("spark.sql.execution.arrow.pyspark.enabled", "true")
-    )
-    return builder.getOrCreate()
 
 
 def ensure_dataset(data_dir: Path = DATA_DIR) -> Path:
@@ -129,21 +96,53 @@ def ensure_dataset(data_dir: Path = DATA_DIR) -> Path:
     return downloaded_csvs[0]
 
 
-def load_and_validate_data(
-    spark: SparkSession, csv_path: Optional[Path] = None
+def _read_raw_input(
+    spark: SparkSession, path: Path, input_format: str = "csv"
 ) -> DataFrame:
-    """Load the known PaySim schema, remove malformed rows, and preserve merchant edges."""
-    path = csv_path or ensure_dataset()
+    """Read raw PaySim data from CSV (with explicit schema) or Parquet."""
+    fmt = input_format.lower()
+    if fmt == "parquet" or path.is_dir() or path.suffix.lower() == ".parquet":
+        raw = spark.read.parquet(str(path))
+        missing = sorted(set(REQUIRED_COLUMNS) - set(raw.columns))
+        if missing:
+            raise ValueError(f"PaySim Parquet input is missing required columns: {', '.join(missing)}")
+        return raw.select(*REQUIRED_COLUMNS)
     header = spark.read.option("header", True).option("inferSchema", False).csv(str(path))
     missing = sorted(set(REQUIRED_COLUMNS) - set(header.columns))
     if missing:
         raise ValueError(f"PaySim input is missing required columns: {', '.join(missing)}")
-    raw = (
+    return (
         spark.read.option("header", True)
         .option("mode", "PERMISSIVE")
         .schema(PAYMENTS_SCHEMA)
         .csv(str(path))
     )
+
+
+def resolve_input_path(
+    data_path: Optional[Path] = None, input_format: str = "csv"
+) -> Path:
+    """Resolve input path for CSV or Parquet format."""
+    if data_path is not None:
+        return data_path
+    if input_format.lower() == "parquet":
+        parquet_path = DATA_DIR / "parquet" / "paysim"
+        if not parquet_path.exists():
+            raise FileNotFoundError(
+                f"Parquet dataset not found at {parquet_path}. Run `python to_parquet.py` first."
+            )
+        return parquet_path
+    return ensure_dataset()
+
+
+def load_and_validate_data(
+    spark: SparkSession,
+    csv_path: Optional[Path] = None,
+    input_format: str = "csv",
+) -> DataFrame:
+    """Load the known PaySim schema, remove malformed rows, and preserve merchant edges."""
+    path = resolve_input_path(csv_path, input_format=input_format)
+    raw = _read_raw_input(spark, path, input_format=input_format)
 
     valid = raw.dropna(subset=REQUIRED_COLUMNS)
     for column in NUMERIC_COLUMNS:
@@ -164,45 +163,54 @@ def load_and_validate_data(
     return valid.withColumn("transaction_id", F.monotonically_increasing_id())
 
 
-def build_data_quality_report(spark: SparkSession, csv_path: Optional[Path] = None) -> dict:
+def build_data_quality_report(
+    spark: SparkSession,
+    csv_path: Optional[Path] = None,
+    input_format: str = "csv",
+) -> dict:
     """Capture the raw-data quality counts used by the project dashboard and reports."""
-    path = csv_path or ensure_dataset()
-    raw = (
-        spark.read.option("header", True)
-        .option("mode", "PERMISSIVE")
-        .schema(PAYMENTS_SCHEMA)
-        .csv(str(path))
-    )
-    rows_read = int(raw.count())
-    required_valid = raw.dropna(subset=REQUIRED_COLUMNS)
-    null_rows = rows_read - int(required_valid.count())
-    numeric_valid = required_valid
-    for column in NUMERIC_COLUMNS:
-        numeric_valid = numeric_valid.filter(~F.isnan(F.col(column).cast("double")))
-    bad_numeric_rows = int(required_valid.count()) - int(numeric_valid.count())
-    cleaned = numeric_valid.filter(
-        F.col("type").isin("CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER")
-        & F.col("nameOrig").startswith("C")
-        & (F.col("nameDest").startswith("C") | F.col("nameDest").startswith("M"))
-        & F.col("amount").between(0, float("inf"))
-        & F.col("isFraud").isin(0, 1)
-    )
-    rows_kept = int(cleaned.count())
-    by_type = {
-        row["type"]: int(row["count"])
-        for row in raw.groupBy("type").count().orderBy("type").collect()
-    }
-    fraud_rows = int(raw.filter(F.col("isFraud") == 1).count())
-    distinct_accounts = int(raw.select("nameOrig", "nameDest").distinct().count())
-    return {
-        "rows_read": rows_read,
-        "rows_kept": rows_kept,
-        "dropped_by_rule": {
-            "missing_required_columns_or_nulls": null_rows,
-            "non_numeric_values": bad_numeric_rows,
-            "invalid_type_or_account_filter": rows_read - int(numeric_valid.count()),
-        },
-        "by_type": by_type,
-        "fraud_rows": fraud_rows,
-        "distinct_accounts": distinct_accounts,
-    }
+    path = resolve_input_path(csv_path, input_format=input_format)
+    raw = _read_raw_input(spark, path, input_format=input_format).cache()
+    try:
+        rows_read = int(raw.count())
+        required_valid = raw.dropna(subset=REQUIRED_COLUMNS)
+        req_valid_count = int(required_valid.count())
+        null_rows = rows_read - req_valid_count
+        numeric_valid = required_valid
+        for column in NUMERIC_COLUMNS:
+            numeric_valid = numeric_valid.filter(~F.isnan(F.col(column).cast("double")))
+        num_valid_count = int(numeric_valid.count())
+        bad_numeric_rows = req_valid_count - num_valid_count
+        cleaned = numeric_valid.filter(
+            F.col("type").isin("CASH_IN", "CASH_OUT", "DEBIT", "PAYMENT", "TRANSFER")
+            & F.col("nameOrig").startswith("C")
+            & (F.col("nameDest").startswith("C") | F.col("nameDest").startswith("M"))
+            & F.col("amount").between(0, float("inf"))
+            & F.col("isFraud").isin(0, 1)
+        )
+        rows_kept = int(cleaned.count())
+        by_type = {
+            row["type"]: int(row["count"])
+            for row in raw.groupBy("type").count().orderBy("type").collect()
+        }
+        fraud_rows = int(raw.filter(F.col("isFraud") == 1).count())
+        distinct_accounts = int(
+            raw.select(F.col("nameOrig").alias("acc"))
+            .union(raw.select(F.col("nameDest").alias("acc")))
+            .distinct()
+            .count()
+        )
+        return {
+            "rows_read": rows_read,
+            "rows_kept": rows_kept,
+            "dropped_by_rule": {
+                "missing_required_columns_or_nulls": null_rows,
+                "non_numeric_values": bad_numeric_rows,
+                "invalid_type_or_account_filter": num_valid_count - rows_kept,
+            },
+            "by_type": by_type,
+            "fraud_rows": fraud_rows,
+            "distinct_accounts": distinct_accounts,
+        }
+    finally:
+        raw.unpersist()

@@ -1,0 +1,205 @@
+# PaySim Financial Fraud-Ring Analytics (PySpark, ML, Streamlit)
+
+End-to-end big-data fraud analytics pipeline and interactive Streamlit dashboard built on Apache Spark (`PySpark {{num:outputs/run_info.json:pyspark}}`) over the PaySim mobile-money transaction dataset (`{{num:outputs/data_quality.json:rows_kept:int}}` kept transactions across `{{num:outputs/data_quality.json:distinct_accounts:int}}` distinct accounts and `{{num:outputs/data_quality.json:fraud_rows:int}}` ground-truth fraud rows).
+
+All metrics, tables, and environment details in this README are generated programmatically from `outputs/` and `docs/` via `python make_report.py` from `docs/templates/README.md.tmpl`.
+
+---
+
+## 1. Problem Statement
+
+Rule-based fraud filters (`isFlaggedFraud` on `TRANSFER` transactions above 200,000 units) evaluate transactions in isolation and miss the majority of fraudulent value (`{{num:outputs/business_impact.json:rule_baseline.alerts:int}}` alerts catching `{{num:outputs/business_impact.json:rule_baseline.share_fraud_value_caught:pct2}}` of fraud value on the primary time-split test set). This project evaluates:
+
+1. **Spark-native distributed graph feature engineering**: in/out degrees, iterative PageRank, undirected triangle counts, iterative connected components, iterative label propagation (LPA), and account-level flow features computed natively on Spark DataFrames (see [docs/engine_findings.txt](docs/engine_findings.txt)).
+2. **Per-split model comparison (`M0`–`M3`)**: models are trained per split (`time`, `group_dest`, `random`) on each split's own training rows, score thresholds are chosen on validation rows only (maximising F1 at true prevalence), test rows are scored distributively via Spark `mapInPandas`, and graph features are label-free but transductive (computed over the full graph).
+3. **Real-data vs synthetic ring structure**: empirical connected-component analysis on PaySim's ground-truth fraud subgraph paired with a controlled synthetic ring injection test (`outputs/planted_ring_validation.json`) across `0%`, `20%`, and `50%` camouflage for both connected components and LPA.
+4. **Big-data systems benchmarks**: CSV vs Parquet storage benchmark, Spark data-size and core-scaling benchmarks, and single-node `pandas`/NetworkX versus Spark comparisons.
+
+---
+
+## 2. Pipeline Architecture
+
+Data flows through the following stages (a dedicated Mermaid architecture diagram in `docs/ARCHITECTURE.md` is deferred to a later documentation step):
+
+1. **Storage & Ingestion** (`data_ingestion.py`, `to_parquet.py`): Reads PaySim CSV with explicit schema (`PAYMENTS_SCHEMA`) or Parquet (`--input-format parquet`), retains merchant destinations (`is_merchant` flag), validates schema and numeric columns, and writes `outputs/data_quality.json`.
+2. **Graph Construction & Feature Engineering** (`graph_construction.py`, `feature_engineering.py`, `graph_pipeline.py`): Runs Spark-native DataFrame algorithms (`degrees`, `pagerank`, `triangles`, `components`, `lpa`, `behaviour_features`), joins account features onto transactions (`add_transaction_graph_features`), and persists `enriched_features.parquet`.
+3. **Per-Split Model Training & Distributed Evaluation** (`splits.py`, `models.py`, `evaluation.py`, `configs/model_config.json`): Independently trains `m1_tabular`, `m1_tabular_noerr`, `m2_graph`, and `m3_community_mule` per split (`time`, `group_dest`, `random`), selects thresholds on validation rows, scores all test rows distributively, and writes `outputs/evaluation.json`, `outputs/pr_curves.csv`, and `outputs/scalability.json`.
+4. **Downstream Analytics & Visuals** (`business_impact.py`, `rings.py`, `planted_rings.py`, `generate_visuals.py`): Computes financial impact at validation thresholds plus review-cost sensitivity, inspects ground-truth fraud components, runs planted-ring injection tests, and generates PNG figures in `outputs/visuals/`.
+5. **Interactive Dashboard & Report Generation** (`app.py`, `make_report.py`, `check_docs.py`): Streamlit 7-tab dashboard reading strictly from `outputs/` (`FRAUD_OUTPUT_DIR`), plus deterministic Markdown table and facts generation ([docs/RESULTS_TABLES.md](docs/RESULTS_TABLES.md), [docs/FACTS_FOR_PAPER.md](docs/FACTS_FOR_PAPER.md), [docs/GLOSSARY.md](docs/GLOSSARY.md)).
+
+---
+
+## 3. Exact PowerShell Run Commands
+
+### Environment & Dependencies
+```powershell
+pip install --no-input -r requirements.txt
+pip install --no-input -r requirements-dev.txt
+```
+
+### Fast Sample Pipeline Run (2% Sample)
+```powershell
+python main.py --sample-fraction 0.02 --output-dir outputs_test
+```
+
+### Full End-to-End Pipeline Run (All Rows, Default `6g` / `48` Partitions)
+```powershell
+python main.py --output-dir runs\full_run
+# Or reading from Parquet after conversion:
+python main.py --input-format parquet --output-dir runs\full_run_parquet
+```
+
+### Downstream Analytics & Charts
+```powershell
+python business_impact.py
+python rings.py
+python planted_rings.py
+python generate_visuals.py
+```
+
+### Big-Data Benchmarks
+```powershell
+# 1. Convert CSV to partitioned and unpartitioned Parquet (keeps original CSV)
+python to_parquet.py
+
+# 2. Storage benchmark (CSV vs Parquet, 3 repeats)
+python storage_benchmark.py
+
+# 3. Spark data-size and core scaling benchmark (resumable)
+python benchmark_scaling.py --run-dir runs\c3-scaling
+python aggregate_scaling.py --run-dir runs\c3-scaling --finalize
+
+# 4. pandas/NetworkX vs Spark comparison (resumable)
+python pandas_vs_spark.py --run-dir runs\c3-pandas-vs-spark
+```
+
+### Interactive Dashboard & Spark UI Screenshot Helper
+```powershell
+# Launch the 7-tab Streamlit dashboard (reads outputs\ by default)
+streamlit run app.py
+
+# Run 2% sample pipeline and hold Spark UI open at http://localhost:4040 for screenshots
+python demo_run.py
+```
+
+### Documentation Generation, Consistency Check, and Tests
+```powershell
+# Regenerate README.md, docs\RESULTS_TABLES.md, docs\FACTS_FOR_PAPER.md, and results_snapshot\
+python make_report.py
+
+# Run read-only consistency and link check
+python check_docs.py
+
+# Run dashboard smoke tests
+python -m pytest tests/test_app_smoke.py -v
+
+# Run full pytest suite
+python -m pytest -q
+```
+
+---
+
+## 4. Pinned Environment and Software Versions
+
+Measured on the project machine (`outputs/run_info.json`):
+- **Python**: `{{num:outputs/run_info.json:python}}`
+- **Java**: `{{num:outputs/run_info.json:java}}`
+- **CPU**: `{{num:outputs/run_info.json:cores.physical}}` physical / `{{num:outputs/run_info.json:cores.logical}}` logical cores
+- **RAM**: `{{num:outputs/run_info.json:ram_gb.total:2f}} GiB` total
+- **Default Spark Settings**: `spark.driver.memory={{num:outputs/run_info.json:config.SPARK_DRIVER_MEMORY}}`, `spark.sql.shuffle.partitions={{num:outputs/run_info.json:config.SPARK_SHUFFLE_PARTITIONS}}`
+
+Pinned Python runtime packages ([requirements.txt](requirements.txt)):
+```text
+{{text:requirements.txt}}
+```
+
+---
+
+## 5. Repository Folder Map
+
+```text
+Financial-Fraud-Ring/
+  main.py, graph_pipeline.py, spark_session.py, data_ingestion.py,
+  graph_construction.py, feature_engineering.py, feature_sets.py,
+  splits.py, models.py, evaluation.py, stage_timer.py, run_info.py,
+  provenance.py, business_impact.py, rings.py, planted_rings.py,
+  to_parquet.py, storage_benchmark.py, benchmark_scaling.py,
+  aggregate_scaling.py, pandas_vs_spark.py, generate_visuals.py,
+  make_report.py, check_docs.py, demo_run.py, app.py,
+  model_names.json, requirements.txt, requirements-dev.txt,
+  README.md, PROGRESS.txt, NOTES_FOR_LATER.txt
+  configs/             model_config.json
+  tests/               pytest suite and tests/data/sample_1000.csv
+  docs/                GLOSSARY.md, env_snapshot.txt, raw_data_facts.json,
+                       engine_findings.txt, RESULTS_TABLES.md,
+                       FACTS_FOR_PAPER.md, templates/
+  logs/                AG_WORKLOG_C1..C4.txt, GATE_*_SUMMARY.txt, raw/ (gitignored)
+  runs/                immutable per-run folders with CARD.md + SHA256SUMS.txt (gitignored)
+  outputs/             accepted copy of results + PROVENANCE.txt (gitignored)
+  results_snapshot/    committed small JSON/CSV/PNG results + SHA256SUMS.txt
+  archive/             archived legacy outputs and archived legacy web dashboard (gitignored)
+```
+
+---
+
+## 6. Key Results (Generated from `outputs/`)
+
+For full tables across all three splits (`time`, `group_dest`, `random`), review-cost sensitivity, per-run benchmark logs, and metric definitions, see [docs/RESULTS_TABLES.md](docs/RESULTS_TABLES.md), [docs/FACTS_FOR_PAPER.md](docs/FACTS_FOR_PAPER.md), and [docs/GLOSSARY.md](docs/GLOSSARY.md).
+
+### 6.0 What the results do and do not show
+
+{{table:what_results_show}}
+
+### 6.1 Primary Time-Split Model Results (`outputs/evaluation.json: splits.time`)
+Test set size: `{{num:outputs/evaluation.json:splits.time.m1_tabular.rows:int}}` rows, fraud prevalence `{{num:outputs/evaluation.json:splits.time.m1_tabular.prevalence:pct4}}`. Thresholds for `m1_tabular`–`m3_community_mule` are selected strictly on validation rows; `m0_rule` uses its fixed `rule_definition`.
+
+{{table:models_time}}
+
+### 6.2 Business Impact at Validation Operating Thresholds (`outputs/business_impact.json`)
+Time-split test set total fraud value: `{{num:outputs/business_impact.json:fraud_value_total:comma2f}}` `{{num:outputs/business_impact.json:currency}}` across `{{num:outputs/business_impact.json:fraud_rows:int}}` fraud transactions. Default review cost: `{{num:outputs/business_impact.json:default_review_cost:int}}` (`{{num:outputs/business_impact.json:review_cost_label}}`).
+
+{{table:business_impact_headline}}
+
+### 6.3 Real-Data Fraud Subgraph Finding (`outputs/ring_analysis.json`)
+> {{num:outputs/ring_analysis.json:finding}}
+
+{{table:real_ring}}
+
+### 6.4 Planted-Ring Synthetic Injection Test (`outputs/planted_ring_validation.json`)
+Label: `{{num:outputs/planted_ring_validation.json:label}}`; `{{num:outputs/planted_ring_validation.json:total_planted_rings:int}}` rings injected into a `{{num:outputs/planted_ring_validation.json:sample_size:int}}`-row sample.
+
+**Connected Components** (overall strict recovery: `{{num:outputs/planted_ring_validation.json:algorithms.connected_components.overall_recovery_rate:pct2}}`):
+
+{{table:planted_rings_cc}}
+
+**Label Propagation (LPA)** (overall strict recovery: `{{num:outputs/planted_ring_validation.json:algorithms.label_propagation.overall_recovery_rate:pct2}}`):
+
+{{table:planted_rings_lpa}}
+
+### 6.5 Spark Data-Size Scaling (`outputs/scaling_runs.json: data_size_summary`)
+Default Spark settings (`{{num:outputs/run_info.json:config.SPARK_DRIVER_MEMORY}}` driver memory, `{{num:outputs/run_info.json:config.SPARK_SHUFFLE_PARTITIONS}}` shuffle partitions, `local[*]`, 2 repeats). `{{num:outputs/scaling_runs.json:superseded_runs_count:int}}` initial runs hit the `< 0.5 GiB / 60 s` memory guard, were retained as `superseded: true`, and were re-run under `< 0.2 GiB / 120 s`.
+
+{{table:data_scaling}}
+
+### 6.6 Spark Core Scaling (`outputs/scaling_runs.json: core_scaling_summary`)
+Measured at sample fraction `{{num:outputs/scaling_runs.json:core_scaling_fraction:2f}}` across `local[1..16]` (2 repeats each).
+
+{{table:core_scaling}}
+
+### 6.7 pandas/NetworkX vs Spark (`outputs/pandas_vs_spark.json: summary`)
+Uniform Parquet samples (`100,000`–`4,000,000` rows, `seed=42`) plus full PaySim Parquet (`{{num:outputs/data_quality.json:rows_kept:int}}` rows) for `pandas_networkx`; 10-minute timeout, 9 GiB RSS cap, 2 repeats.
+
+{{table:pandas_vs_spark}}
+
+{{table:pandas_vs_spark_guide}}
+
+### 6.8 Storage Benchmark: CSV vs Parquet (`outputs/storage_benchmark.json`)
+3 repeats each on the full `{{num:outputs/data_quality.json:rows_kept:int}}`-row dataset.
+
+{{table:storage_benchmark}}
+
+---
+
+## 7. Limitations
+
+{{table:limitations}}

@@ -13,17 +13,21 @@ from typing import Any, Dict, Optional
 from data_ingestion import (
     PAYMENTS_SCHEMA,
     build_data_quality_report,
-    create_spark_session,
     ensure_dataset,
     load_and_validate_data,
+    resolve_input_path,
 )
-from evaluation import collect_spark_metrics, evaluate_models, write_json
-from feature_engineering import (
-    add_transaction_graph_features,
-    extract_account_features,
+from run_info import write_run_info
+from spark_session import create_spark_session
+from evaluation import (
+    collect_spark_metrics,
+    evaluate_models,
+    run_distributed_evaluation,
+    write_json,
 )
-from graph_construction import build_transaction_graph
-from models import sample_training_data, train_comparative_models
+from graph_pipeline import run_graph_stages
+from models import train_comparative_models
+from splits import draw_training_sample, get_dataset_split
 
 LOGGER = logging.getLogger("fraud_analytics")
 
@@ -33,58 +37,108 @@ def run_pipeline(
     output_dir: Path,
     max_training_rows: int,
     sample_fraction: Optional[float] = None,
+    input_format: str = "csv",
 ) -> Dict[str, Any]:
     pipeline_started = time.perf_counter()
     output_dir.mkdir(parents=True, exist_ok=True)
-    input_path = data_path or ensure_dataset()
+    input_path = resolve_input_path(data_path, input_format=input_format)
+    write_run_info(
+        output_dir / "run_info.json",
+        dataset_path=input_path if input_path.is_file() else None,
+        config={
+            "sample_fraction": sample_fraction,
+            "max_training_rows": max_training_rows,
+            "input_format": input_format,
+            "input_path": str(input_path),
+        },
+    )
     spark = create_spark_session()
-    timings: Dict[str, float] = {}
+    timings: Dict[str, Any] = {}
 
     try:
-        started = time.perf_counter()
-        raw_df = spark.read.option("header", True).option("mode", "PERMISSIVE").schema(
-            PAYMENTS_SCHEMA
-        ).csv(str(input_path))
-        quality_report = build_data_quality_report(spark, input_path)
+        dq_started = time.perf_counter()
+        quality_report = build_data_quality_report(spark, input_path, input_format=input_format)
         write_json(quality_report, str(output_dir / "data_quality.json"))
-        transactions = load_and_validate_data(spark, input_path)
-        if sample_fraction is not None:
-            transactions = transactions.sample(withReplacement=False, fraction=sample_fraction, seed=42)
-        transaction_count = transactions.count()
-        timings["ingestion_and_validation"] = time.perf_counter() - started
-        LOGGER.info("Validated %s PaySim transactions", f"{transaction_count:,}")
+        dq_seconds = time.perf_counter() - dq_started
 
-        started = time.perf_counter()
-        graph = build_transaction_graph(transactions)
-        graph.vertices.cache()
-        graph.edges.cache()
-        graph.vertices.count()
-        graph.edges.count()
-        timings["graph_construction"] = time.perf_counter() - started
-
-        started = time.perf_counter()
-        account_features = extract_account_features(graph).cache()
-        account_count = account_features.count()
-        enriched = add_transaction_graph_features(
-            transactions, account_features
+        graph_res = run_graph_stages(
+            spark,
+            df=None,
+            timer=timings,
+            input_path=input_path,
+            input_format=input_format,
+            sample_fraction=sample_fraction,
+            seed=42,
+            materialize_enriched=False,
         )
-        timings["graph_feature_engineering"] = time.perf_counter() - started
-        LOGGER.info("Computed graph features for %s accounts", f"{account_count:,}")
+        transaction_count = graph_res["rows"]
+        account_count = graph_res["account_count"]
+        enriched = graph_res["enriched"]
+        engines = graph_res["engines"]
+        algo_info = graph_res["algo_info"]
+
+        timings["ingestion_and_validation"] = dq_seconds + graph_res["seconds"]["ingest_validate"]
+        timings["graph_construction"] = graph_res["seconds"]["graph_build"]
+        timings["graph_feature_engineering"] = graph_res["seconds"]["graph_feature_engineering"]
+        LOGGER.info(
+            "Ingested %s PaySim transactions and computed graph features for %s accounts",
+            f"{transaction_count:,}",
+            f"{account_count:,}",
+        )
+
+        # Persist enriched features to Parquet in the run folder
+        enriched_parquet_path = output_dir / "enriched_features.parquet"
+        LOGGER.info("Persisting enriched features to %s", enriched_parquet_path)
+        enriched.write.mode("overwrite").parquet(str(enriched_parquet_path))
+        enriched = spark.read.parquet(str(enriched_parquet_path)).cache()
+
+        # Per-split training: call training once per split on each split's own train rows
+        splits_to_run = ["time", "group_dest", "random"]
+        models_by_split = {}
+        training_samples_by_split = {}
+        total_training_rows = 0
 
         started = time.perf_counter()
-        training_data = sample_training_data(enriched, max_training_rows)
-        models, test_data, _ = train_comparative_models(training_data)
-        timings["model_training_and_prediction"] = time.perf_counter() - started
+        for split_name in splits_to_run:
+            LOGGER.info("Drawing training sample and training models for split: %s", split_name)
+            split_train_df, _, _ = get_dataset_split(enriched, split_name)
+            split_training_data = draw_training_sample(split_train_df, max_training_rows)
+            training_samples_by_split[split_name] = int(len(split_training_data))
+            total_training_rows += len(split_training_data)
+            split_models, _, _ = train_comparative_models(
+                split_training_data, output_dir=output_dir, split_name=split_name
+            )
+            models_by_split[split_name] = split_models
 
-        report = evaluate_models(test_data)
-        write_json(report, str(output_dir / "evaluation.json"))
-        metrics = collect_spark_metrics(spark, timings)
+        timings["model_training"] = time.perf_counter() - started
+
+        started = time.perf_counter()
+        report = run_distributed_evaluation(
+            spark=spark,
+            enriched_df=enriched,
+            models=models_by_split,
+            output_dir=output_dir,
+            splits_to_run=splits_to_run,
+        )
+        timings["distributed_scoring_and_eval"] = time.perf_counter() - started
         timings["pipeline_total"] = time.perf_counter() - pipeline_started
+
+        metrics = collect_spark_metrics(spark, timings)
+        metrics["phases"]["pipeline_total"] = time.perf_counter() - pipeline_started
+        metrics["timings_seconds"]["pipeline_total"] = metrics["phases"]["pipeline_total"]
         metrics["transaction_count"] = transaction_count
         metrics["account_count"] = account_count
-        metrics["sampled_training_rows"] = int(len(training_data))
-        metrics["test_rows"] = int(len(test_data))
-        metrics["model_names"] = list(models)
+
+        # Requirement (c): record sampled_training_rows per split
+        metrics["sampled_training_rows"] = training_samples_by_split
+        metrics["sampled_training_rows_per_split"] = training_samples_by_split
+        metrics["sampled_training_rows_total"] = int(total_training_rows)
+
+        # Canonical model names only (no legacy aliases)
+        canonical_models = [m for m in models_by_split.get("time", {}).keys() if not m.startswith("score_")]
+        metrics["model_names"] = canonical_models
+        metrics["engines"] = engines
+        metrics["algorithm_info"] = algo_info
         write_json(metrics, str(output_dir / "scalability.json"))
         LOGGER.info("Evaluation report: %s", json.dumps(report, indent=2))
         LOGGER.info("Scalability metrics: %s", json.dumps(metrics, indent=2))
@@ -121,6 +175,13 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="Optional sample fraction for fast debugging runs (0.0-1.0).",
     )
+    parser.add_argument(
+        "--input-format",
+        type=str,
+        choices=["csv", "parquet"],
+        default="csv",
+        help="Input storage format: csv (default) or parquet.",
+    )
     return parser.parse_args()
 
 
@@ -132,7 +193,13 @@ def main() -> None:
     args = parse_args()
     if args.sample_fraction is not None and not 0 < args.sample_fraction <= 1:
         raise ValueError("--sample-fraction must be between 0 and 1.")
-    run_pipeline(args.data, args.output_dir, args.max_training_rows, args.sample_fraction)
+    run_pipeline(
+        args.data,
+        args.output_dir,
+        args.max_training_rows,
+        args.sample_fraction,
+        input_format=args.input_format,
+    )
 
 
 if __name__ == "__main__":

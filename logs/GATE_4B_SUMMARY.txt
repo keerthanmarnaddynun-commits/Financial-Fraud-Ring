@@ -1,0 +1,71 @@
+# GATE 4B SUMMARY (STEP 4.1b - Chunk 4 Doc Fixes)
+
+Generated programmatically by `scripts/generate_gate4b_summary.py`. Docs only (zero Spark runs, zero full pytest runs).
+
+## 1. Changes Applied (All 8 Items)
+| Item | Document Locations | Summary of Script-Generated Update |
+| --- | --- | --- |
+| 1 | README Section 1 item 2 | Removed 'leakage-free'; stated validation-only thresholds, per-split training, and label-free transductive graph features. |
+| 2 | README 6.8, FACTS 8, RESULTS 14 | Added warm mean (repeats 2-3) and warm speedup vs CSV plus cold-cache CSV note (e.g., CSV count_rows warm mean 1.3647s vs unpartitioned Parquet 0.7140s = 1.91x warm speedup). |
+| 3 | README 6.7, FACTS 7, RESULTS 13 | Added reading guide: pandas faster on components (Spark timeout at 2M); at 4M degree compute is 23.25s (Spark) vs 23.33s (pandas) with Spark load separate; Spark not run at 6,362,620 rows. |
+| 4 | README Section 6.0 | Added 'What the results do and do not show' from outputs/ (m1/m2/m3 row differences, m1_tabular_noerr drop, 0 real rings >=4, components 2042.20s of 2908.38s, 6 or 7 rings/cell, >=80% strict recovery definition). |
+| 5 | README 7, FACTS 11 | Added single training run / no CIs (random_state=42), training sampling (max_training_rows=100,000, sampled_training_rows=147,532), and 0.2 GiB/120s memory guard note (ok min dip 76.73 MiB at f=0.25). |
+| 6 | README 6.1, FACTS 2a-2c, RESULTS 3-5 | Changed m0_rule threshold source column to rule_definition in every model table. |
+| 7 | README 4 & 7, FACTS 9c & 11, RESULTS 16 | Removed 'Intel Core Ultra 7 155H' and 'Windows 11' (absent from outputs/run_info.json); environment table only emits CPU/OS rows if keys exist in run_info.json. |
+| 8 | README Section 6.2 | Formatted total fraud value with thousands separators (3,181,396,658.88). |
+
+## 2. Updated Files
+| Updated File | Size (Bytes) | SHA-256 (prefix) |
+| --- | --- | --- |
+| make_report.py | 61,680 | 8857e5f3e694a0dd... |
+| docs/templates/README.md.tmpl | 11,740 | 0765fb3d0e62ca38... |
+| README.md | 27,334 | ee6c7a6759293d38... |
+| docs/RESULTS_TABLES.md | 26,555 | 35e9fd3989f9ed75... |
+| docs/FACTS_FOR_PAPER.md | 37,404 | 7deb139218c39d08... |
+
+## 3. Chunk 4 Status (from `PROGRESS.txt`)
+- STEP 4.1 | DONE | S4.1 | Report generator (make_report.py), docs/RESULTS_TABLES.md, docs/FACTS_FOR_PAPER.md, results_snapshot
+- STEP 4.1b | DONE | S4.1b | Doc fixes (8 items in make_report.py and README.md.tmpl); check_docs.py PASS
+- STEP 4.2 | DONE | S4.2 | README.md generated from docs/templates/README.md.tmpl via make_report.py
+- STEP 4.3 | SKIPPED(by user, later) | - | Paper rewrite from template and claims trace
+- STEP 4.4 | SKIPPED(by user, later) | - | Architecture diagram
+- STEP 4.5 | SKIPPED(by user, later) | - | Demo script and viva questions
+- STEP 4.6 | DONE | S4.6 | Archived legacy web dashboard (web/, web_app.py) to archive/web_legacy/
+- STEP 4.7 | DONE | S4.7 | Strict read-only check_docs.py passed (0 mismatches, 0 banned words, 0 broken links)
+- STEP 4.8 | PENDING | - | Final summary and last push (waits for plugged-in at home)
+- GATE 4 | PENDING | - | Final gate (Gate 4a after 4.7; Gate 4 after 4.8)
+
+## 4. Read-Only Consistency Check (`python check_docs.py`)
+Raw output (`logs/raw/20261118_4.1b_check_docs.txt`):
+```text
+=== CHECK_DOCS (READ-ONLY CONSISTENCY CHECK) ===
+
+[A] Byte-for-byte template regeneration (3 files):
+    - README.md
+    - docs/FACTS_FOR_PAPER.md
+    - docs/RESULTS_TABLES.md
+    STATUS: PASS (0 byte differences)
+
+[B] Banned vocabulary scan (32 targets):
+    STATUS: PASS (0 banned-word hits)
+
+[C] Relative Markdown link check (4 files):
+    STATUS: PASS (0 broken relative links)
+
+[D] COVERAGE
+  Checked:
+    1. Byte-for-byte identity between make_report.py temp regeneration and workspace files: README.md, docs/FACTS_FOR_PAPER.md, docs/RESULTS_TABLES.md
+    2. Banned words (optimal, sweet spot, robust, decisively, catastrophic, proves, guarantees, perfect, state-of-the-art, outperforms, verified, confirmed, audited) in README.md, docs/*.(md|txt|tmpl), app.py string literals, and Python comments across active project modules.
+    3. Local existence of all relative Markdown links in README.md and docs/**/*.md.
+  NOT Checked:
+    1. Does NOT re-run Spark pipelines, benchmarks, or pytest tests to recompute JSON values in outputs/.
+    2. Does NOT inspect deferred/unwritten docs (docs/paper_final.md, docs/ARCHITECTURE.md, docs/DEMO_SCRIPT.txt, docs/VIVA_QA.txt) or legacy research_paper_draft.md.
+    3. Does NOT inspect check_docs.py itself, tests/, scratch/, archive/, runs/, logs/, old_app_reference.py, or app_mine.py.
+    4. Does NOT check external HTTP/HTTPS URLs or PNG chart pixel contents.
+    5. Does NOT flag standard technical terms 'validation'/'validate' in code identifiers or filenames.
+
+OVERALL: PASS (total_issues=0)
+```
+
+---
+Stopped at GATE 4B. `STEP 4.8` remains `PENDING` until plugged in at home.

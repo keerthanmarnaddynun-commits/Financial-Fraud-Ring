@@ -1,0 +1,7 @@
+{
+  "m0_rule": "M0 Rule Baseline",
+  "m1_tabular": "M1 Tabular Baseline",
+  "m1_tabular_noerr": "M1 Tabular (No Error Bal)",
+  "m2_graph": "M2 Graph + Structural",
+  "m3_community_mule": "M3 Community + Mule"
+}

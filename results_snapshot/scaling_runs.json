@@ -1,0 +1,3453 @@
+{
+  "benchmark": "spark_scaling",
+  "generated_at": "2026-11-18T12:22:11.792272",
+  "total_runs_recorded": 21,
+  "active_runs_count": 18,
+  "superseded_runs_count": 3,
+  "ok_runs_count": 18,
+  "non_ok_runs_count": 0,
+  "total_benchmark_wall_seconds": 21179.5396,
+  "active_benchmark_wall_seconds": 19128.6949,
+  "core_scaling_fraction": 0.1,
+  "core_scaling_baseline_local1_seconds": 926.943,
+  "data_size_summary": [
+    {
+      "fraction": 0.1,
+      "master": "local[*]",
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "superseded_count": 0,
+      "superseded_statuses": [],
+      "mean_rows": 635856,
+      "mean_nodes": 1092959,
+      "mean_edges": 635856,
+      "individual_total_seconds": [
+        490.713,
+        495.9982
+      ],
+      "mean_total_seconds": 493.3556,
+      "mean_stage_seconds": {
+        "ingest_validate": 17.4879,
+        "graph_build": 11.1961,
+        "degrees": 11.735,
+        "pagerank": 52.8734,
+        "triangles": 22.9955,
+        "components": 239.8684,
+        "lpa": 103.6978,
+        "behaviour_features": 11.2865,
+        "feature_join": 7.3476,
+        "total": 493.3556
+      },
+      "mean_peak_rss_bytes": 6634749952,
+      "min_available_ram_bytes": 1236008960,
+      "mean_shuffle_bytes": 8870019661
+    },
+    {
+      "fraction": 0.25,
+      "master": "local[*]",
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "superseded_count": 2,
+      "superseded_statuses": [
+        "aborted_low_memory",
+        "aborted_low_memory"
+      ],
+      "mean_rows": 1590820,
+      "mean_nodes": 2509524,
+      "mean_edges": 1590820,
+      "individual_total_seconds": [
+        1132.0729,
+        714.9294
+      ],
+      "mean_total_seconds": 923.5011,
+      "mean_stage_seconds": {
+        "ingest_validate": 18.3388,
+        "graph_build": 9.1912,
+        "degrees": 11.9252,
+        "pagerank": 54.8691,
+        "triangles": 32.1948,
+        "components": 577.6302,
+        "lpa": 182.1359,
+        "behaviour_features": 14.8571,
+        "feature_join": 7.3124,
+        "total": 923.5011
+      },
+      "mean_peak_rss_bytes": 7263207424,
+      "min_available_ram_bytes": 80457728,
+      "mean_shuffle_bytes": 21683590868
+    },
+    {
+      "fraction": 0.5,
+      "master": "local[*]",
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "superseded_count": 1,
+      "superseded_statuses": [
+        "aborted_low_memory"
+      ],
+      "mean_rows": 3180590,
+      "mean_nodes": 4737083,
+      "mean_edges": 3180590,
+      "individual_total_seconds": [
+        1262.7428,
+        1467.2162
+      ],
+      "mean_total_seconds": 1364.9795,
+      "mean_stage_seconds": {
+        "ingest_validate": 23.1249,
+        "graph_build": 17.5936,
+        "degrees": 22.1718,
+        "pagerank": 96.9982,
+        "triangles": 51.1129,
+        "components": 808.7098,
+        "lpa": 263.3324,
+        "behaviour_features": 30.8023,
+        "feature_join": 12.7862,
+        "total": 1364.9795
+      },
+      "mean_peak_rss_bytes": 7423629312,
+      "min_available_ram_bytes": 484163584,
+      "mean_shuffle_bytes": 54226430377
+    },
+    {
+      "fraction": 1.0,
+      "master": "local[*]",
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "superseded_count": 0,
+      "superseded_statuses": [],
+      "mean_rows": 6362620,
+      "mean_nodes": 9073900,
+      "mean_edges": 6362620,
+      "individual_total_seconds": [
+        2799.1532,
+        2764.2759
+      ],
+      "mean_total_seconds": 2781.7146,
+      "mean_stage_seconds": {
+        "ingest_validate": 24.9062,
+        "graph_build": 20.2178,
+        "degrees": 28.6916,
+        "pagerank": 148.3757,
+        "triangles": 89.1963,
+        "components": 1900.3481,
+        "lpa": 454.6033,
+        "behaviour_features": 43.7942,
+        "feature_join": 16.505,
+        "total": 2781.7146
+      },
+      "mean_peak_rss_bytes": 7495284736,
+      "min_available_ram_bytes": 465641472,
+      "mean_shuffle_bytes": 136340283087
+    }
+  ],
+  "core_scaling_summary": [
+    {
+      "cores": 1,
+      "master": "local[1]",
+      "fraction": 0.1,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_rows": 635856,
+      "mean_nodes": 1092959,
+      "mean_edges": 635856,
+      "individual_total_seconds": [
+        957.1011,
+        896.7849
+      ],
+      "mean_total_seconds": 926.943,
+      "speedup": 1.0,
+      "individual_speedups": [
+        0.9685,
+        1.0336
+      ],
+      "efficiency": 1.0,
+      "mean_stage_seconds": {
+        "ingest_validate": 20.5302,
+        "graph_build": 14.6294,
+        "degrees": 16.1303,
+        "pagerank": 87.9494,
+        "triangles": 42.5299,
+        "components": 497.0307,
+        "lpa": 201.9914,
+        "behaviour_features": 15.9514,
+        "feature_join": 11.0511,
+        "total": 926.943
+      },
+      "mean_peak_rss_bytes": 4185020416,
+      "min_available_ram_bytes": 3277025280,
+      "mean_shuffle_bytes": 8870019661
+    },
+    {
+      "cores": 2,
+      "master": "local[2]",
+      "fraction": 0.1,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_rows": 635856,
+      "mean_nodes": 1092959,
+      "mean_edges": 635856,
+      "individual_total_seconds": [
+        713.3556,
+        862.5806
+      ],
+      "mean_total_seconds": 787.9681,
+      "speedup": 1.1764,
+      "individual_speedups": [
+        1.2994,
+        1.0746
+      ],
+      "efficiency": 0.5882,
+      "mean_stage_seconds": {
+        "ingest_validate": 19.3698,
+        "graph_build": 13.6862,
+        "degrees": 14.9862,
+        "pagerank": 78.3204,
+        "triangles": 34.0312,
+        "components": 393.4181,
+        "lpa": 187.791,
+        "behaviour_features": 16.2466,
+        "feature_join": 10.7568,
+        "total": 787.9681
+      },
+      "mean_peak_rss_bytes": 5259100160,
+      "min_available_ram_bytes": 1845604352,
+      "mean_shuffle_bytes": 8870019661
+    },
+    {
+      "cores": 4,
+      "master": "local[4]",
+      "fraction": 0.1,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_rows": 635856,
+      "mean_nodes": 1092959,
+      "mean_edges": 635856,
+      "individual_total_seconds": [
+        764.0945,
+        720.3328
+      ],
+      "mean_total_seconds": 742.2137,
+      "speedup": 1.2489,
+      "individual_speedups": [
+        1.2131,
+        1.2868
+      ],
+      "efficiency": 0.3122,
+      "mean_stage_seconds": {
+        "ingest_validate": 20.4937,
+        "graph_build": 14.9363,
+        "degrees": 17.7374,
+        "pagerank": 79.3761,
+        "triangles": 35.9638,
+        "components": 377.952,
+        "lpa": 153.3894,
+        "behaviour_features": 16.0197,
+        "feature_join": 9.6243,
+        "total": 742.2137
+      },
+      "mean_peak_rss_bytes": 4893394944,
+      "min_available_ram_bytes": 2514616320,
+      "mean_shuffle_bytes": 8870019661
+    },
+    {
+      "cores": 8,
+      "master": "local[8]",
+      "fraction": 0.1,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_rows": 635856,
+      "mean_nodes": 1092959,
+      "mean_edges": 635856,
+      "individual_total_seconds": [
+        689.1568,
+        691.3962
+      ],
+      "mean_total_seconds": 690.2765,
+      "speedup": 1.3429,
+      "individual_speedups": [
+        1.345,
+        1.3407
+      ],
+      "efficiency": 0.1679,
+      "mean_stage_seconds": {
+        "ingest_validate": 20.7102,
+        "graph_build": 14.2188,
+        "degrees": 17.8056,
+        "pagerank": 76.9878,
+        "triangles": 31.6205,
+        "components": 344.7229,
+        "lpa": 141.6979,
+        "behaviour_features": 14.0213,
+        "feature_join": 9.2336,
+        "total": 690.2765
+      },
+      "mean_peak_rss_bytes": 5071892480,
+      "min_available_ram_bytes": 2263052288,
+      "mean_shuffle_bytes": 8870019661
+    },
+    {
+      "cores": 16,
+      "master": "local[16]",
+      "fraction": 0.1,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_rows": 635856,
+      "mean_nodes": 1092959,
+      "mean_edges": 635856,
+      "individual_total_seconds": [
+        661.9565,
+        672.148
+      ],
+      "mean_total_seconds": 667.0522,
+      "speedup": 1.3896,
+      "individual_speedups": [
+        1.4003,
+        1.3791
+      ],
+      "efficiency": 0.0868,
+      "mean_stage_seconds": {
+        "ingest_validate": 23.0913,
+        "graph_build": 13.9135,
+        "degrees": 15.355,
+        "pagerank": 71.1236,
+        "triangles": 32.0135,
+        "components": 331.5123,
+        "lpa": 141.3949,
+        "behaviour_features": 13.4325,
+        "feature_join": 9.0611,
+        "total": 667.0522
+      },
+      "mean_peak_rss_bytes": 5906763776,
+      "min_available_ram_bytes": 1432895488,
+      "mean_shuffle_bytes": 8870019661
+    }
+  ],
+  "non_ok_runs": [],
+  "superseded_runs": [
+    {
+      "status": "aborted_low_memory",
+      "reason": "Available RAM remained below 536870912 bytes for 60.4s (min_available_ram_bytes=296656896).",
+      "suite": "data_scaling",
+      "fraction": 0.25,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": null,
+      "nodes": null,
+      "edges": null,
+      "seconds": {
+        "total": 329.3656
+      },
+      "peak_rss_bytes": 7359488000,
+      "min_available_ram_bytes": 296656896,
+      "shuffle_read_bytes": null,
+      "shuffle_write_bytes": null,
+      "shuffle_bytes": null,
+      "wall_seconds": 329.3656,
+      "started_at": "2026-11-18T03:28:26.234647",
+      "finished_at": "2026-11-18T03:33:55.600278",
+      "worker_log": "_worker_data_scaling_f0.25_localall_r1.log",
+      "superseded": true,
+      "superseded_note": "Original aborted_low_memory record (< 0.5 GiB for 60s) retained; re-run with < 0.2 GiB for 120s guard."
+    },
+    {
+      "status": "aborted_low_memory",
+      "reason": "Available RAM remained below 536870912 bytes for 60.6s (min_available_ram_bytes=385540096).",
+      "suite": "data_scaling",
+      "fraction": 0.25,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": null,
+      "nodes": null,
+      "edges": null,
+      "seconds": {
+        "total": 849.4402
+      },
+      "peak_rss_bytes": 7385858048,
+      "min_available_ram_bytes": 385540096,
+      "shuffle_read_bytes": null,
+      "shuffle_write_bytes": null,
+      "shuffle_bytes": null,
+      "wall_seconds": 849.4402,
+      "started_at": "2026-11-18T03:34:00.605020",
+      "finished_at": "2026-11-18T03:48:10.045195",
+      "worker_log": "_worker_data_scaling_f0.25_localall_r2.log",
+      "superseded": true,
+      "superseded_note": "Original aborted_low_memory record (< 0.5 GiB for 60s) retained; re-run with < 0.2 GiB for 120s guard."
+    },
+    {
+      "status": "aborted_low_memory",
+      "reason": "Available RAM remained below 536870912 bytes for 60.1s (min_available_ram_bytes=428642304).",
+      "suite": "data_scaling",
+      "fraction": 0.5,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": null,
+      "nodes": null,
+      "edges": null,
+      "seconds": {
+        "total": 872.0389
+      },
+      "peak_rss_bytes": 7402225664,
+      "min_available_ram_bytes": 428642304,
+      "shuffle_read_bytes": null,
+      "shuffle_write_bytes": null,
+      "shuffle_bytes": null,
+      "wall_seconds": 872.0389,
+      "started_at": "2026-11-18T03:48:15.051089",
+      "finished_at": "2026-11-18T04:02:47.090018",
+      "worker_log": "_worker_data_scaling_f0.50_localall_r1.log",
+      "superseded": true,
+      "superseded_note": "Original aborted_low_memory record (< 0.5 GiB for 60s) retained; re-run with < 0.2 GiB for 120s guard."
+    }
+  ],
+  "runs": [
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 0.1,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 15.45,
+        "graph_build": 11.7292,
+        "degrees": 11.9007,
+        "pagerank": 51.4867,
+        "triangles": 23.1143,
+        "components": 238.4638,
+        "lpa": 104.8225,
+        "behaviour_features": 11.1474,
+        "feature_join": 6.869,
+        "graph_feature_engineering": 463.2409,
+        "total": 490.713
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 15.449953800000003,
+          "peak_rss_bytes": 3037585408,
+          "baseline_rss_bytes": 563404800,
+          "min_available_ram_bytes": 4563808256,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 11.729194000000007,
+          "peak_rss_bytes": 3170062336,
+          "baseline_rss_bytes": 3033251840,
+          "min_available_ram_bytes": 4460568576,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 11.900650099999893,
+          "peak_rss_bytes": 3230916608,
+          "baseline_rss_bytes": 3144241152,
+          "min_available_ram_bytes": 4381065216,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 51.48669650000011,
+          "peak_rss_bytes": 3285823488,
+          "baseline_rss_bytes": 3176833024,
+          "min_available_ram_bytes": 4204011520,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 23.114320300000145,
+          "peak_rss_bytes": 3523166208,
+          "baseline_rss_bytes": 3253903360,
+          "min_available_ram_bytes": 4046761984,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 238.46377329999996,
+          "peak_rss_bytes": 5617360896,
+          "baseline_rss_bytes": 3523805184,
+          "min_available_ram_bytes": 1987289088,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 104.82248519999985,
+          "peak_rss_bytes": 6005907456,
+          "baseline_rss_bytes": 5617000448,
+          "min_available_ram_bytes": 1678991360,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 11.147442700000283,
+          "peak_rss_bytes": 6346342400,
+          "baseline_rss_bytes": 6006136832,
+          "min_available_ram_bytes": 1468026880,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 6.8689965999997185,
+          "peak_rss_bytes": 6561218560,
+          "baseline_rss_bytes": 6560747520,
+          "min_available_ram_bytes": 1302106112,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 6563524608,
+      "min_available_ram_bytes": 1302106112,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 507.0542,
+      "started_at": "2026-11-18T01:00:00.896810",
+      "finished_at": "2026-11-18T01:08:27.951048",
+      "worker_log": "_worker_data_scaling_f0.10_localall_r1.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 0.1,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 19.5258,
+        "graph_build": 10.6631,
+        "degrees": 11.5693,
+        "pagerank": 54.2601,
+        "triangles": 22.8767,
+        "components": 241.273,
+        "lpa": 102.5731,
+        "behaviour_features": 11.4256,
+        "feature_join": 7.8261,
+        "graph_feature_engineering": 465.5516,
+        "total": 495.9982
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 19.525807200000145,
+          "peak_rss_bytes": 2223370240,
+          "baseline_rss_bytes": 594968576,
+          "min_available_ram_bytes": 5803704320,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 10.663088699999662,
+          "peak_rss_bytes": 3330605056,
+          "baseline_rss_bytes": 2222612480,
+          "min_available_ram_bytes": 4666195968,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 11.569322800000009,
+          "peak_rss_bytes": 3416481792,
+          "baseline_rss_bytes": 3316891648,
+          "min_available_ram_bytes": 4669870080,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 54.26013239999975,
+          "peak_rss_bytes": 3457413120,
+          "baseline_rss_bytes": 3402928128,
+          "min_available_ram_bytes": 4476174336,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 22.876694099999895,
+          "peak_rss_bytes": 3456864256,
+          "baseline_rss_bytes": 3452334080,
+          "min_available_ram_bytes": 4437479424,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 241.2730491000002,
+          "peak_rss_bytes": 6007201792,
+          "baseline_rss_bytes": 3455139840,
+          "min_available_ram_bytes": 1783443456,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 102.57313109999996,
+          "peak_rss_bytes": 5780496384,
+          "baseline_rss_bytes": 5434322944,
+          "min_available_ram_bytes": 2119454720,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 11.425560799999857,
+          "peak_rss_bytes": 5793148928,
+          "baseline_rss_bytes": 5781094400,
+          "min_available_ram_bytes": 2125688832,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 7.826105599999664,
+          "peak_rss_bytes": 6705975296,
+          "baseline_rss_bytes": 6703882240,
+          "min_available_ram_bytes": 1236008960,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 6705975296,
+      "min_available_ram_bytes": 1236008960,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 517.5644,
+      "started_at": "2026-11-18T01:08:32.984991",
+      "finished_at": "2026-11-18T01:17:10.549388",
+      "worker_log": "_worker_data_scaling_f0.10_localall_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[1]",
+      "cores": 1,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 22.0712,
+        "graph_build": 14.8531,
+        "degrees": 16.8181,
+        "pagerank": 86.2131,
+        "triangles": 45.2464,
+        "components": 517.4613,
+        "lpa": 207.6086,
+        "behaviour_features": 16.5909,
+        "feature_join": 11.0209,
+        "graph_feature_engineering": 919.9865,
+        "total": 957.1011
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 22.071231600000374,
+          "peak_rss_bytes": 945049600,
+          "baseline_rss_bytes": 606789632,
+          "min_available_ram_bytes": 7232143360,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 14.853101400000014,
+          "peak_rss_bytes": 1254391808,
+          "baseline_rss_bytes": 941039616,
+          "min_available_ram_bytes": 6917251072,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 16.81809599999997,
+          "peak_rss_bytes": 1484804096,
+          "baseline_rss_bytes": 1231880192,
+          "min_available_ram_bytes": 6705086464,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 86.21314840000014,
+          "peak_rss_bytes": 2775429120,
+          "baseline_rss_bytes": 1485758464,
+          "min_available_ram_bytes": 5264998400,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 45.246421199999986,
+          "peak_rss_bytes": 2804453376,
+          "baseline_rss_bytes": 2776199168,
+          "min_available_ram_bytes": 4898852864,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 517.4613321000002,
+          "peak_rss_bytes": 3430154240,
+          "baseline_rss_bytes": 2805141504,
+          "min_available_ram_bytes": 3965702144,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 207.60859849999997,
+          "peak_rss_bytes": 4177362944,
+          "baseline_rss_bytes": 3423940608,
+          "min_available_ram_bytes": 3277025280,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 16.590901999999915,
+          "peak_rss_bytes": 3844726784,
+          "baseline_rss_bytes": 3777724416,
+          "min_available_ram_bytes": 4136919040,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 11.02094070000021,
+          "peak_rss_bytes": 3875024896,
+          "baseline_rss_bytes": 3874336768,
+          "min_available_ram_bytes": 4150419456,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 4177362944,
+      "min_available_ram_bytes": 3277025280,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 975.0153,
+      "started_at": "2026-11-18T01:17:15.579492",
+      "finished_at": "2026-11-18T01:33:30.594834",
+      "worker_log": "_worker_core_scaling_f0.10_local1_r1.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[1]",
+      "cores": 1,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 18.9892,
+        "graph_build": 14.4058,
+        "degrees": 15.4426,
+        "pagerank": 89.6857,
+        "triangles": 39.8135,
+        "components": 476.6001,
+        "lpa": 196.3742,
+        "behaviour_features": 15.3119,
+        "feature_join": 11.0813,
+        "graph_feature_engineering": 863.1752,
+        "total": 896.7849
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 18.989211400000386,
+          "peak_rss_bytes": 1052692480,
+          "baseline_rss_bytes": 611606528,
+          "min_available_ram_bytes": 7022333952,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 14.405759400000534,
+          "peak_rss_bytes": 1170059264,
+          "baseline_rss_bytes": 1049931776,
+          "min_available_ram_bytes": 6883246080,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 15.442612599999848,
+          "peak_rss_bytes": 1751851008,
+          "baseline_rss_bytes": 1170227200,
+          "min_available_ram_bytes": 6268436480,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 89.68568589999995,
+          "peak_rss_bytes": 2109358080,
+          "baseline_rss_bytes": 1751924736,
+          "min_available_ram_bytes": 5860470784,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 39.813493700000436,
+          "peak_rss_bytes": 2291666944,
+          "baseline_rss_bytes": 2111062016,
+          "min_available_ram_bytes": 5532557312,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 476.6000565000004,
+          "peak_rss_bytes": 3442413568,
+          "baseline_rss_bytes": 2292248576,
+          "min_available_ram_bytes": 4337545216,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 196.37424479999936,
+          "peak_rss_bytes": 4192677888,
+          "baseline_rss_bytes": 3443412992,
+          "min_available_ram_bytes": 3523264512,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 15.311871500000052,
+          "peak_rss_bytes": 3867664384,
+          "baseline_rss_bytes": 3817979904,
+          "min_available_ram_bytes": 4058804224,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 11.081342000000404,
+          "peak_rss_bytes": 3899760640,
+          "baseline_rss_bytes": 3898339328,
+          "min_available_ram_bytes": 4057354240,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 4192677888,
+      "min_available_ram_bytes": 3523264512,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 913.0932,
+      "started_at": "2026-11-18T01:33:35.622430",
+      "finished_at": "2026-11-18T01:48:48.715640",
+      "worker_log": "_worker_core_scaling_f0.10_local1_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[2]",
+      "cores": 2,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 16.9165,
+        "graph_build": 11.767,
+        "degrees": 12.1249,
+        "pagerank": 68.7001,
+        "triangles": 29.0308,
+        "components": 336.8368,
+        "lpa": 192.9124,
+        "behaviour_features": 15.9233,
+        "feature_join": 10.3518,
+        "graph_feature_engineering": 684.4417,
+        "total": 713.3556
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 16.916535100000146,
+          "peak_rss_bytes": 1142902784,
+          "baseline_rss_bytes": 556503040,
+          "min_available_ram_bytes": 6882971648,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 11.766994000000523,
+          "peak_rss_bytes": 1442607104,
+          "baseline_rss_bytes": 1133744128,
+          "min_available_ram_bytes": 6556307456,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 12.124911999999313,
+          "peak_rss_bytes": 1974734848,
+          "baseline_rss_bytes": 1289060352,
+          "min_available_ram_bytes": 5992148992,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 68.7001121000003,
+          "peak_rss_bytes": 2591420416,
+          "baseline_rss_bytes": 1975173120,
+          "min_available_ram_bytes": 5302726656,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 29.030751499999496,
+          "peak_rss_bytes": 2831622144,
+          "baseline_rss_bytes": 2593280000,
+          "min_available_ram_bytes": 4970147840,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 336.8367855000006,
+          "peak_rss_bytes": 4322865152,
+          "baseline_rss_bytes": 2832142336,
+          "min_available_ram_bytes": 3386929152,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 192.91242880000027,
+          "peak_rss_bytes": 5326602240,
+          "baseline_rss_bytes": 4322779136,
+          "min_available_ram_bytes": 1999740928,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 15.923252300000058,
+          "peak_rss_bytes": 5410627584,
+          "baseline_rss_bytes": 5327388672,
+          "min_available_ram_bytes": 1902526464,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 10.35180020000007,
+          "peak_rss_bytes": 5430153216,
+          "baseline_rss_bytes": 5429547008,
+          "min_available_ram_bytes": 1861754880,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 5458255872,
+      "min_available_ram_bytes": 1845604352,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 729.4863,
+      "started_at": "2026-11-18T01:48:53.808748",
+      "finished_at": "2026-11-18T02:01:03.295047",
+      "worker_log": "_worker_core_scaling_f0.10_local2_r1.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[2]",
+      "cores": 2,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 21.8232,
+        "graph_build": 15.6055,
+        "degrees": 17.8474,
+        "pagerank": 87.9406,
+        "triangles": 39.0317,
+        "components": 449.9994,
+        "lpa": 182.6695,
+        "behaviour_features": 16.57,
+        "feature_join": 11.1618,
+        "graph_feature_engineering": 824.8882,
+        "total": 862.5806
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 21.82318159999977,
+          "peak_rss_bytes": 1141510144,
+          "baseline_rss_bytes": 588034048,
+          "min_available_ram_bytes": 6238384128,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 15.605514299999413,
+          "peak_rss_bytes": 1479835648,
+          "baseline_rss_bytes": 1125904384,
+          "min_available_ram_bytes": 5896486912,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 17.847419399999126,
+          "peak_rss_bytes": 1984237568,
+          "baseline_rss_bytes": 1301176320,
+          "min_available_ram_bytes": 5376090112,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 87.94060720000016,
+          "peak_rss_bytes": 2101555200,
+          "baseline_rss_bytes": 1984729088,
+          "min_available_ram_bytes": 5177241600,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 39.0317157999998,
+          "peak_rss_bytes": 2319609856,
+          "baseline_rss_bytes": 2102984704,
+          "min_available_ram_bytes": 5231693824,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 449.9994428,
+          "peak_rss_bytes": 3810136064,
+          "baseline_rss_bytes": 2321137664,
+          "min_available_ram_bytes": 3636682752,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 182.66954540000006,
+          "peak_rss_bytes": 4800954368,
+          "baseline_rss_bytes": 3794649088,
+          "min_available_ram_bytes": 2682798080,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 16.569955400000254,
+          "peak_rss_bytes": 4976205824,
+          "baseline_rss_bytes": 4801372160,
+          "min_available_ram_bytes": 2521333760,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 11.16178359999958,
+          "peak_rss_bytes": 5033496576,
+          "baseline_rss_bytes": 5033136128,
+          "min_available_ram_bytes": 2437091328,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 5059944448,
+      "min_available_ram_bytes": 2418479104,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 886.4747,
+      "started_at": "2026-11-18T02:01:08.319863",
+      "finished_at": "2026-11-18T02:15:54.794545",
+      "worker_log": "_worker_core_scaling_f0.10_local2_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[4]",
+      "cores": 4,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 22.4343,
+        "graph_build": 16.7923,
+        "degrees": 20.2811,
+        "pagerank": 83.3913,
+        "triangles": 34.7353,
+        "components": 385.4497,
+        "lpa": 157.7277,
+        "behaviour_features": 17.653,
+        "feature_join": 9.3623,
+        "graph_feature_engineering": 724.6124,
+        "total": 764.0945
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 22.434254699999656,
+          "peak_rss_bytes": 1667817472,
+          "baseline_rss_bytes": 584855552,
+          "min_available_ram_bytes": 5918892032,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 16.792305199999646,
+          "peak_rss_bytes": 1712062464,
+          "baseline_rss_bytes": 1656270848,
+          "min_available_ram_bytes": 5881098240,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 20.28108020000036,
+          "peak_rss_bytes": 1906188288,
+          "baseline_rss_bytes": 1700556800,
+          "min_available_ram_bytes": 5577461760,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 83.39130120000027,
+          "peak_rss_bytes": 2170830848,
+          "baseline_rss_bytes": 1906929664,
+          "min_available_ram_bytes": 5052698624,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 34.73531139999977,
+          "peak_rss_bytes": 2466082816,
+          "baseline_rss_bytes": 2134011904,
+          "min_available_ram_bytes": 4866924544,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 385.4497025999999,
+          "peak_rss_bytes": 3739770880,
+          "baseline_rss_bytes": 2466664448,
+          "min_available_ram_bytes": 3072225280,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 157.7277065999997,
+          "peak_rss_bytes": 4779102208,
+          "baseline_rss_bytes": 3731197952,
+          "min_available_ram_bytes": 2568404992,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 17.653005899999698,
+          "peak_rss_bytes": 4781428736,
+          "baseline_rss_bytes": 4745785344,
+          "min_available_ram_bytes": 2591236096,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 9.362317899999653,
+          "peak_rss_bytes": 4859314176,
+          "baseline_rss_bytes": 4858527744,
+          "min_available_ram_bytes": 2514616320,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 4859314176,
+      "min_available_ram_bytes": 2514616320,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 784.8946,
+      "started_at": "2026-11-18T02:15:59.842681",
+      "finished_at": "2026-11-18T02:29:04.737345",
+      "worker_log": "_worker_core_scaling_f0.10_local4_r1.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[4]",
+      "cores": 4,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 18.553,
+        "graph_build": 13.0803,
+        "degrees": 15.1937,
+        "pagerank": 75.361,
+        "triangles": 37.1923,
+        "components": 370.4542,
+        "lpa": 149.0511,
+        "behaviour_features": 14.3865,
+        "feature_join": 9.8863,
+        "graph_feature_engineering": 688.3836,
+        "total": 720.3328
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 18.55301959999997,
+          "peak_rss_bytes": 1543880704,
+          "baseline_rss_bytes": 580804608,
+          "min_available_ram_bytes": 5990072320,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 13.080255500000021,
+          "peak_rss_bytes": 1645080576,
+          "baseline_rss_bytes": 1528713216,
+          "min_available_ram_bytes": 5911678976,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 15.19368680000025,
+          "peak_rss_bytes": 2042785792,
+          "baseline_rss_bytes": 1635266560,
+          "min_available_ram_bytes": 5472698368,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 75.36098469999979,
+          "peak_rss_bytes": 2708160512,
+          "baseline_rss_bytes": 2044174336,
+          "min_available_ram_bytes": 4742168576,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 37.19227520000004,
+          "peak_rss_bytes": 3006595072,
+          "baseline_rss_bytes": 2709954560,
+          "min_available_ram_bytes": 4216881152,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 370.45421970000007,
+          "peak_rss_bytes": 4052008960,
+          "baseline_rss_bytes": 3007168512,
+          "min_available_ram_bytes": 3387637760,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 149.05107360000147,
+          "peak_rss_bytes": 4743245824,
+          "baseline_rss_bytes": 4046942208,
+          "min_available_ram_bytes": 2737426432,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 14.386471399999209,
+          "peak_rss_bytes": 4851568640,
+          "baseline_rss_bytes": 4741902336,
+          "min_available_ram_bytes": 2684182528,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 9.886267999998381,
+          "peak_rss_bytes": 4888199168,
+          "baseline_rss_bytes": 4887818240,
+          "min_available_ram_bytes": 2634616832,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 4927475712,
+      "min_available_ram_bytes": 2568605696,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 737.6881,
+      "started_at": "2026-11-18T02:29:09.774999",
+      "finished_at": "2026-11-18T02:41:27.463450",
+      "worker_log": "_worker_core_scaling_f0.10_local4_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[8]",
+      "cores": 8,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 21.2724,
+        "graph_build": 12.819,
+        "degrees": 15.4371,
+        "pagerank": 80.7155,
+        "triangles": 33.0785,
+        "components": 342.7799,
+        "lpa": 139.1552,
+        "behaviour_features": 15.2283,
+        "feature_join": 9.3523,
+        "graph_feature_engineering": 654.7036,
+        "total": 689.1568
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 21.272385599999325,
+          "peak_rss_bytes": 1889583104,
+          "baseline_rss_bytes": 618291200,
+          "min_available_ram_bytes": 5667602432,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 12.81898110000111,
+          "peak_rss_bytes": 2056929280,
+          "baseline_rss_bytes": 1896026112,
+          "min_available_ram_bytes": 5497597952,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 15.437120100001266,
+          "peak_rss_bytes": 2098376704,
+          "baseline_rss_bytes": 2036543488,
+          "min_available_ram_bytes": 5437669376,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 80.71547849999843,
+          "peak_rss_bytes": 2776723456,
+          "baseline_rss_bytes": 2089832448,
+          "min_available_ram_bytes": 4498509824,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 33.078545499998654,
+          "peak_rss_bytes": 3325444096,
+          "baseline_rss_bytes": 2778316800,
+          "min_available_ram_bytes": 3915972608,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 342.77988670000013,
+          "peak_rss_bytes": 4824399872,
+          "baseline_rss_bytes": 3293040640,
+          "min_available_ram_bytes": 2433380352,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 139.1552303999997,
+          "peak_rss_bytes": 4922986496,
+          "baseline_rss_bytes": 3946041344,
+          "min_available_ram_bytes": 2423513088,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 15.228322000000844,
+          "peak_rss_bytes": 4924739584,
+          "baseline_rss_bytes": 4922568704,
+          "min_available_ram_bytes": 2465783808,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 9.352343100001235,
+          "peak_rss_bytes": 4947017728,
+          "baseline_rss_bytes": 4945690624,
+          "min_available_ram_bytes": 2459971584,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 4975636480,
+      "min_available_ram_bytes": 2423513088,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 707.3752,
+      "started_at": "2026-11-18T02:41:32.500373",
+      "finished_at": "2026-11-18T02:53:19.875563",
+      "worker_log": "_worker_core_scaling_f0.10_local8_r1.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[8]",
+      "cores": 8,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 20.148,
+        "graph_build": 15.6187,
+        "degrees": 20.174,
+        "pagerank": 73.2601,
+        "triangles": 30.1625,
+        "components": 346.666,
+        "lpa": 144.2405,
+        "behaviour_features": 12.8144,
+        "feature_join": 9.1148,
+        "graph_feature_engineering": 655.2656,
+        "total": 691.3962
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 20.147959599999012,
+          "peak_rss_bytes": 1773404160,
+          "baseline_rss_bytes": 561815552,
+          "min_available_ram_bytes": 5777121280,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 15.61869200000001,
+          "peak_rss_bytes": 1814818816,
+          "baseline_rss_bytes": 1762041856,
+          "min_available_ram_bytes": 5675687936,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 20.17401710000013,
+          "peak_rss_bytes": 1993195520,
+          "baseline_rss_bytes": 1810190336,
+          "min_available_ram_bytes": 5473820672,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 73.26014020000002,
+          "peak_rss_bytes": 2821050368,
+          "baseline_rss_bytes": 1969500160,
+          "min_available_ram_bytes": 4577210368,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 30.16252799999893,
+          "peak_rss_bytes": 3299315712,
+          "baseline_rss_bytes": 2822258688,
+          "min_available_ram_bytes": 4018704384,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 346.6659715000005,
+          "peak_rss_bytes": 4664172544,
+          "baseline_rss_bytes": 3300151296,
+          "min_available_ram_bytes": 2527997952,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 144.24053989999993,
+          "peak_rss_bytes": 5115809792,
+          "baseline_rss_bytes": 4662398976,
+          "min_available_ram_bytes": 2277003264,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 12.814400900000692,
+          "peak_rss_bytes": 5119229952,
+          "baseline_rss_bytes": 5116362752,
+          "min_available_ram_bytes": 2282717184,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 9.114848499999425,
+          "peak_rss_bytes": 5143343104,
+          "baseline_rss_bytes": 5141598208,
+          "min_available_ram_bytes": 2263052288,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 5168148480,
+      "min_available_ram_bytes": 2263052288,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 710.1868,
+      "started_at": "2026-11-18T02:53:24.933954",
+      "finished_at": "2026-11-18T03:05:15.120771",
+      "worker_log": "_worker_core_scaling_f0.10_local8_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[16]",
+      "cores": 16,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 22.1632,
+        "graph_build": 12.901,
+        "degrees": 13.8027,
+        "pagerank": 72.1049,
+        "triangles": 32.3557,
+        "components": 330.6762,
+        "lpa": 139.3214,
+        "behaviour_features": 13.6063,
+        "feature_join": 9.6932,
+        "graph_feature_engineering": 626.5955,
+        "total": 661.9565
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 22.16324110000096,
+          "peak_rss_bytes": 2373582848,
+          "baseline_rss_bytes": 552759296,
+          "min_available_ram_bytes": 5130317824,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 12.900987700000769,
+          "peak_rss_bytes": 2578423808,
+          "baseline_rss_bytes": 2354900992,
+          "min_available_ram_bytes": 4916387840,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 13.80265000000145,
+          "peak_rss_bytes": 2672779264,
+          "baseline_rss_bytes": 2577670144,
+          "min_available_ram_bytes": 4768112640,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 72.10490030000074,
+          "peak_rss_bytes": 2967040000,
+          "baseline_rss_bytes": 2673041408,
+          "min_available_ram_bytes": 4379697152,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 32.355659099999684,
+          "peak_rss_bytes": 3390828544,
+          "baseline_rss_bytes": 2968453120,
+          "min_available_ram_bytes": 3890823168,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 330.6761527999988,
+          "peak_rss_bytes": 5894959104,
+          "baseline_rss_bytes": 3389493248,
+          "min_available_ram_bytes": 1456619520,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 139.321389499999,
+          "peak_rss_bytes": 5904338944,
+          "baseline_rss_bytes": 5868113920,
+          "min_available_ram_bytes": 1575161856,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 13.606304000000819,
+          "peak_rss_bytes": 5908111360,
+          "baseline_rss_bytes": 5890527232,
+          "min_available_ram_bytes": 1575895040,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 9.693197900000087,
+          "peak_rss_bytes": 6120914944,
+          "baseline_rss_bytes": 6120779776,
+          "min_available_ram_bytes": 1432895488,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 6120914944,
+      "min_available_ram_bytes": 1432895488,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 682.2808,
+      "started_at": "2026-11-18T03:05:20.156509",
+      "finished_at": "2026-11-18T03:16:42.437370",
+      "worker_log": "_worker_core_scaling_f0.10_local16_r1.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "core_scaling",
+      "fraction": 0.1,
+      "master": "local[16]",
+      "cores": 16,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 635856,
+      "nodes": 1092959,
+      "edges": 635856,
+      "account_count": 1092959,
+      "seconds": {
+        "ingest_validate": 24.0194,
+        "graph_build": 14.926,
+        "degrees": 16.9074,
+        "pagerank": 70.1424,
+        "triangles": 31.6714,
+        "components": 332.3485,
+        "lpa": 143.4683,
+        "behaviour_features": 13.2588,
+        "feature_join": 8.429,
+        "graph_feature_engineering": 632.9502,
+        "total": 672.148
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 24.019449799998256,
+          "peak_rss_bytes": 2609491968,
+          "baseline_rss_bytes": 529338368,
+          "min_available_ram_bytes": 5008646144,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2713,
+          "shuffle_write_bytes_delta": 2713
+        },
+        "graph_build": {
+          "wall_seconds": 14.92597569999998,
+          "peak_rss_bytes": 2817400832,
+          "baseline_rss_bytes": 2605412352,
+          "min_available_ram_bytes": 4807344128,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 17971704,
+          "shuffle_write_bytes_delta": 17971704
+        },
+        "degrees": {
+          "wall_seconds": 16.907441199999084,
+          "peak_rss_bytes": 2926526464,
+          "baseline_rss_bytes": 2800254976,
+          "min_available_ram_bytes": 4687282176,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 18177900,
+          "shuffle_write_bytes_delta": 18177900
+        },
+        "pagerank": {
+          "wall_seconds": 70.1424122999997,
+          "peak_rss_bytes": 2974720000,
+          "baseline_rss_bytes": 2884128768,
+          "min_available_ram_bytes": 4474036224,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 167089682,
+          "shuffle_write_bytes_delta": 167089682
+        },
+        "triangles": {
+          "wall_seconds": 31.671407499999987,
+          "peak_rss_bytes": 2955976704,
+          "baseline_rss_bytes": 2467966976,
+          "min_available_ram_bytes": 4553805824,
+          "stages_count_delta": 28,
+          "shuffle_read_bytes_delta": 140508617,
+          "shuffle_write_bytes_delta": 140508617
+        },
+        "components": {
+          "wall_seconds": 332.3484606000002,
+          "peak_rss_bytes": 5124694016,
+          "baseline_rss_bytes": 2956615680,
+          "min_available_ram_bytes": 2328346624,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 2688424776,
+          "shuffle_write_bytes_delta": 2481310323
+        },
+        "lpa": {
+          "wall_seconds": 143.46828039999855,
+          "peak_rss_bytes": 5288427520,
+          "baseline_rss_bytes": 5116276736,
+          "min_available_ram_bytes": 2078695424,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 1402666456,
+          "shuffle_write_bytes_delta": 1402666456
+        },
+        "behaviour_features": {
+          "wall_seconds": 13.258814700000585,
+          "peak_rss_bytes": 5300613120,
+          "baseline_rss_bytes": 5287407616,
+          "min_available_ram_bytes": 2084184064,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 75652007,
+          "shuffle_write_bytes_delta": 75652007
+        },
+        "feature_join": {
+          "wall_seconds": 8.428993899999114,
+          "peak_rss_bytes": 5656035328,
+          "baseline_rss_bytes": 5637337088,
+          "min_available_ram_bytes": 1746612224,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 28073202,
+          "shuffle_write_bytes_delta": 28073202
+        }
+      },
+      "peak_rss_bytes": 5692612608,
+      "min_available_ram_bytes": 1743720448,
+      "shuffle_read_bytes": 4538567057,
+      "shuffle_write_bytes": 4331452604,
+      "shuffle_bytes": 8870019661,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 693.6844,
+      "started_at": "2026-11-18T03:16:47.484841",
+      "finished_at": "2026-11-18T03:28:21.169223",
+      "worker_log": "_worker_core_scaling_f0.10_local16_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "aborted_low_memory",
+      "reason": "Available RAM remained below 536870912 bytes for 60.4s (min_available_ram_bytes=296656896).",
+      "suite": "data_scaling",
+      "fraction": 0.25,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": null,
+      "nodes": null,
+      "edges": null,
+      "seconds": {
+        "total": 329.3656
+      },
+      "peak_rss_bytes": 7359488000,
+      "min_available_ram_bytes": 296656896,
+      "shuffle_read_bytes": null,
+      "shuffle_write_bytes": null,
+      "shuffle_bytes": null,
+      "wall_seconds": 329.3656,
+      "started_at": "2026-11-18T03:28:26.234647",
+      "finished_at": "2026-11-18T03:33:55.600278",
+      "worker_log": "_worker_data_scaling_f0.25_localall_r1.log",
+      "superseded": true,
+      "superseded_note": "Original aborted_low_memory record (< 0.5 GiB for 60s) retained; re-run with < 0.2 GiB for 120s guard."
+    },
+    {
+      "status": "aborted_low_memory",
+      "reason": "Available RAM remained below 536870912 bytes for 60.6s (min_available_ram_bytes=385540096).",
+      "suite": "data_scaling",
+      "fraction": 0.25,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": null,
+      "nodes": null,
+      "edges": null,
+      "seconds": {
+        "total": 849.4402
+      },
+      "peak_rss_bytes": 7385858048,
+      "min_available_ram_bytes": 385540096,
+      "shuffle_read_bytes": null,
+      "shuffle_write_bytes": null,
+      "shuffle_bytes": null,
+      "wall_seconds": 849.4402,
+      "started_at": "2026-11-18T03:34:00.605020",
+      "finished_at": "2026-11-18T03:48:10.045195",
+      "worker_log": "_worker_data_scaling_f0.25_localall_r2.log",
+      "superseded": true,
+      "superseded_note": "Original aborted_low_memory record (< 0.5 GiB for 60s) retained; re-run with < 0.2 GiB for 120s guard."
+    },
+    {
+      "status": "aborted_low_memory",
+      "reason": "Available RAM remained below 536870912 bytes for 60.1s (min_available_ram_bytes=428642304).",
+      "suite": "data_scaling",
+      "fraction": 0.5,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": null,
+      "nodes": null,
+      "edges": null,
+      "seconds": {
+        "total": 872.0389
+      },
+      "peak_rss_bytes": 7402225664,
+      "min_available_ram_bytes": 428642304,
+      "shuffle_read_bytes": null,
+      "shuffle_write_bytes": null,
+      "shuffle_bytes": null,
+      "wall_seconds": 872.0389,
+      "started_at": "2026-11-18T03:48:15.051089",
+      "finished_at": "2026-11-18T04:02:47.090018",
+      "worker_log": "_worker_data_scaling_f0.50_localall_r1.log",
+      "superseded": true,
+      "superseded_note": "Original aborted_low_memory record (< 0.5 GiB for 60s) retained; re-run with < 0.2 GiB for 120s guard."
+    },
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 0.5,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 3180590,
+      "nodes": 4737083,
+      "edges": 3180590,
+      "account_count": 4737083,
+      "seconds": {
+        "ingest_validate": 24.7812,
+        "graph_build": 20.2019,
+        "degrees": 25.0173,
+        "pagerank": 105.6967,
+        "triangles": 53.9284,
+        "components": 871.2485,
+        "lpa": 281.0091,
+        "behaviour_features": 31.4984,
+        "feature_join": 13.7039,
+        "graph_feature_engineering": 1421.7726,
+        "total": 1467.2162
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 24.781236800001352,
+          "peak_rss_bytes": 3964178432,
+          "baseline_rss_bytes": 611471360,
+          "min_available_ram_bytes": 3901214720,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2714,
+          "shuffle_write_bytes_delta": 2714
+        },
+        "graph_build": {
+          "wall_seconds": 20.201931599998716,
+          "peak_rss_bytes": 4626960384,
+          "baseline_rss_bytes": 3934113792,
+          "min_available_ram_bytes": 3191660544,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 84020874,
+          "shuffle_write_bytes_delta": 84020874
+        },
+        "degrees": {
+          "wall_seconds": 25.01728329999969,
+          "peak_rss_bytes": 4830806016,
+          "baseline_rss_bytes": 4587966464,
+          "min_available_ram_bytes": 2983059456,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 86268442,
+          "shuffle_write_bytes_delta": 86268442
+        },
+        "pagerank": {
+          "wall_seconds": 105.69671780000135,
+          "peak_rss_bytes": 6991142912,
+          "baseline_rss_bytes": 4823875584,
+          "min_available_ram_bytes": 916832256,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 775790108,
+          "shuffle_write_bytes_delta": 775790108
+        },
+        "triangles": {
+          "wall_seconds": 53.9284219000001,
+          "peak_rss_bytes": 7008153600,
+          "baseline_rss_bytes": 6992314368,
+          "min_available_ram_bytes": 919130112,
+          "stages_count_delta": 25,
+          "shuffle_read_bytes_delta": 863105827,
+          "shuffle_write_bytes_delta": 863105827
+        },
+        "components": {
+          "wall_seconds": 871.2484633999993,
+          "peak_rss_bytes": 7415050240,
+          "baseline_rss_bytes": 7006429184,
+          "min_available_ram_bytes": 582090752,
+          "stages_count_delta": 133,
+          "shuffle_read_bytes_delta": 19329955538,
+          "shuffle_write_bytes_delta": 17231175535
+        },
+        "lpa": {
+          "wall_seconds": 281.0091063,
+          "peak_rss_bytes": 7383621632,
+          "baseline_rss_bytes": 7210078208,
+          "min_available_ram_bytes": 642621440,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 6513099143,
+          "shuffle_write_bytes_delta": 6513099143
+        },
+        "behaviour_features": {
+          "wall_seconds": 31.498421899999812,
+          "peak_rss_bytes": 7392563200,
+          "baseline_rss_bytes": 7382814720,
+          "min_available_ram_bytes": 668241920,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 373558712,
+          "shuffle_write_bytes_delta": 373558712
+        },
+        "feature_join": {
+          "wall_seconds": 13.703880299999582,
+          "peak_rss_bytes": 7408357376,
+          "baseline_rss_bytes": 7407857664,
+          "min_available_ram_bytes": 489869312,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 136803832,
+          "shuffle_write_bytes_delta": 136803832
+        }
+      },
+      "peak_rss_bytes": 7417094144,
+      "min_available_ram_bytes": 484163584,
+      "shuffle_read_bytes": 28162605190,
+      "shuffle_write_bytes": 26063825187,
+      "shuffle_bytes": 54226430377,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 7,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 1492.1291,
+      "started_at": "2026-11-18T04:02:52.108084",
+      "finished_at": "2026-11-18T04:27:44.237234",
+      "worker_log": "_worker_data_scaling_f0.50_localall_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 1.0,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "account_count": 9073900,
+      "seconds": {
+        "ingest_validate": 25.0669,
+        "graph_build": 21.0778,
+        "degrees": 29.7308,
+        "pagerank": 148.4159,
+        "triangles": 90.0093,
+        "components": 1908.2372,
+        "lpa": 462.6081,
+        "behaviour_features": 42.248,
+        "feature_join": 16.582,
+        "graph_feature_engineering": 2752.7358,
+        "total": 2799.1532
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 25.066865799999505,
+          "peak_rss_bytes": 4443058176,
+          "baseline_rss_bytes": 560324608,
+          "min_available_ram_bytes": 3397378048,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2714,
+          "shuffle_write_bytes_delta": 2714
+        },
+        "graph_build": {
+          "wall_seconds": 21.077828199999203,
+          "peak_rss_bytes": 4777566208,
+          "baseline_rss_bytes": 4432760832,
+          "min_available_ram_bytes": 2942521344,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 162217321,
+          "shuffle_write_bytes_delta": 162217321
+        },
+        "degrees": {
+          "wall_seconds": 29.73079879999932,
+          "peak_rss_bytes": 5954367488,
+          "baseline_rss_bytes": 4738183168,
+          "min_available_ram_bytes": 1799823360,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 167385092,
+          "shuffle_write_bytes_delta": 167385092
+        },
+        "pagerank": {
+          "wall_seconds": 148.41588179999962,
+          "peak_rss_bytes": 7333318656,
+          "baseline_rss_bytes": 5954850816,
+          "min_available_ram_bytes": 465653760,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 1504513023,
+          "shuffle_write_bytes_delta": 1504513023
+        },
+        "triangles": {
+          "wall_seconds": 90.00929859999997,
+          "peak_rss_bytes": 7346724864,
+          "baseline_rss_bytes": 7325102080,
+          "min_available_ram_bytes": 545681408,
+          "stages_count_delta": 25,
+          "shuffle_read_bytes_delta": 2118287677,
+          "shuffle_write_bytes_delta": 2118287677
+        },
+        "components": {
+          "wall_seconds": 1908.237227399999,
+          "peak_rss_bytes": 7513264128,
+          "baseline_rss_bytes": 7347118080,
+          "min_available_ram_bytes": 506609664,
+          "stages_count_delta": 181,
+          "shuffle_read_bytes_delta": 54191757873,
+          "shuffle_write_bytes_delta": 46939906482
+        },
+        "lpa": {
+          "wall_seconds": 462.60811209999883,
+          "peak_rss_bytes": 7460941824,
+          "baseline_rss_bytes": 7398903808,
+          "min_available_ram_bytes": 811876352,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 12640813694,
+          "shuffle_write_bytes_delta": 12640813694
+        },
+        "behaviour_features": {
+          "wall_seconds": 42.247977200000605,
+          "peak_rss_bytes": 7406923776,
+          "baseline_rss_bytes": 7399567360,
+          "min_available_ram_bytes": 905658368,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 738578836,
+          "shuffle_write_bytes_delta": 738578836
+        },
+        "feature_join": {
+          "wall_seconds": 16.58203130000038,
+          "peak_rss_bytes": 7413653504,
+          "baseline_rss_bytes": 7413182464,
+          "min_available_ram_bytes": 904470528,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 272511009,
+          "shuffle_write_bytes_delta": 272511009
+        }
+      },
+      "peak_rss_bytes": 7513288704,
+      "min_available_ram_bytes": 465641472,
+      "shuffle_read_bytes": 71796067239,
+      "shuffle_write_bytes": 64544215848,
+      "shuffle_bytes": 136340283087,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 9,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 2822.5572,
+      "started_at": "2026-11-18T04:27:49.263531",
+      "finished_at": "2026-11-18T05:14:51.820810",
+      "worker_log": "_worker_data_scaling_f1.00_localall_r1.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 1.0,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "account_count": 9073900,
+      "seconds": {
+        "ingest_validate": 24.7454,
+        "graph_build": 19.3577,
+        "degrees": 27.6524,
+        "pagerank": 148.3354,
+        "triangles": 88.3834,
+        "components": 1892.459,
+        "lpa": 446.5985,
+        "behaviour_features": 45.3404,
+        "feature_join": 16.4279,
+        "graph_feature_engineering": 2719.8826,
+        "total": 2764.2759
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 24.745428499998525,
+          "peak_rss_bytes": 4131516416,
+          "baseline_rss_bytes": 633192448,
+          "min_available_ram_bytes": 4203634688,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2714,
+          "shuffle_write_bytes_delta": 2714
+        },
+        "graph_build": {
+          "wall_seconds": 19.357654299998103,
+          "peak_rss_bytes": 4374814720,
+          "baseline_rss_bytes": 4117012480,
+          "min_available_ram_bytes": 3793899520,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 162217321,
+          "shuffle_write_bytes_delta": 162217321
+        },
+        "degrees": {
+          "wall_seconds": 27.652397900001233,
+          "peak_rss_bytes": 6170292224,
+          "baseline_rss_bytes": 4373831680,
+          "min_available_ram_bytes": 2010640384,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 167385092,
+          "shuffle_write_bytes_delta": 167385092
+        },
+        "pagerank": {
+          "wall_seconds": 148.335366299998,
+          "peak_rss_bytes": 7321284608,
+          "baseline_rss_bytes": 6170591232,
+          "min_available_ram_bytes": 1064824832,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 1504513023,
+          "shuffle_write_bytes_delta": 1504513023
+        },
+        "triangles": {
+          "wall_seconds": 88.38337400000091,
+          "peak_rss_bytes": 7334612992,
+          "baseline_rss_bytes": 7323762688,
+          "min_available_ram_bytes": 1040424960,
+          "stages_count_delta": 25,
+          "shuffle_read_bytes_delta": 2118287677,
+          "shuffle_write_bytes_delta": 2118287677
+        },
+        "components": {
+          "wall_seconds": 1892.4589519999972,
+          "peak_rss_bytes": 7477280768,
+          "baseline_rss_bytes": 7328047104,
+          "min_available_ram_bytes": 595836928,
+          "stages_count_delta": 181,
+          "shuffle_read_bytes_delta": 54191757873,
+          "shuffle_write_bytes_delta": 46939906482
+        },
+        "lpa": {
+          "wall_seconds": 446.5984886999977,
+          "peak_rss_bytes": 7418363904,
+          "baseline_rss_bytes": 7336706048,
+          "min_available_ram_bytes": 865497088,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 12640813694,
+          "shuffle_write_bytes_delta": 12640813694
+        },
+        "behaviour_features": {
+          "wall_seconds": 45.340438999999606,
+          "peak_rss_bytes": 7372619776,
+          "baseline_rss_bytes": 7360909312,
+          "min_available_ram_bytes": 1061466112,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 738578836,
+          "shuffle_write_bytes_delta": 738578836
+        },
+        "feature_join": {
+          "wall_seconds": 16.42793520000123,
+          "peak_rss_bytes": 7401922560,
+          "baseline_rss_bytes": 7400284160,
+          "min_available_ram_bytes": 952516608,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 272511009,
+          "shuffle_write_bytes_delta": 272511009
+        }
+      },
+      "peak_rss_bytes": 7477280768,
+      "min_available_ram_bytes": 595836928,
+      "shuffle_read_bytes": 71796067239,
+      "shuffle_write_bytes": 64544215848,
+      "shuffle_bytes": 136340283087,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 9,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 2786.6672,
+      "started_at": "2026-11-18T05:14:56.865646",
+      "finished_at": "2026-11-18T06:01:23.532910",
+      "worker_log": "_worker_data_scaling_f1.00_localall_r2.log",
+      "superseded": false
+    },
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 0.25,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 1590820,
+      "nodes": 2509524,
+      "edges": 1590820,
+      "account_count": 2509524,
+      "seconds": {
+        "ingest_validate": 21.3758,
+        "graph_build": 10.3488,
+        "degrees": 13.9236,
+        "pagerank": 62.2991,
+        "triangles": 35.5832,
+        "components": 762.568,
+        "lpa": 197.7049,
+        "behaviour_features": 11.0157,
+        "feature_join": 5.5725,
+        "graph_feature_engineering": 1100.0373,
+        "total": 1132.0729
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 21.375760700000058,
+          "peak_rss_bytes": 4056580096,
+          "baseline_rss_bytes": 562167808,
+          "min_available_ram_bytes": 2946191360,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2714,
+          "shuffle_write_bytes_delta": 2714
+        },
+        "graph_build": {
+          "wall_seconds": 10.348836600000027,
+          "peak_rss_bytes": 4192702464,
+          "baseline_rss_bytes": 4027629568,
+          "min_available_ram_bytes": 2842071040,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 43187429,
+          "shuffle_write_bytes_delta": 43187429
+        },
+        "degrees": {
+          "wall_seconds": 13.923574400000007,
+          "peak_rss_bytes": 4322398208,
+          "baseline_rss_bytes": 4150923264,
+          "min_available_ram_bytes": 2616279040,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 44186708,
+          "shuffle_write_bytes_delta": 44186708
+        },
+        "pagerank": {
+          "wall_seconds": 62.2991002,
+          "peak_rss_bytes": 5003468800,
+          "baseline_rss_bytes": 4322516992,
+          "min_available_ram_bytes": 1918025728,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 397533959,
+          "shuffle_write_bytes_delta": 397533959
+        },
+        "triangles": {
+          "wall_seconds": 35.583242799999994,
+          "peak_rss_bytes": 5045067776,
+          "baseline_rss_bytes": 5005307904,
+          "min_available_ram_bytes": 1659686912,
+          "stages_count_delta": 25,
+          "shuffle_read_bytes_delta": 380547835,
+          "shuffle_write_bytes_delta": 380547835
+        },
+        "components": {
+          "wall_seconds": 762.5679607,
+          "peak_rss_bytes": 7151820800,
+          "baseline_rss_bytes": 5045649408,
+          "min_available_ram_bytes": 80457728,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 6590351710,
+          "shuffle_write_bytes_delta": 6113781136
+        },
+        "lpa": {
+          "wall_seconds": 197.7049136999999,
+          "peak_rss_bytes": 6849847296,
+          "baseline_rss_bytes": 6609190912,
+          "min_available_ram_bytes": 418598912,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 3367189991,
+          "shuffle_write_bytes_delta": 3367189991
+        },
+        "behaviour_features": {
+          "wall_seconds": 11.015700200000083,
+          "peak_rss_bytes": 6906044416,
+          "baseline_rss_bytes": 6848253952,
+          "min_available_ram_bytes": 496046080,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 188402003,
+          "shuffle_write_bytes_delta": 188402003
+        },
+        "feature_join": {
+          "wall_seconds": 5.572544500000049,
+          "peak_rss_bytes": 7007678464,
+          "baseline_rss_bytes": 7006007296,
+          "min_available_ram_bytes": 495497216,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 68678372,
+          "shuffle_write_bytes_delta": 68678372
+        }
+      },
+      "peak_rss_bytes": 7151820800,
+      "min_available_ram_bytes": 80457728,
+      "shuffle_read_bytes": 11080080721,
+      "shuffle_write_bytes": 10603510147,
+      "shuffle_bytes": 21683590868,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 1157.9642,
+      "started_at": "2026-11-18T11:25:38.822111",
+      "finished_at": "2026-11-18T11:44:56.786327",
+      "worker_log": "_worker_data_scaling_f0.25_localall_r1.log",
+      "superseded": false,
+      "memory_guard_bytes": 214748365,
+      "memory_guard_duration_seconds": 120.0
+    },
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 0.25,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 2,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 1590820,
+      "nodes": 2509524,
+      "edges": 1590820,
+      "account_count": 2509524,
+      "seconds": {
+        "ingest_validate": 15.3017,
+        "graph_build": 8.0336,
+        "degrees": 9.9267,
+        "pagerank": 47.439,
+        "triangles": 28.8064,
+        "components": 392.6925,
+        "lpa": 166.5668,
+        "behaviour_features": 18.6985,
+        "feature_join": 9.0523,
+        "graph_feature_engineering": 691.4054,
+        "total": 714.9294
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 15.301722100000006,
+          "peak_rss_bytes": 2855563264,
+          "baseline_rss_bytes": 609173504,
+          "min_available_ram_bytes": 4768907264,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2714,
+          "shuffle_write_bytes_delta": 2714
+        },
+        "graph_build": {
+          "wall_seconds": 8.0336413,
+          "peak_rss_bytes": 3074502656,
+          "baseline_rss_bytes": 2847539200,
+          "min_available_ram_bytes": 4504576000,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 43187429,
+          "shuffle_write_bytes_delta": 43187429
+        },
+        "degrees": {
+          "wall_seconds": 9.926714700000048,
+          "peak_rss_bytes": 3091542016,
+          "baseline_rss_bytes": 3025842176,
+          "min_available_ram_bytes": 4412542976,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 44186708,
+          "shuffle_write_bytes_delta": 44186708
+        },
+        "pagerank": {
+          "wall_seconds": 47.43900880000001,
+          "peak_rss_bytes": 4754518016,
+          "baseline_rss_bytes": 3053408256,
+          "min_available_ram_bytes": 2760265728,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 397533959,
+          "shuffle_write_bytes_delta": 397533959
+        },
+        "triangles": {
+          "wall_seconds": 28.80636770000001,
+          "peak_rss_bytes": 4991672320,
+          "baseline_rss_bytes": 4753248256,
+          "min_available_ram_bytes": 2408869888,
+          "stages_count_delta": 25,
+          "shuffle_read_bytes_delta": 380547835,
+          "shuffle_write_bytes_delta": 380547835
+        },
+        "components": {
+          "wall_seconds": 392.6925367000001,
+          "peak_rss_bytes": 7374594048,
+          "baseline_rss_bytes": 4992335872,
+          "min_available_ram_bytes": 314462208,
+          "stages_count_delta": 93,
+          "shuffle_read_bytes_delta": 6590351710,
+          "shuffle_write_bytes_delta": 6113781136
+        },
+        "lpa": {
+          "wall_seconds": 166.56676730000027,
+          "peak_rss_bytes": 7151161344,
+          "baseline_rss_bytes": 7083704320,
+          "min_available_ram_bytes": 1382547456,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 3367189991,
+          "shuffle_write_bytes_delta": 3367189991
+        },
+        "behaviour_features": {
+          "wall_seconds": 18.698546799999804,
+          "peak_rss_bytes": 7121436672,
+          "baseline_rss_bytes": 7102390272,
+          "min_available_ram_bytes": 1876979712,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 188402003,
+          "shuffle_write_bytes_delta": 188402003
+        },
+        "feature_join": {
+          "wall_seconds": 9.052287800000158,
+          "peak_rss_bytes": 7188340736,
+          "baseline_rss_bytes": 7185043456,
+          "min_available_ram_bytes": 1795780608,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 68678372,
+          "shuffle_write_bytes_delta": 68678372
+        }
+      },
+      "peak_rss_bytes": 7374594048,
+      "min_available_ram_bytes": 314462208,
+      "shuffle_read_bytes": 11080080721,
+      "shuffle_write_bytes": 10603510147,
+      "shuffle_bytes": 21683590868,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 739.9618,
+      "started_at": "2026-11-18T11:45:01.800121",
+      "finished_at": "2026-11-18T11:57:21.761975",
+      "worker_log": "_worker_data_scaling_f0.25_localall_r2.log",
+      "superseded": false,
+      "memory_guard_bytes": 214748365,
+      "memory_guard_duration_seconds": 120.0
+    },
+    {
+      "status": "ok",
+      "suite": "data_scaling",
+      "fraction": 0.5,
+      "master": "local[*]",
+      "cores": 22,
+      "repeat": 1,
+      "input_format": "parquet",
+      "driver_memory": "6g",
+      "shuffle_partitions": 48,
+      "rows": 3180590,
+      "nodes": 4737083,
+      "edges": 3180590,
+      "account_count": 4737083,
+      "seconds": {
+        "ingest_validate": 21.4686,
+        "graph_build": 14.9852,
+        "degrees": 19.3264,
+        "pagerank": 88.2997,
+        "triangles": 48.2975,
+        "components": 746.1711,
+        "lpa": 245.6557,
+        "behaviour_features": 30.1062,
+        "feature_join": 11.8685,
+        "graph_feature_engineering": 1226.0573,
+        "total": 1262.7428
+      },
+      "stages": {
+        "ingest_validate": {
+          "wall_seconds": 21.46858089999978,
+          "peak_rss_bytes": 3069808640,
+          "baseline_rss_bytes": 591740928,
+          "min_available_ram_bytes": 6101078016,
+          "stages_count_delta": 5,
+          "shuffle_read_bytes_delta": 2714,
+          "shuffle_write_bytes_delta": 2714
+        },
+        "graph_build": {
+          "wall_seconds": 14.98524899999984,
+          "peak_rss_bytes": 3496308736,
+          "baseline_rss_bytes": 3050020864,
+          "min_available_ram_bytes": 5621129216,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 84020874,
+          "shuffle_write_bytes_delta": 84020874
+        },
+        "degrees": {
+          "wall_seconds": 19.326352499999757,
+          "peak_rss_bytes": 4211965952,
+          "baseline_rss_bytes": 3496333312,
+          "min_available_ram_bytes": 4927954944,
+          "stages_count_delta": 6,
+          "shuffle_read_bytes_delta": 86268442,
+          "shuffle_write_bytes_delta": 86268442
+        },
+        "pagerank": {
+          "wall_seconds": 88.29966979999972,
+          "peak_rss_bytes": 6984527872,
+          "baseline_rss_bytes": 4212670464,
+          "min_available_ram_bytes": 2027175936,
+          "stages_count_delta": 27,
+          "shuffle_read_bytes_delta": 775790108,
+          "shuffle_write_bytes_delta": 775790108
+        },
+        "triangles": {
+          "wall_seconds": 48.29745170000024,
+          "peak_rss_bytes": 7213699072,
+          "baseline_rss_bytes": 6985846784,
+          "min_available_ram_bytes": 1633951744,
+          "stages_count_delta": 25,
+          "shuffle_read_bytes_delta": 863105827,
+          "shuffle_write_bytes_delta": 863105827
+        },
+        "components": {
+          "wall_seconds": 746.1710511000001,
+          "peak_rss_bytes": 7430164480,
+          "baseline_rss_bytes": 7189508096,
+          "min_available_ram_bytes": 1589047296,
+          "stages_count_delta": 133,
+          "shuffle_read_bytes_delta": 19329955538,
+          "shuffle_write_bytes_delta": 17231175535
+        },
+        "lpa": {
+          "wall_seconds": 245.6556611000001,
+          "peak_rss_bytes": 7387119616,
+          "baseline_rss_bytes": 7152271360,
+          "min_available_ram_bytes": 1631981568,
+          "stages_count_delta": 68,
+          "shuffle_read_bytes_delta": 6513099143,
+          "shuffle_write_bytes_delta": 6513099143
+        },
+        "behaviour_features": {
+          "wall_seconds": 30.10623880000003,
+          "peak_rss_bytes": 7391698944,
+          "baseline_rss_bytes": 7388098560,
+          "min_available_ram_bytes": 1609244672,
+          "stages_count_delta": 7,
+          "shuffle_read_bytes_delta": 373558712,
+          "shuffle_write_bytes_delta": 373558712
+        },
+        "feature_join": {
+          "wall_seconds": 11.868456000000151,
+          "peak_rss_bytes": 7407316992,
+          "baseline_rss_bytes": 7404101632,
+          "min_available_ram_bytes": 1512865792,
+          "stages_count_delta": 4,
+          "shuffle_read_bytes_delta": 136803832,
+          "shuffle_write_bytes_delta": 136803832
+        }
+      },
+      "peak_rss_bytes": 7430164480,
+      "min_available_ram_bytes": 1475268608,
+      "shuffle_read_bytes": 28162605190,
+      "shuffle_write_bytes": 26063825187,
+      "shuffle_bytes": 54226430377,
+      "engines": {
+        "degrees": "spark-native",
+        "pagerank": "spark-native",
+        "triangles": "spark-native",
+        "components": "spark-native",
+        "lpa": "spark-native",
+        "behaviour": "spark-native"
+      },
+      "algo_info": {
+        "degrees": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "pagerank": {
+          "engine": "spark-native",
+          "iterations": 10,
+          "converged": true
+        },
+        "triangles": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        },
+        "components": {
+          "engine": "spark-native",
+          "iterations": 7,
+          "converged": true
+        },
+        "lpa": {
+          "engine": "spark-native",
+          "iterations": 5,
+          "converged": false
+        },
+        "behaviour": {
+          "engine": "spark-native",
+          "iterations": 1,
+          "converged": true
+        }
+      },
+      "wall_seconds": 1284.6174,
+      "started_at": "2026-11-18T11:57:26.782346",
+      "finished_at": "2026-11-18T12:18:51.399746",
+      "worker_log": "_worker_data_scaling_f0.50_localall_r1.log",
+      "superseded": false,
+      "memory_guard_bytes": 214748365,
+      "memory_guard_duration_seconds": 120.0
+    }
+  ],
+  "caveats": [
+    "Single machine (Windows 11 laptop, 15.37 GiB shared RAM); results do not represent a multi-node cluster.",
+    "Hybrid CPU architecture (Intel Core Ultra 7 155H, 16 cores / 22 logical threads mixing performance and efficiency cores); core scaling is uneven across thread counts.",
+    "Shared RAM and local NTFS disk I/O with OS background services.",
+    "Uniform random transaction sampling (seed=42) changes graph edge density and connected-component structure across fractions; node and edge counts are reported per run.",
+    "2 repeats per configuration; both individual repeat values and means are reported.",
+    "Default Spark settings used across all runs (spark.driver.memory=6g, spark.sql.shuffle.partitions=48)."
+  ]
+}

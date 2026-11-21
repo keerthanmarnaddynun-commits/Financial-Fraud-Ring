@@ -1,0 +1,218 @@
+# AG_FINAL_SUMMARY (STEP 4.8 / GATE 4)
+
+Generated programmatically by `scripts/generate_final_summary.py`. Active git branch: `bdc-final`.
+
+## 1. Final Full Pytest Suite Result (`python -m pytest -q`)
+| Metric | Value | Source |
+| --- | --- | --- |
+| Passed | 37 | logs/raw/20261118-1710_4.8_pytest.txt |
+| Failed | 0 | logs/raw/20261118-1710_4.8_pytest.txt |
+| Errors | 0 | logs/raw/20261118-1710_4.8_pytest.txt |
+| Skipped | 0 | logs/raw/20261118-1710_4.8_pytest.txt |
+| Warnings | 10 | logs/raw/20261118-1710_4.8_pytest.txt |
+| Duration | 2027.13s (0:33:47) | logs/raw/20261118-1710_4.8_pytest.txt |
+| Raw summary line | `37 passed, 10 warnings in 2027.13s (0:33:47)` | logs/raw/20261118-1710_4.8_pytest.txt |
+
+## 2. Final Document Consistency Check (`python check_docs.py`)
+- Overall result: `OVERALL: PASS (total_issues=0)` (source: `logs/raw/20261118-1747_4.8_check_docs.txt`)
+- Re-ran `python make_report.py` before `python check_docs.py`; `git status --short` showed zero modifications in `README.md`, `docs/`, or `results_snapshot/`.
+
+```text
+=== CHECK_DOCS (READ-ONLY CONSISTENCY CHECK) ===
+
+[A] Byte-for-byte template regeneration (3 files):
+    - README.md
+    - docs/FACTS_FOR_PAPER.md
+    - docs/RESULTS_TABLES.md
+    STATUS: PASS (0 byte differences)
+
+[B] Banned vocabulary scan (32 targets):
+    STATUS: PASS (0 banned-word hits)
+
+[C] Relative Markdown link check (4 files):
+    STATUS: PASS (0 broken relative links)
+
+[D] COVERAGE
+  Checked:
+    1. Byte-for-byte identity between make_report.py temp regeneration and workspace files: README.md, docs/FACTS_FOR_PAPER.md, docs/RESULTS_TABLES.md
+    2. Banned words (optimal, sweet spot, robust, decisively, catastrophic, proves, guarantees, perfect, state-of-the-art, outperforms, verified, confirmed, audited) in README.md, docs/*.(md|txt|tmpl), app.py string literals, and Python comments across active project modules.
+    3. Local existence of all relative Markdown links in README.md and docs/**/*.md.
+  NOT Checked:
+    1. Does NOT re-run Spark pipelines, benchmarks, or pytest tests to recompute JSON values in outputs/.
+    2. Does NOT inspect deferred/unwritten docs (docs/paper_final.md, docs/ARCHITECTURE.md, docs/DEMO_SCRIPT.txt, docs/VIVA_QA.txt) or legacy research_paper_draft.md.
+    3. Does NOT inspect check_docs.py itself, tests/, scratch/, archive/, runs/, logs/, old_app_reference.py, or app_mine.py.
+    4. Does NOT check external HTTP/HTTPS URLs or PNG chart pixel contents.
+    5. Does NOT flag standard technical terms 'validation'/'validate' in code identifiers or filenames.
+
+OVERALL: PASS (total_issues=0)
+```
+
+## 3. All Step Statuses (`PROGRESS.txt`)
+Counts parsed from `PROGRESS.txt`: `DONE=39`, `SKIPPED=6`, `PENDING=0`, `BLOCKED=0`.
+
+| Step | Status | Commit / Tag | Notes |
+| --- | --- | --- | --- |
+| STEP 1.0 | DONE | S1.0 | setup, logging, glossary, provenance helpers |
+| STEP 1.1 | DONE | S1.1 | environment, raw data facts, engine findings |
+| STEP 1.2 | DONE | S1.2 | single Spark session builder, remove dead utils |
+| STEP 1.3 | DONE | S1.3 | StageTimer with process-tree RSS sampling |
+| STEP 1.4 | DONE | S1.4 | run_info writer |
+| STEP 1.5 | DONE | S1.5 | Spark-native graph algorithms with engine log |
+| STEP 1.6 | DONE | S1.6 | Shared feature sets and model config |
+| STEP 1.7 | DONE | S1.7 | Splits, training sample, validation threshold |
+| STEP 1.8 | DONE | S1.8 | Distributed scoring and realistic evaluation |
+| STEP 1.9 | DONE | S1.9 | Model files, importance, ablation |
+| STEP 1.10 | DONE | S1.10 | Dashboard compatibility and scorer test |
+| STEP 1.11 | DONE | S1.11 | Pytest suite with 1000-row sample |
+| STEP 1.12 | DONE | S1.12 | Pin requirements and fix README facts |
+| STEP 1.13 | DONE | S1.13 | Sample run, then full run v2 promoted to outputs |
+| STEP 1.14 | SKIPPED(time) | - | [OPTIONAL] Past-only graph features variant |
+| GATE 1 | DONE | S1.GATE | Chunk 1 summary and gate check |
+| STEP 1.15 | DONE | S1.15 | Per-split training, feature persistence, scalability cleanup |
+| STEP 2.1 | DONE | S2.1 | Business impact table |
+| STEP 2.2 | DONE | S2.2 | Real-data ring analysis |
+| STEP 2.3 | DONE | S2.3 | Planted-ring validation with camouflage |
+| STEP 2.4 | DONE | S2.4 | Dashboard tabs: Business impact and Fraud rings |
+| STEP 2.5 | DONE | S2.5 | Model results polish |
+| STEP 2.6 | DONE | S2.6 | generate_visuals.py rewrite |
+| STEP 2.7 | SKIPPED(time) | - | [OPTIONAL] Account lookup in scorer |
+| STEP 2.8 | DONE | S2.8 | Dashboard tests for new tabs |
+| GATE 2 | DONE | S2.GATE | Chunk 2 summary and gate check |
+| STEP 3.0 | DONE | S3.0 | Pre-flight for long runs (7.27 GB RAM, 115.91 GiB disk, AC power) |
+| STEP 3.1 | DONE | S3.1 | Parquet conversion and storage benchmark (runs/20261118-0038_c3-storage) |
+| STEP 3.2 | DONE | S3.2 | Reusable run_graph_stages runner shared by main.py and benchmarks |
+| STEP 3.3 | DONE | S3.3/3B | Scaling benchmark v2 (runs/20261118-1120_c3-scaling-v2; 18/18 active ok + 3 superseded retained) |
+| STEP 3.4 | DONE | S3.4/3B | pandas/NetworkX vs Spark v2 (runs/20261118-1120_c3-pandas-vs-spark-v2; 48 ok incl. 6.36M pandas, 1 timeout) |
+| STEP 3.5 | DONE | S3.5/3B | Benchmark charts and Scaling tab updated (5/5 dashboard tests pass) |
+| STEP 3.6 | SKIPPED(time) | - | [OPTIONAL] Spark settings comparison (skipped per user instruction) |
+| STEP 3.7 | DONE | S3.7 | Demo run helper for Spark UI screenshots (checked with --no-wait) |
+| GATE 3 | DONE | S3.GATE3B | Chunk 3B summary generated by script (logs/GATE_3B_SUMMARY.txt); waiting for user before Chunk 4 |
+| STEP 4.1 | DONE | S4.1 | Report generator (make_report.py), docs/RESULTS_TABLES.md, docs/FACTS_FOR_PAPER.md, results_snapshot |
+| STEP 4.1b | DONE | S4.1b | Doc fixes (8 items in make_report.py and README.md.tmpl); check_docs.py PASS |
+| STEP 4.2 | DONE | S4.2 | README.md generated from docs/templates/README.md.tmpl via make_report.py |
+| STEP 4.3 | SKIPPED(by user, later) | - | Paper rewrite from template and claims trace |
+| STEP 4.4 | SKIPPED(by user, later) | - | Architecture diagram |
+| STEP 4.5 | SKIPPED(by user, later) | - | Demo script and viva questions |
+| STEP 4.6 | DONE | S4.6 | Archived legacy web dashboard (web/, web_app.py) to archive/web_legacy/ |
+| STEP 4.7 | DONE | S4.7 | Strict read-only check_docs.py passed (0 mismatches, 0 banned words, 0 broken links) |
+| STEP 4.8 | DONE | S4.8 | Full pytest passed (37 passed, 0 failed), check_docs PASS, logs/AG_FINAL_SUMMARY.txt generated |
+| GATE 4 | DONE | S4.8 | Final gate complete (all 37 tests passed; 4.3/4.4/4.5 deferred by user) |
+
+## 4. Key Document Hashes (Computed Directly from Disk)
+| File | Size (Bytes) | SHA-256 |
+| --- | --- | --- |
+| README.md | 27,334 | ee6c7a6759293d384cf7e3b20b54227c9189be9d043d7189c796844790f1f2ed |
+| docs/FACTS_FOR_PAPER.md | 37,404 | 7deb139218c39d080ef1b9cd45b743088f5d8666c9cc181321ab9dc0d507c109 |
+| docs/RESULTS_TABLES.md | 26,555 | 35e9fd3989f9ed75b506f3842f79332f431e0dc339da7cd26ab23066e682c04d |
+| results_snapshot/SHA256SUMS.txt | 2,261 | cb7a45ecdfc074a69b461e2c0d82cafa261473c08703aace2516fbdc40bcb5ac |
+
+## 5. Committed Snapshot Manifest (`results_snapshot/SHA256SUMS.txt`, `25` Files)
+| Snapshot Artifact (`results_snapshot/`) | SHA-256 |
+| --- | --- |
+| business_impact.json | 4c97f7946c1a33aea84fc8b3da5e9aadd01ed229056610dddb56fd4ad6b6e5c6 |
+| data_quality.json | 1cecbf30e7f925ef1b77b430483775ec06acd0103d5d6031e058b4efef47bc9f |
+| evaluation.json | 9381cd6e09af1a7c807c611e0a84e76a75e1846bb2a4074524a0b10beca594af |
+| feature_importance.json | 0dc136a1eac32d47521429ffd6b7959b00941642cbdbb1583e956c99dd2e5fb4 |
+| pandas_vs_spark.csv | 5bb4fbbbe9530087390b857e251b4f4799fdabf89a741126e38b93c2155d764e |
+| pandas_vs_spark.json | 583caa1ca99a719e8a802246a548537dbc61348267cb6275c67a87d7a912c71a |
+| planted_ring_validation.json | 57c5f417ffb2a6e9a83f680d50ce80b02a7ffcbde4a64a43c281965cfa0a158b |
+| PROVENANCE.txt | d191c874b41cc30b5ca4b55aa7f66dbeaa55c71a412422a5e9bb4cd6549e0ce3 |
+| ring_analysis.json | 589cc0dc71f4af84b9af89d4ce15ea79d52c132a3602d84133f2a4ea3bbb89a9 |
+| rings_summary.csv | c12a82ff2d1b85568fef4f3c42ba60c9c217df097e8d2367a5ef88f6cf03586f |
+| run_info.json | 0ab1d075ff79df4cc22787a22d92a7641a0a5efeefada028a9fee3cb9bafb472 |
+| scalability.json | 2a608225c23449c3d03fff7b2116565d09ca653aa8ba7cded80d238ce5fe77a9 |
+| scaling_runs.csv | ff33ebf7bf17b47cc10a20a13fed58ef4cfbd00cbe895e714485967bb2938889 |
+| scaling_runs.json | a5a0b478d14de4e430d8d3add7b77bf7cafa8600bb99d8edb686bbfeb449a69c |
+| storage_benchmark.json | 421e6385d79d8f4ece45df98636f862d07cd104fc0c16664de0daa28e9a68aa4 |
+| visuals/business_impact.png | 9190e0bf0ccdb73855d2eaafc6bc888c979305c5e4d13083a7c04ccde75b3d92 |
+| visuals/confusion_matrices.png | f8f334f12edd0ac89ee9bd088c419ed361af09447b4d0f0e23708a344f0f0ddd |
+| visuals/feature_importance.png | 53df455c769388fb02bc7b9c1c701edd10aeea946c5e9864ebcc62ac56064c69 |
+| visuals/pandas_vs_spark.png | d6b2a14a002e5f33ec3c2671e877c61f1ea61c54fc7ae07f38889838afb2f4d7 |
+| visuals/pr_curves.png | 3d2dbcfb42e860b74b8997374134ca4fd7234c9c23e4d4eeabaa5d6a2db14539 |
+| visuals/ring_size_histogram.png | ef99bf54f9d0e0f216297ec6de1b3d0e1907f6d1c01b622e9b686104e3a50e9d |
+| visuals/scaling_benchmark.png | 69a46476ccf89fadf80be197579254afa8a3346ee33466db6a5492bc641ff1bb |
+| visuals/scaling_cores_speedup.png | 33fb287c441e77e2c8de8b0c7e46a9ab1ab738fedbfc2122fbc06f161428644d |
+| visuals/scaling_data_size.png | 69a46476ccf89fadf80be197579254afa8a3346ee33466db6a5492bc641ff1bb |
+| visuals/storage_benchmark.png | ac6d2f38ec660853c5621b7b3defd940417849f2a10c4c46f884873508a0f321 |
+
+## 6. Commit List on `bdc-final` Since `main` (`48` Commits Prior to `S4.8`)
+- `2cf1082 S4.1b: Chunk 4 doc fixes (8 items) and GATE_4B_SUMMARY`
+- `0f76d2b S4.GATE4A: Chunk 4a summary generated by script (ready for final tests at home)`
+- `0c11435 S4.7: strict read-only document check`
+- `e786590 S4.6: archive legacy web dashboard`
+- `431baf9 S4.2: README from template`
+- `96eea2e S4.1: report generator, facts for paper, and results snapshot`
+- `7f10ffa S3.GATE3B: interpolate section 10 numbers directly from JSON`
+- `bcb4021 S3.GATE3B: scaling rerun with 0.2GiB/120s guard, full 6.36M pandas_networkx, and GATE_3B_SUMMARY`
+- `7a7a73c S3.GATE: Chunk 3 Gate summary generated by script`
+- `1d26cdf S3.7: demo run helper for Spark UI screenshots`
+- `a858c4a S3.5: benchmark charts and Scaling tab`
+- `20ee3d0 S3.4: pandas versus Spark comparison`
+- `d9809ce S3.3: scaling benchmark results`
+- `5b6ddf7 S3.2: reusable graph-stage runner`
+- `c10b755 S3.1: parquet conversion and storage benchmark`
+- `ca32d79 S3.0: Chunk 3 pre-flight check passed`
+- `a29bd33 S2.FINAL: scalability phases/stages layout, per-split sampled rows, and dashboard dual-layout support`
+- `6b066b6 S2.GATE: full rerun promoted and GATE 2B summary`
+- `81c9ad4 S1.15: per-split training, feature persistence, scalability cleanup`
+- `68c28dd S2.GATE: apply directives F1-F3 (validation thresholds, LPA and ring metrics, script-generated summary)`
+- `2d4a659 S2.GATE: record pre-fix audit answers in worklog`
+- `7627dfe S2.GATE: chunk 2 summary and gate check`
+- `747d6fb S2.8: dashboard tests for new tabs`
+- `56c5936 S2.7: account lookup skipped for battery budget`
+- `e2b3821 S2.6: visuals from real outputs`
+- `60c1bf8 S2.5: model results charts`
+- `71be4a0 S2.4: business impact and rings tabs`
+- `96944a9 S2.3: planted-ring validation with camouflage`
+- `7b3fbdd S2.2: real-data fraud ring analysis`
+- `3e5656d S2.1: log pre-flight RAM check for step 2.2`
+- `fa50d01 S2.1: business impact table`
+- `fea640b S2.0: gate 1 errata, step 1.15 pending, and split warning`
+- `b42deae S1.GATE: chunk 1 summary and gate check`
+- `6ada005 S1.14: past-only variant skipped for time budget`
+- `59b02eb S1.13: full run v2 promoted to outputs`
+- `65adf00 S1.12: pinned requirements, README fact fixes`
+- `76b0f28 S1.11: pytest suite with 1000-row sample`
+- `5c2684a S1.10: dashboard reads new layout, scorer tested`
+- `3ba64c5 S1.9: model artefacts and feature importance`
+- `3bb418d S1.8: distributed scoring and realistic evaluation`
+- `6b7ce4f S1.7: time, group and random splits with validation threshold`
+- `bfa31d0 S1.6: shared feature sets and model config`
+- `8a2669e S1.5: Spark-native graph algorithms with engine reporting`
+- `3ea3713 S1.4: run_info writer`
+- `acd44ff S1.3: StageTimer with process-tree RSS sampling`
+- `0ef8b3f S1.2: single Spark session builder, remove dead utils`
+- `cb0e93b S1.1: environment, raw data facts, engine findings`
+- `01f61fb S1.0: setup, logging and provenance helpers`
+
+## 7. Scripts Run (Command List)
+- `python main.py --output-dir runs/20261117_162714_c1-full-v2` (full 6.36M-row pipeline, per-split training & distributed scoring)
+- `python business_impact.py`, `python rings.py`, `python planted_rings.py`, `python generate_visuals.py` (Chunk 2 downstream analytics & figures)
+- `python to_parquet.py` and `python storage_benchmark.py` (Chunk 3 CSV vs Parquet conversion & 3-repeat storage benchmark)
+- `python benchmark_scaling.py --run-dir runs/20261118-0057_c3-scaling` and `--run-dir runs/20261118-1120_c3-scaling-v2 --low-mem-bytes 214748365 --low-mem-duration 120` + `python aggregate_scaling.py` (Chunk 3 scaling benchmarks)
+- `python pandas_vs_spark.py --run-dir runs/20261118-0756_c3-pandas-vs-spark` and `--run-dir runs/20261118-1120_c3-pandas-vs-spark-v2 --extra-full-pandas` (Chunk 3 single-node vs Spark comparison)
+- `python demo_run.py --no-wait` (Chunk 3 Spark UI helper non-interactive check)
+- `python make_report.py` (Chunk 4 deterministic README, RESULTS_TABLES, FACTS_FOR_PAPER, and results_snapshot sync)
+- `python check_docs.py` (Chunk 4 read-only byte-for-byte, banned-word, and link check)
+- `python -m pytest -q` (STEP 4.8 final complete test suite)
+
+## 8. Failures and Non-OK Benchmark Records Summary
+- STEP 4.8 final pytest suite: `0` failures, `0` errors.
+- Chunk 1 initial full run (`c1-full`) had cross-split model reuse on `group_dest` and `random`; documented in `logs/GATE_1_ERRATA.txt` and resolved via STEP 1.15 per-split training and full rerun `runs/20261117_162714_c1-full-v2`.
+- Chunk 3 initial scaling run (`c3-scaling`) recorded `3` `aborted_low_memory` units (`0.25 r1/r2`, `0.50 r1`) under `< 0.5 GiB / 60 s`; all `3` were retained as `superseded: true` and completed `status=ok` under `< 0.2 GiB / 120 s` in `runs/20261118-1120_c3-scaling-v2`.
+- Chunk 3 `pandas_vs_spark` recorded `1` `timeout` (`spark components` at `2,000,000` rows, `600 s` limit); retained in `outputs/pandas_vs_spark.json` and size escalation stopped for `spark components`.
+
+## 9. Open Questions and Deferred Items
+- `STEP 4.3` (paper rewrite from template & claims trace), `STEP 4.4` (architecture diagram), and `STEP 4.5` (demo script & viva Q&A) remain `SKIPPED(by user, later)`.
+- Optional steps `STEP 1.14` (past-only graph features), `STEP 2.7` (account lookup in scorer), and `STEP 3.6` (Spark shuffle-partition tuning) remain `SKIPPED(time)`.
+- Interactive Spark UI screenshots (`docs/` Jobs, Stages, SQL pages) await user execution of `python demo_run.py`.
+
+## 10. Things Not Checked
+- Multi-node Spark cluster execution (YARN/Kubernetes, HDFS/S3 network shuffle) was not tested; all runs executed on a single local machine.
+- Multi-seed training variance and confidence intervals were not computed (`random_state=42`, one training run per model and split).
+- Spark `components` and `degree` were not run at `6,362,620` rows inside `pandas_vs_spark.py` (Spark `components` timed out at `2,000,000` rows under the `600 s` cap).
+- `check_docs.py` does not inspect deferred documents (`docs/paper_final.md`, `docs/ARCHITECTURE.md`, `docs/DEMO_SCRIPT.txt`, `docs/VIVA_QA.txt`), legacy `research_paper_draft.md`, `old_app_reference.py`, `app_mine.py`, external URLs, or PNG pixel contents.
+- `bdc-final` has NOT been merged into `main`.
+
+---
+GATE 4 COMPLETE. Zip `logs/` and `results_snapshot/` for review.

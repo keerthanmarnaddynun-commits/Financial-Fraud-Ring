@@ -1,0 +1,25 @@
+{
+  "file": "PS_20174392719_1491204439457_log.csv",
+  "total_rows": 6362620,
+  "rows_by_type": {
+    "PAYMENT": 2151495,
+    "CASH_OUT": 2237500,
+    "CASH_IN": 1399284,
+    "TRANSFER": 532909,
+    "DEBIT": 41432
+  },
+  "rows_by_dest_prefix": {
+    "C": 4211125,
+    "M": 2151495
+  },
+  "fraud_rows_total": 8213,
+  "fraud_rows_by_type": {
+    "CASH_OUT": 4116,
+    "TRANSFER": 4097
+  },
+  "step_min": 1,
+  "step_max": 743,
+  "distinct_nameOrig_count": 6353307,
+  "distinct_nameDest_count": 2722362,
+  "distinct_accounts_union": 9073900
+}

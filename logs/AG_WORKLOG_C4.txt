@@ -1,0 +1,92 @@
+================================================================================
+AG_WORKLOG_C4.txt - Chunk 4 Documents and Consistency Checks Worklog
+================================================================================
+
+[2026-11-18 14:02] CHUNK 4 | DECISION
+Chunk 4 scope on battery (no Spark runs, no full pytest suite):
+- Execute STEP 4.1 (make_report.py, docs/RESULTS_TABLES.md, docs/FACTS_FOR_PAPER.md, results_snapshot), STEP 4.2 (README.md from template), STEP 4.6 (archive legacy web dashboard), STEP 4.7 (read-only check_docs.py).
+- Log STEP 4.3 (paper), STEP 4.4 (architecture diagram), and STEP 4.5 (demo script & viva questions) as SKIPPED(by user, later).
+- Defer STEP 4.8 (final full pytest suite and final summary) until plugged in at home.
+
+[2026-11-18 14:05] STEP 4.1 | ACTION
+Created make_report.py reading strictly from outputs/, docs/raw_data_facts.json, docs/GLOSSARY.md, configs/model_config.json, and requirements.txt.
+Ran `python make_report.py` generating docs/RESULTS_TABLES.md and docs/FACTS_FOR_PAPER.md (every table and key number with source file and JSON key, plus glossary and limitations), and syncing small JSON/CSV/PNG files into results_snapshot/ with updated SHA256SUMS.txt.
+Checked generated files for banned words and unresolved placeholders: zero matches.
+
+[2026-11-18 14:08] STEP 4.2 | ACTION
+Created docs/templates/README.md.tmpl using {{table:...}}, {{num:...}}, and {{text:...}} placeholders only (no hand-typed numbers, no file counts, no legacy web dashboard mentions, no broken link to deferred docs/ARCHITECTURE.md).
+Ran `python make_report.py --no-snapshot` generating README.md (21,999 bytes). Checked README.md for banned words and unresolved placeholders: zero matches.
+
+[2026-11-18 14:11] STEP 4.6 | ACTION
+Moved legacy web dashboard files (`web/` and `web_app.py`) to `archive/web_legacy/` (kept on disk under gitignored `archive/`) and removed the old tracked paths via `git rm --cached -r web web_app.py`. Checked README.md: zero mentions of `web/` or `web_app.py`.
+
+[2026-11-18 14:15] STEP 4.7 | ACTION
+Created strict read-only check_docs.py checking byte-for-byte temp regeneration against workspace files (README.md, docs/RESULTS_TABLES.md, docs/FACTS_FOR_PAPER.md), banned words across README/docs/app.py strings/active Python comments, broken relative links, and printing explicit COVERAGE.
+Ran `python -u check_docs.py`: exit code 0 (0 byte differences, 0 banned-word hits, 0 broken relative links).
+RAW: logs/raw/20261118_4.7_check_docs.txt
+
+[2026-11-18 14:18] GATE 4A | ACTION
+Generated logs/GATE_4A_SUMMARY.txt programmatically via `python scripts/generate_gate4a_summary.py`. Stopping before STEP 4.8 and posting READY FOR FINAL TESTS AT HOME.
+
+[2026-11-18 14:26] STEP 4.1b | ACTION
+Applied 8 doc fixes in make_report.py and docs/templates/README.md.tmpl (docs only; no Spark runs, no full pytest):
+1. Removed "leakage-free" from README section 1 item 2; stated validation-only thresholds, per-split training, and label-free transductive graph features.
+2. Added script-computed warm mean (repeats 2-3), warm speedup vs CSV, and cold-cache CSV note to all storage benchmark tables (README 6.8, FACTS 8, RESULTS 14).
+3. Added script-generated reading guide below pandas vs Spark tables (README 6.7, FACTS 7, RESULTS 13).
+4. Added README section 6.0 "What the results do and do not show" filled strictly from outputs/ by script.
+5. Expanded Limitations (README 7 and FACTS 11) with single training run / no CIs (random_state=42), training sampling (splits.py draw_training_sample, max_training_rows, sampled_training_rows), and 0.2 GiB / 120 s memory guard behavior (minimum dip in ok runs read from scaling_runs.json).
+6. Updated all model tables to display m0_rule threshold source as rule_definition.
+7. Removed CPU model and OS names ("Intel Core Ultra 7 155H", "Windows 11") not present in outputs/run_info.json; environment table only includes them if keys exist in run_info.json.
+8. Formatted README 6.2 total fraud value with thousands separators (comma2f).
+Ran `python make_report.py` and `python check_docs.py`: exit code 0 (0 byte differences, 0 banned-word hits, 0 broken relative links).
+RAW: logs/raw/20261118_4.1b_check_docs.txt
+
+[2026-11-18 17:46] STEP 4.8 | ACTION
+Laptop plugged in; ran full test suite (`python -u -m pytest -q`) saving UTF-8 output to logs/raw/20261118-1710_4.8_pytest.txt.
+Outcome: 37 passed, 0 failed, 10 warnings in 2027.13s (0:33:47).
+Re-ran `python make_report.py` and `python check_docs.py` (logs/raw/20261118-1747_4.8_check_docs.txt): OVERALL PASS (0 byte differences, 0 banned-word hits, 0 broken relative links); `git status --short` showed zero changes in README.md, docs/, or results_snapshot/.
+Generated logs/AG_FINAL_SUMMARY.txt programmatically via scripts/generate_final_summary.py.
+Marked STEP 4.8 DONE and GATE 4 DONE in PROGRESS.txt (keeping STEP 4.3, 4.4, 4.5 as SKIPPED(by user, later)).
+RAW: logs/raw/20261118-1710_4.8_pytest.txt, logs/raw/20261118-1747_4.8_check_docs.txt
+
+[2026-11-21 11:00] STEP 4.9 | ACTION
+Completed dashboard polish in app.py across 4 items (docs and tests unchanged; no Spark runs, no full pytest suite):
+1. Metric cards HTML rendering: reconstructed render_metric_card to output clean unindented HTML so markdown parsers do not treat it as an indented code block, properly applying .metric-subtext styling on Overview, Business Impact, Fraud Rings, and all tabs.
+2. Business Impact tab: added dynamic one-line captions above headline operating table (fixed at validation threshold and default review cost read from business_impact.json) and sensitivity table (fixed at review costs read from business_impact.json), stating they do not follow interactive controls.
+3. Business Impact tab: initialized Operating Score Threshold slider at selected model's validation threshold from outputs/evaluation.json (fallback to business_impact.json), adding the headline validation point to candidate points so live cards start matching headline table, while preserving slider range [0.0, 1.0] and hindsight comparison view.
+4. Live Scorer tab: updated 5 transaction and balance input labels from "($)" to "(simulated currency units)".
+Verification:
+- python -m pytest tests/test_app_smoke.py -q: 5 passed in 11.28s.
+- python check_docs.py: PASS (0 byte differences, 0 banned-word hits, 0 broken relative links, 0 total issues).
+
+[2026-11-21 11:25] STEP 4.10 | ACTION
+Implemented Live Scorer preset selection state in app.py (work on bdc-final only; no Spark runs, no full pytest):
+1. Preset Selection State: Stored active preset name in st.session_state["sc_selected_preset"], dynamically rendering the selected button as type="primary" and other two as type="secondary".
+2. Input field fill behavior: Maintained existing behavior where clicking a preset populates corresponding transaction features.
+3. Preset caption: Added caption "Selected preset: <name>" ("None" when unselected) immediately below the preset buttons.
+4. Input edit behavior decision: Kept highlight as is upon manual edits as the simpler, cleaner approach.
+5. Verification & Tests: Added test_scorer_preset_selection_state in tests/test_app_smoke.py.
+   - python -m pytest tests/test_app_smoke.py -q: 6 passed in 22.91s.
+   - python check_docs.py: PASS (0 byte differences, 0 banned-word hits, 0 broken relative links, 0 total issues).
+
+================================================================================
+DECISIONS
+================================================================================
+- Skipped STEP 4.3, STEP 4.4, and STEP 4.5 with status SKIPPED(by user, later) per user instruction.
+- Deferred STEP 4.8 until the laptop is plugged in at home; stopping after STEP 4.7 with logs/GATE_4A_SUMMARY.txt generated by script.
+- Archived legacy web dashboard (`web/`, `web_app.py`) to `archive/web_legacy/` per STEP 4.6 (override O7), retaining only the unified 7-tab Streamlit `app.py` in active source.
+
+================================================================================
+FAILURES
+================================================================================
+(None yet)
+
+================================================================================
+SURPRISES
+================================================================================
+(None yet)
+
+================================================================================
+OPEN QUESTIONS
+================================================================================
+- Deferred by user for later: STEP 4.3 (paper rewrite), STEP 4.4 (architecture diagram), STEP 4.5 (demo script & viva Q&A), and interactive Spark UI screenshots via `python demo_run.py`.

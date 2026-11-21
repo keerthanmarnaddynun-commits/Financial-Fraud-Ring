@@ -1,0 +1,2041 @@
+{
+  "benchmark": "pandas_networkx_vs_spark",
+  "generated_at": "2026-11-18T12:32:04.847504",
+  "total_runs_recorded": 49,
+  "ok_runs_count": 48,
+  "non_ok_runs_count": 1,
+  "total_benchmark_wall_seconds": 3209.1721,
+  "summary": [
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 100000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0321,
+      "individual_load_seconds": [
+        0.0358,
+        0.0284
+      ],
+      "mean_compute_seconds": 0.5005,
+      "individual_compute_seconds": [
+        0.4991,
+        0.5019
+      ],
+      "mean_total_seconds": 0.5326,
+      "individual_total_seconds": [
+        0.5349,
+        0.5303
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 304719872,
+      "max_peak_rss_bytes": 317136896,
+      "min_available_ram_bytes": 7352180736,
+      "nodes": 192910,
+      "edges": 100000
+    },
+    {
+      "tool": "spark",
+      "task": "components",
+      "rows": 100000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 5.2797,
+      "individual_load_seconds": [
+        5.0911,
+        5.4682
+      ],
+      "mean_compute_seconds": 88.8719,
+      "individual_compute_seconds": [
+        88.1925,
+        89.5514
+      ],
+      "mean_total_seconds": 94.1516,
+      "individual_total_seconds": [
+        93.2836,
+        95.0196
+      ],
+      "mean_spark_startup_seconds": 9.3343,
+      "mean_peak_rss_bytes": 4280217600,
+      "max_peak_rss_bytes": 4506243072,
+      "min_available_ram_bytes": 3574923264,
+      "nodes": 192910,
+      "edges": 100000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 250000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0332,
+      "individual_load_seconds": [
+        0.0354,
+        0.031
+      ],
+      "mean_compute_seconds": 1.8085,
+      "individual_compute_seconds": [
+        1.7114,
+        1.9057
+      ],
+      "mean_total_seconds": 1.8417,
+      "individual_total_seconds": [
+        1.7468,
+        1.9367
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 480993280,
+      "max_peak_rss_bytes": 483680256,
+      "min_available_ram_bytes": 7201402880,
+      "nodes": 462324,
+      "edges": 250000
+    },
+    {
+      "tool": "spark",
+      "task": "components",
+      "rows": 250000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 5.936,
+      "individual_load_seconds": [
+        5.9889,
+        5.8831
+      ],
+      "mean_compute_seconds": 157.0877,
+      "individual_compute_seconds": [
+        157.6377,
+        156.5378
+      ],
+      "mean_total_seconds": 163.0238,
+      "individual_total_seconds": [
+        163.6266,
+        162.4209
+      ],
+      "mean_spark_startup_seconds": 9.1351,
+      "mean_peak_rss_bytes": 3701725184,
+      "max_peak_rss_bytes": 3794558976,
+      "min_available_ram_bytes": 3975884800,
+      "nodes": 462324,
+      "edges": 250000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 500000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0499,
+      "individual_load_seconds": [
+        0.0442,
+        0.0555
+      ],
+      "mean_compute_seconds": 4.1778,
+      "individual_compute_seconds": [
+        4.1137,
+        4.242
+      ],
+      "mean_total_seconds": 4.2277,
+      "individual_total_seconds": [
+        4.1579,
+        4.2975
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 732489728,
+      "max_peak_rss_bytes": 740970496,
+      "min_available_ram_bytes": 6934802432,
+      "nodes": 877876,
+      "edges": 500000
+    },
+    {
+      "tool": "spark",
+      "task": "components",
+      "rows": 500000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 6.5826,
+      "individual_load_seconds": [
+        6.9021,
+        6.2631
+      ],
+      "mean_compute_seconds": 233.1672,
+      "individual_compute_seconds": [
+        233.7943,
+        232.5401
+      ],
+      "mean_total_seconds": 239.7498,
+      "individual_total_seconds": [
+        240.6964,
+        238.8031
+      ],
+      "mean_spark_startup_seconds": 9.359,
+      "mean_peak_rss_bytes": 4316348416,
+      "max_peak_rss_bytes": 4335497216,
+      "min_available_ram_bytes": 3209633792,
+      "nodes": 877876,
+      "edges": 500000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 1000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0654,
+      "individual_load_seconds": [
+        0.0671,
+        0.0637
+      ],
+      "mean_compute_seconds": 8.2995,
+      "individual_compute_seconds": [
+        8.2619,
+        8.337
+      ],
+      "mean_total_seconds": 8.3649,
+      "individual_total_seconds": [
+        8.329,
+        8.4007
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 1228593152,
+      "max_peak_rss_bytes": 1237929984,
+      "min_available_ram_bytes": 6527590400,
+      "nodes": 1647746,
+      "edges": 1000000
+    },
+    {
+      "tool": "spark",
+      "task": "components",
+      "rows": 1000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 9.2642,
+      "individual_load_seconds": [
+        8.3055,
+        10.2228
+      ],
+      "mean_compute_seconds": 294.0489,
+      "individual_compute_seconds": [
+        290.2342,
+        297.8636
+      ],
+      "mean_total_seconds": 303.313,
+      "individual_total_seconds": [
+        298.5397,
+        308.0864
+      ],
+      "mean_spark_startup_seconds": 9.4797,
+      "mean_peak_rss_bytes": 4691777536,
+      "max_peak_rss_bytes": 4769587200,
+      "min_available_ram_bytes": 2904358912,
+      "nodes": 1647746,
+      "edges": 1000000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 2000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.1033,
+      "individual_load_seconds": [
+        0.1021,
+        0.1044
+      ],
+      "mean_compute_seconds": 16.3668,
+      "individual_compute_seconds": [
+        16.1914,
+        16.5421
+      ],
+      "mean_total_seconds": 16.47,
+      "individual_total_seconds": [
+        16.2935,
+        16.6465
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 2198894592,
+      "max_peak_rss_bytes": 2201743360,
+      "min_available_ram_bytes": 5526388736,
+      "nodes": 3092224,
+      "edges": 2000000
+    },
+    {
+      "tool": "spark",
+      "task": "components",
+      "rows": 2000000,
+      "ok_count": 0,
+      "total_count": 1,
+      "statuses": [
+        "timeout"
+      ],
+      "mean_load_seconds": null,
+      "individual_load_seconds": [],
+      "mean_compute_seconds": null,
+      "individual_compute_seconds": [],
+      "mean_total_seconds": null,
+      "individual_total_seconds": [],
+      "mean_spark_startup_seconds": null,
+      "mean_peak_rss_bytes": 6655774720,
+      "max_peak_rss_bytes": 6655774720,
+      "min_available_ram_bytes": 1080107008,
+      "nodes": null,
+      "edges": null
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 4000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.1773,
+      "individual_load_seconds": [
+        0.1495,
+        0.2051
+      ],
+      "mean_compute_seconds": 36.0466,
+      "individual_compute_seconds": [
+        35.6263,
+        36.4669
+      ],
+      "mean_total_seconds": 36.2239,
+      "individual_total_seconds": [
+        35.7758,
+        36.672
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 4079945728,
+      "max_peak_rss_bytes": 4083564544,
+      "min_available_ram_bytes": 4024160256,
+      "nodes": 5862727,
+      "edges": 4000000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "components",
+      "rows": 6362620,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.1789,
+      "individual_load_seconds": [
+        0.188,
+        0.1698
+      ],
+      "mean_compute_seconds": 49.936,
+      "individual_compute_seconds": [
+        50.7347,
+        49.1373
+      ],
+      "mean_total_seconds": 50.1149,
+      "individual_total_seconds": [
+        50.9227,
+        49.3071
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 5805404160,
+      "max_peak_rss_bytes": 5817982976,
+      "min_available_ram_bytes": 3121250304,
+      "nodes": 9073900,
+      "edges": 6362620
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 100000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0338,
+      "individual_load_seconds": [
+        0.0399,
+        0.0278
+      ],
+      "mean_compute_seconds": 0.2931,
+      "individual_compute_seconds": [
+        0.284,
+        0.3022
+      ],
+      "mean_total_seconds": 0.3269,
+      "individual_total_seconds": [
+        0.3238,
+        0.33
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 247388160,
+      "max_peak_rss_bytes": 254681088,
+      "min_available_ram_bytes": 7080411136,
+      "nodes": 192910,
+      "edges": 100000
+    },
+    {
+      "tool": "spark",
+      "task": "degree",
+      "rows": 100000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 4.7021,
+      "individual_load_seconds": [
+        4.3532,
+        5.0511
+      ],
+      "mean_compute_seconds": 8.1184,
+      "individual_compute_seconds": [
+        8.6316,
+        7.6052
+      ],
+      "mean_total_seconds": 12.8206,
+      "individual_total_seconds": [
+        12.9848,
+        12.6563
+      ],
+      "mean_spark_startup_seconds": 7.5325,
+      "mean_peak_rss_bytes": 1393889280,
+      "max_peak_rss_bytes": 1418444800,
+      "min_available_ram_bytes": 6688366592,
+      "nodes": 192910,
+      "edges": 100000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 250000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0411,
+      "individual_load_seconds": [
+        0.0447,
+        0.0375
+      ],
+      "mean_compute_seconds": 0.8126,
+      "individual_compute_seconds": [
+        0.7526,
+        0.8726
+      ],
+      "mean_total_seconds": 0.8537,
+      "individual_total_seconds": [
+        0.7973,
+        0.9101
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 323543040,
+      "max_peak_rss_bytes": 344743936,
+      "min_available_ram_bytes": 7007768576,
+      "nodes": 462324,
+      "edges": 250000
+    },
+    {
+      "tool": "spark",
+      "task": "degree",
+      "rows": 250000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 5.4858,
+      "individual_load_seconds": [
+        5.328,
+        5.6436
+      ],
+      "mean_compute_seconds": 9.5365,
+      "individual_compute_seconds": [
+        9.176,
+        9.8969
+      ],
+      "mean_total_seconds": 15.0222,
+      "individual_total_seconds": [
+        14.504,
+        15.5405
+      ],
+      "mean_spark_startup_seconds": 7.9877,
+      "mean_peak_rss_bytes": 1515689984,
+      "max_peak_rss_bytes": 1566687232,
+      "min_available_ram_bytes": 6552780800,
+      "nodes": 462324,
+      "edges": 250000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 500000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0586,
+      "individual_load_seconds": [
+        0.0586,
+        0.0585
+      ],
+      "mean_compute_seconds": 2.0683,
+      "individual_compute_seconds": [
+        2.0598,
+        2.0768
+      ],
+      "mean_total_seconds": 2.1269,
+      "individual_total_seconds": [
+        2.1184,
+        2.1353
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 450275328,
+      "max_peak_rss_bytes": 452001792,
+      "min_available_ram_bytes": 6930845696,
+      "nodes": 877876,
+      "edges": 500000
+    },
+    {
+      "tool": "spark",
+      "task": "degree",
+      "rows": 500000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 5.9718,
+      "individual_load_seconds": [
+        5.9265,
+        6.0171
+      ],
+      "mean_compute_seconds": 13.0927,
+      "individual_compute_seconds": [
+        13.2587,
+        12.9268
+      ],
+      "mean_total_seconds": 19.0646,
+      "individual_total_seconds": [
+        19.1853,
+        18.9438
+      ],
+      "mean_spark_startup_seconds": 8.1497,
+      "mean_peak_rss_bytes": 2186766336,
+      "max_peak_rss_bytes": 2377940992,
+      "min_available_ram_bytes": 5643980800,
+      "nodes": 877876,
+      "edges": 500000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 1000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.0752,
+      "individual_load_seconds": [
+        0.0827,
+        0.0678
+      ],
+      "mean_compute_seconds": 4.7014,
+      "individual_compute_seconds": [
+        4.7692,
+        4.6337
+      ],
+      "mean_total_seconds": 4.7767,
+      "individual_total_seconds": [
+        4.8519,
+        4.7016
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 680165376,
+      "max_peak_rss_bytes": 680779776,
+      "min_available_ram_bytes": 6722355200,
+      "nodes": 1647746,
+      "edges": 1000000
+    },
+    {
+      "tool": "spark",
+      "task": "degree",
+      "rows": 1000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 7.481,
+      "individual_load_seconds": [
+        7.6176,
+        7.3445
+      ],
+      "mean_compute_seconds": 13.9543,
+      "individual_compute_seconds": [
+        13.6274,
+        14.2812
+      ],
+      "mean_total_seconds": 21.4353,
+      "individual_total_seconds": [
+        21.245,
+        21.6256
+      ],
+      "mean_spark_startup_seconds": 8.1067,
+      "mean_peak_rss_bytes": 2371086336,
+      "max_peak_rss_bytes": 2463764480,
+      "min_available_ram_bytes": 5565480960,
+      "nodes": 1647746,
+      "edges": 1000000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 2000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.1074,
+      "individual_load_seconds": [
+        0.1198,
+        0.095
+      ],
+      "mean_compute_seconds": 10.5544,
+      "individual_compute_seconds": [
+        10.2594,
+        10.8494
+      ],
+      "mean_total_seconds": 10.6618,
+      "individual_total_seconds": [
+        10.3792,
+        10.9444
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 1104609280,
+      "max_peak_rss_bytes": 1110073344,
+      "min_available_ram_bytes": 6354763776,
+      "nodes": 3092224,
+      "edges": 2000000
+    },
+    {
+      "tool": "spark",
+      "task": "degree",
+      "rows": 2000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 9.0332,
+      "individual_load_seconds": [
+        8.8437,
+        9.2228
+      ],
+      "mean_compute_seconds": 17.9633,
+      "individual_compute_seconds": [
+        17.907,
+        18.0197
+      ],
+      "mean_total_seconds": 26.9966,
+      "individual_total_seconds": [
+        26.7508,
+        27.2424
+      ],
+      "mean_spark_startup_seconds": 8.2645,
+      "mean_peak_rss_bytes": 3316463616,
+      "max_peak_rss_bytes": 3560341504,
+      "min_available_ram_bytes": 4454924288,
+      "nodes": 3092224,
+      "edges": 2000000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 4000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.1694,
+      "individual_load_seconds": [
+        0.1712,
+        0.1676
+      ],
+      "mean_compute_seconds": 23.3291,
+      "individual_compute_seconds": [
+        23.7352,
+        22.9231
+      ],
+      "mean_total_seconds": 23.4986,
+      "individual_total_seconds": [
+        23.9064,
+        23.0907
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 1930149888,
+      "max_peak_rss_bytes": 1936113664,
+      "min_available_ram_bytes": 5638836224,
+      "nodes": 5862727,
+      "edges": 4000000
+    },
+    {
+      "tool": "spark",
+      "task": "degree",
+      "rows": 4000000,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 11.9456,
+      "individual_load_seconds": [
+        11.6943,
+        12.1968
+      ],
+      "mean_compute_seconds": 23.2524,
+      "individual_compute_seconds": [
+        22.4804,
+        24.0245
+      ],
+      "mean_total_seconds": 35.1981,
+      "individual_total_seconds": [
+        34.1747,
+        36.2214
+      ],
+      "mean_spark_startup_seconds": 8.0838,
+      "mean_peak_rss_bytes": 4427960320,
+      "max_peak_rss_bytes": 4452163584,
+      "min_available_ram_bytes": 3287109632,
+      "nodes": 5862727,
+      "edges": 4000000
+    },
+    {
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "rows": 6362620,
+      "ok_count": 2,
+      "total_count": 2,
+      "statuses": [
+        "ok",
+        "ok"
+      ],
+      "mean_load_seconds": 0.5848,
+      "individual_load_seconds": [
+        0.9836,
+        0.1861
+      ],
+      "mean_compute_seconds": 35.3315,
+      "individual_compute_seconds": [
+        35.8767,
+        34.7863
+      ],
+      "mean_total_seconds": 35.9164,
+      "individual_total_seconds": [
+        36.8603,
+        34.9724
+      ],
+      "mean_spark_startup_seconds": 0.0,
+      "mean_peak_rss_bytes": 2749057024,
+      "max_peak_rss_bytes": 2750464000,
+      "min_available_ram_bytes": 6007185408,
+      "nodes": 9073900,
+      "edges": 6362620
+    }
+  ],
+  "non_ok_runs": [
+    {
+      "status": "timeout",
+      "reason": "Exceeded 600s timeout (elapsed=600.4s).",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 2000000,
+      "rows": 2000000,
+      "nodes": null,
+      "edges": null,
+      "repeat": 1,
+      "spark_startup_seconds": null,
+      "load_seconds": null,
+      "compute_seconds": null,
+      "seconds": 602.0724,
+      "wall_seconds": 602.0724,
+      "peak_rss_bytes": 6655774720,
+      "min_available_ram_bytes": 1080107008,
+      "started_at": "2026-11-18T08:38:49.770308",
+      "finished_at": "2026-11-18T08:48:51.842716",
+      "worker_log": "_worker_spark_components_2000000_r1.log"
+    }
+  ],
+  "runs": [
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0399,
+      "compute_seconds": 0.284,
+      "seconds": 0.3238,
+      "extra": {
+        "sum_in_degree": 100000.0,
+        "sum_out_degree": 100000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 100000,
+      "repeat": 1,
+      "peak_rss_bytes": 240095232,
+      "min_available_ram_bytes": 7080411136,
+      "wall_seconds": 3.0957,
+      "started_at": "2026-11-18T07:57:06.397583",
+      "finished_at": "2026-11-18T07:57:09.493340",
+      "worker_log": "_worker_pandas_networkx_degree_100000_r1.log"
+    },
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0278,
+      "compute_seconds": 0.3022,
+      "seconds": 0.33,
+      "extra": {
+        "sum_in_degree": 100000.0,
+        "sum_out_degree": 100000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 100000,
+      "repeat": 2,
+      "peak_rss_bytes": 254681088,
+      "min_available_ram_bytes": 7088775168,
+      "wall_seconds": 3.0602,
+      "started_at": "2026-11-18T07:57:11.604362",
+      "finished_at": "2026-11-18T07:57:14.664603",
+      "worker_log": "_worker_pandas_networkx_degree_100000_r2.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0447,
+      "compute_seconds": 0.7526,
+      "seconds": 0.7973,
+      "extra": {
+        "sum_in_degree": 250000.0,
+        "sum_out_degree": 250000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 250000,
+      "repeat": 1,
+      "peak_rss_bytes": 302342144,
+      "min_available_ram_bytes": 7054659584,
+      "wall_seconds": 3.5722,
+      "started_at": "2026-11-18T07:57:16.688694",
+      "finished_at": "2026-11-18T07:57:20.260876",
+      "worker_log": "_worker_pandas_networkx_degree_250000_r1.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0375,
+      "compute_seconds": 0.8726,
+      "seconds": 0.9101,
+      "extra": {
+        "sum_in_degree": 250000.0,
+        "sum_out_degree": 250000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 250000,
+      "repeat": 2,
+      "peak_rss_bytes": 344743936,
+      "min_available_ram_bytes": 7007768576,
+      "wall_seconds": 4.0957,
+      "started_at": "2026-11-18T07:57:22.282805",
+      "finished_at": "2026-11-18T07:57:26.378513",
+      "worker_log": "_worker_pandas_networkx_degree_250000_r2.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0586,
+      "compute_seconds": 2.0598,
+      "seconds": 2.1184,
+      "extra": {
+        "sum_in_degree": 500000.0,
+        "sum_out_degree": 500000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 500000,
+      "repeat": 1,
+      "peak_rss_bytes": 452001792,
+      "min_available_ram_bytes": 6930845696,
+      "wall_seconds": 4.5904,
+      "started_at": "2026-11-18T07:57:28.400928",
+      "finished_at": "2026-11-18T07:57:32.991317",
+      "worker_log": "_worker_pandas_networkx_degree_500000_r1.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0585,
+      "compute_seconds": 2.0768,
+      "seconds": 2.1353,
+      "extra": {
+        "sum_in_degree": 500000.0,
+        "sum_out_degree": 500000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 500000,
+      "repeat": 2,
+      "peak_rss_bytes": 448548864,
+      "min_available_ram_bytes": 6950567936,
+      "wall_seconds": 5.6088,
+      "started_at": "2026-11-18T07:57:35.017926",
+      "finished_at": "2026-11-18T07:57:40.626780",
+      "worker_log": "_worker_pandas_networkx_degree_500000_r2.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0827,
+      "compute_seconds": 4.7692,
+      "seconds": 4.8519,
+      "extra": {
+        "sum_in_degree": 1000000.0,
+        "sum_out_degree": 1000000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 1000000,
+      "repeat": 1,
+      "peak_rss_bytes": 680779776,
+      "min_available_ram_bytes": 6722355200,
+      "wall_seconds": 7.6545,
+      "started_at": "2026-11-18T07:57:42.648808",
+      "finished_at": "2026-11-18T07:57:50.303283",
+      "worker_log": "_worker_pandas_networkx_degree_1000000_r1.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0678,
+      "compute_seconds": 4.6337,
+      "seconds": 4.7016,
+      "extra": {
+        "sum_in_degree": 1000000.0,
+        "sum_out_degree": 1000000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 1000000,
+      "repeat": 2,
+      "peak_rss_bytes": 679550976,
+      "min_available_ram_bytes": 6802112512,
+      "wall_seconds": 7.6761,
+      "started_at": "2026-11-18T07:57:52.325704",
+      "finished_at": "2026-11-18T07:58:00.001854",
+      "worker_log": "_worker_pandas_networkx_degree_1000000_r2.log"
+    },
+    {
+      "rows": 2000000,
+      "nodes": 3092224,
+      "edges": 2000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1198,
+      "compute_seconds": 10.2594,
+      "seconds": 10.3792,
+      "extra": {
+        "sum_in_degree": 2000000.0,
+        "sum_out_degree": 2000000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 2000000,
+      "repeat": 1,
+      "peak_rss_bytes": 1110073344,
+      "min_available_ram_bytes": 6354763776,
+      "wall_seconds": 13.7836,
+      "started_at": "2026-11-18T07:58:02.106734",
+      "finished_at": "2026-11-18T07:58:15.890376",
+      "worker_log": "_worker_pandas_networkx_degree_2000000_r1.log"
+    },
+    {
+      "rows": 2000000,
+      "nodes": 3092224,
+      "edges": 2000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.095,
+      "compute_seconds": 10.8494,
+      "seconds": 10.9444,
+      "extra": {
+        "sum_in_degree": 2000000.0,
+        "sum_out_degree": 2000000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 2000000,
+      "repeat": 2,
+      "peak_rss_bytes": 1099145216,
+      "min_available_ram_bytes": 6388363264,
+      "wall_seconds": 13.8307,
+      "started_at": "2026-11-18T07:58:17.997472",
+      "finished_at": "2026-11-18T07:58:31.828168",
+      "worker_log": "_worker_pandas_networkx_degree_2000000_r2.log"
+    },
+    {
+      "rows": 4000000,
+      "nodes": 5862727,
+      "edges": 4000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1712,
+      "compute_seconds": 23.7352,
+      "seconds": 23.9064,
+      "extra": {
+        "sum_in_degree": 4000000.0,
+        "sum_out_degree": 4000000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 4000000,
+      "repeat": 1,
+      "peak_rss_bytes": 1924186112,
+      "min_available_ram_bytes": 5638836224,
+      "wall_seconds": 27.0834,
+      "started_at": "2026-11-18T07:58:33.847711",
+      "finished_at": "2026-11-18T07:59:00.931185",
+      "worker_log": "_worker_pandas_networkx_degree_4000000_r1.log"
+    },
+    {
+      "rows": 4000000,
+      "nodes": 5862727,
+      "edges": 4000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1676,
+      "compute_seconds": 22.9231,
+      "seconds": 23.0907,
+      "extra": {
+        "sum_in_degree": 4000000.0,
+        "sum_out_degree": 4000000.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 4000000,
+      "repeat": 2,
+      "peak_rss_bytes": 1936113664,
+      "min_available_ram_bytes": 5729304576,
+      "wall_seconds": 26.6327,
+      "started_at": "2026-11-18T07:59:02.954614",
+      "finished_at": "2026-11-18T07:59:29.587346",
+      "worker_log": "_worker_pandas_networkx_degree_4000000_r2.log"
+    },
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0358,
+      "compute_seconds": 0.4991,
+      "seconds": 0.5349,
+      "extra": {
+        "component_count": 92910,
+        "max_component_size": 6
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 100000,
+      "repeat": 1,
+      "peak_rss_bytes": 292302848,
+      "min_available_ram_bytes": 7388844032,
+      "wall_seconds": 3.5792,
+      "started_at": "2026-11-18T07:59:31.613319",
+      "finished_at": "2026-11-18T07:59:35.192575",
+      "worker_log": "_worker_pandas_networkx_components_100000_r1.log"
+    },
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0284,
+      "compute_seconds": 0.5019,
+      "seconds": 0.5303,
+      "extra": {
+        "component_count": 92910,
+        "max_component_size": 6
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 100000,
+      "repeat": 2,
+      "peak_rss_bytes": 317136896,
+      "min_available_ram_bytes": 7352180736,
+      "wall_seconds": 3.0622,
+      "started_at": "2026-11-18T07:59:37.240076",
+      "finished_at": "2026-11-18T07:59:40.302254",
+      "worker_log": "_worker_pandas_networkx_components_100000_r2.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0354,
+      "compute_seconds": 1.7114,
+      "seconds": 1.7468,
+      "extra": {
+        "component_count": 212324,
+        "max_component_size": 12
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 250000,
+      "repeat": 1,
+      "peak_rss_bytes": 478306304,
+      "min_available_ram_bytes": 7201402880,
+      "wall_seconds": 4.6078,
+      "started_at": "2026-11-18T07:59:42.323627",
+      "finished_at": "2026-11-18T07:59:46.931445",
+      "worker_log": "_worker_pandas_networkx_components_250000_r1.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.031,
+      "compute_seconds": 1.9057,
+      "seconds": 1.9367,
+      "extra": {
+        "component_count": 212324,
+        "max_component_size": 12
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 250000,
+      "repeat": 2,
+      "peak_rss_bytes": 483680256,
+      "min_available_ram_bytes": 7203627008,
+      "wall_seconds": 4.5992,
+      "started_at": "2026-11-18T07:59:48.949376",
+      "finished_at": "2026-11-18T07:59:53.548553",
+      "worker_log": "_worker_pandas_networkx_components_250000_r2.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0442,
+      "compute_seconds": 4.1137,
+      "seconds": 4.1579,
+      "extra": {
+        "component_count": 377876,
+        "max_component_size": 16
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 500000,
+      "repeat": 1,
+      "peak_rss_bytes": 740970496,
+      "min_available_ram_bytes": 6942965760,
+      "wall_seconds": 7.1481,
+      "started_at": "2026-11-18T07:59:55.568663",
+      "finished_at": "2026-11-18T08:00:02.716833",
+      "worker_log": "_worker_pandas_networkx_components_500000_r1.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0555,
+      "compute_seconds": 4.242,
+      "seconds": 4.2975,
+      "extra": {
+        "component_count": 377876,
+        "max_component_size": 16
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 500000,
+      "repeat": 2,
+      "peak_rss_bytes": 724008960,
+      "min_available_ram_bytes": 6934802432,
+      "wall_seconds": 7.6565,
+      "started_at": "2026-11-18T08:00:04.738181",
+      "finished_at": "2026-11-18T08:00:12.394717",
+      "worker_log": "_worker_pandas_networkx_components_500000_r2.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0671,
+      "compute_seconds": 8.2619,
+      "seconds": 8.329,
+      "extra": {
+        "component_count": 647746,
+        "max_component_size": 22
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 1000000,
+      "repeat": 1,
+      "peak_rss_bytes": 1219256320,
+      "min_available_ram_bytes": 6567063552,
+      "wall_seconds": 12.2528,
+      "started_at": "2026-11-18T08:00:14.412147",
+      "finished_at": "2026-11-18T08:00:26.664986",
+      "worker_log": "_worker_pandas_networkx_components_1000000_r1.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.0637,
+      "compute_seconds": 8.337,
+      "seconds": 8.4007,
+      "extra": {
+        "component_count": 647746,
+        "max_component_size": 22
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 1000000,
+      "repeat": 2,
+      "peak_rss_bytes": 1237929984,
+      "min_available_ram_bytes": 6527590400,
+      "wall_seconds": 11.7845,
+      "started_at": "2026-11-18T08:00:28.694459",
+      "finished_at": "2026-11-18T08:00:40.478942",
+      "worker_log": "_worker_pandas_networkx_components_1000000_r2.log"
+    },
+    {
+      "rows": 2000000,
+      "nodes": 3092224,
+      "edges": 2000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1021,
+      "compute_seconds": 16.1914,
+      "seconds": 16.2935,
+      "extra": {
+        "component_count": 1092224,
+        "max_component_size": 38
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 2000000,
+      "repeat": 1,
+      "peak_rss_bytes": 2196045824,
+      "min_available_ram_bytes": 5526388736,
+      "wall_seconds": 20.4769,
+      "started_at": "2026-11-18T08:00:42.539514",
+      "finished_at": "2026-11-18T08:01:03.016425",
+      "worker_log": "_worker_pandas_networkx_components_2000000_r1.log"
+    },
+    {
+      "rows": 2000000,
+      "nodes": 3092224,
+      "edges": 2000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1044,
+      "compute_seconds": 16.5421,
+      "seconds": 16.6465,
+      "extra": {
+        "component_count": 1092224,
+        "max_component_size": 38
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 2000000,
+      "repeat": 2,
+      "peak_rss_bytes": 2201743360,
+      "min_available_ram_bytes": 5571186688,
+      "wall_seconds": 20.9699,
+      "started_at": "2026-11-18T08:01:05.046020",
+      "finished_at": "2026-11-18T08:01:26.015897",
+      "worker_log": "_worker_pandas_networkx_components_2000000_r2.log"
+    },
+    {
+      "rows": 4000000,
+      "nodes": 5862727,
+      "edges": 4000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1495,
+      "compute_seconds": 35.6263,
+      "seconds": 35.7758,
+      "extra": {
+        "component_count": 1862727,
+        "max_component_size": 83
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 4000000,
+      "repeat": 1,
+      "peak_rss_bytes": 4076326912,
+      "min_available_ram_bytes": 4024160256,
+      "wall_seconds": 41.3926,
+      "started_at": "2026-11-18T08:01:28.040535",
+      "finished_at": "2026-11-18T08:02:09.433196",
+      "worker_log": "_worker_pandas_networkx_components_4000000_r1.log"
+    },
+    {
+      "rows": 4000000,
+      "nodes": 5862727,
+      "edges": 4000000,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.2051,
+      "compute_seconds": 36.4669,
+      "seconds": 36.672,
+      "extra": {
+        "component_count": 1862727,
+        "max_component_size": 83
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 4000000,
+      "repeat": 2,
+      "peak_rss_bytes": 4083564544,
+      "min_available_ram_bytes": 4128223232,
+      "wall_seconds": 42.4536,
+      "started_at": "2026-11-18T08:02:11.455501",
+      "finished_at": "2026-11-18T08:02:53.909096",
+      "worker_log": "_worker_pandas_networkx_components_4000000_r2.log"
+    },
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 6.9505,
+      "load_seconds": 4.3532,
+      "compute_seconds": 8.6316,
+      "seconds": 12.9848,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 100000.0,
+        "sum_out_degree": 100000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 100000,
+      "repeat": 1,
+      "peak_rss_bytes": 1418444800,
+      "min_available_ram_bytes": 6688366592,
+      "wall_seconds": 23.7449,
+      "started_at": "2026-11-18T08:02:55.940417",
+      "finished_at": "2026-11-18T08:03:19.685368",
+      "worker_log": "_worker_spark_degree_100000_r1.log"
+    },
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 8.1145,
+      "load_seconds": 5.0511,
+      "compute_seconds": 7.6052,
+      "seconds": 12.6563,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 100000.0,
+        "sum_out_degree": 100000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 100000,
+      "repeat": 2,
+      "peak_rss_bytes": 1369333760,
+      "min_available_ram_bytes": 6759583744,
+      "wall_seconds": 24.1429,
+      "started_at": "2026-11-18T08:03:21.721218",
+      "finished_at": "2026-11-18T08:03:45.864128",
+      "worker_log": "_worker_spark_degree_100000_r2.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 7.9347,
+      "load_seconds": 5.328,
+      "compute_seconds": 9.176,
+      "seconds": 14.504,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 250000.0,
+        "sum_out_degree": 250000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 250000,
+      "repeat": 1,
+      "peak_rss_bytes": 1464692736,
+      "min_available_ram_bytes": 6661058560,
+      "wall_seconds": 25.7856,
+      "started_at": "2026-11-18T08:03:47.886767",
+      "finished_at": "2026-11-18T08:04:13.672419",
+      "worker_log": "_worker_spark_degree_250000_r1.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 8.0406,
+      "load_seconds": 5.6436,
+      "compute_seconds": 9.8969,
+      "seconds": 15.5405,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 250000.0,
+        "sum_out_degree": 250000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 250000,
+      "repeat": 2,
+      "peak_rss_bytes": 1566687232,
+      "min_available_ram_bytes": 6552780800,
+      "wall_seconds": 26.4995,
+      "started_at": "2026-11-18T08:04:15.696403",
+      "finished_at": "2026-11-18T08:04:42.195971",
+      "worker_log": "_worker_spark_degree_250000_r2.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 8.195,
+      "load_seconds": 5.9265,
+      "compute_seconds": 13.2587,
+      "seconds": 19.1853,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 500000.0,
+        "sum_out_degree": 500000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 500000,
+      "repeat": 1,
+      "peak_rss_bytes": 2377940992,
+      "min_available_ram_bytes": 5643980800,
+      "wall_seconds": 30.4302,
+      "started_at": "2026-11-18T08:04:44.219919",
+      "finished_at": "2026-11-18T08:05:14.650189",
+      "worker_log": "_worker_spark_degree_500000_r1.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 8.1044,
+      "load_seconds": 6.0171,
+      "compute_seconds": 12.9268,
+      "seconds": 18.9438,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 500000.0,
+        "sum_out_degree": 500000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 500000,
+      "repeat": 2,
+      "peak_rss_bytes": 1995591680,
+      "min_available_ram_bytes": 6017675264,
+      "wall_seconds": 30.0173,
+      "started_at": "2026-11-18T08:05:16.678373",
+      "finished_at": "2026-11-18T08:05:46.695667",
+      "worker_log": "_worker_spark_degree_500000_r2.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 8.1974,
+      "load_seconds": 7.6176,
+      "compute_seconds": 13.6274,
+      "seconds": 21.245,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 1000000.0,
+        "sum_out_degree": 1000000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 1000000,
+      "repeat": 1,
+      "peak_rss_bytes": 2463764480,
+      "min_available_ram_bytes": 5565480960,
+      "wall_seconds": 32.541,
+      "started_at": "2026-11-18T08:05:48.720106",
+      "finished_at": "2026-11-18T08:06:21.261128",
+      "worker_log": "_worker_spark_degree_1000000_r1.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 8.0159,
+      "load_seconds": 7.3445,
+      "compute_seconds": 14.2812,
+      "seconds": 21.6256,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 1000000.0,
+        "sum_out_degree": 1000000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 1000000,
+      "repeat": 2,
+      "peak_rss_bytes": 2278408192,
+      "min_available_ram_bytes": 5753712640,
+      "wall_seconds": 32.5513,
+      "started_at": "2026-11-18T08:06:23.291600",
+      "finished_at": "2026-11-18T08:06:55.843019",
+      "worker_log": "_worker_spark_degree_1000000_r2.log"
+    },
+    {
+      "rows": 2000000,
+      "nodes": 3092224,
+      "edges": 2000000,
+      "spark_startup_seconds": 8.4307,
+      "load_seconds": 8.8437,
+      "compute_seconds": 17.907,
+      "seconds": 26.7508,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 2000000.0,
+        "sum_out_degree": 2000000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 2000000,
+      "repeat": 1,
+      "peak_rss_bytes": 3560341504,
+      "min_available_ram_bytes": 4454924288,
+      "wall_seconds": 38.49,
+      "started_at": "2026-11-18T08:06:57.866197",
+      "finished_at": "2026-11-18T08:07:36.356233",
+      "worker_log": "_worker_spark_degree_2000000_r1.log"
+    },
+    {
+      "rows": 2000000,
+      "nodes": 3092224,
+      "edges": 2000000,
+      "spark_startup_seconds": 8.0983,
+      "load_seconds": 9.2228,
+      "compute_seconds": 18.0197,
+      "seconds": 27.2424,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 2000000.0,
+        "sum_out_degree": 2000000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 2000000,
+      "repeat": 2,
+      "peak_rss_bytes": 3072585728,
+      "min_available_ram_bytes": 4889931776,
+      "wall_seconds": 38.474,
+      "started_at": "2026-11-18T08:07:38.388951",
+      "finished_at": "2026-11-18T08:08:16.863027",
+      "worker_log": "_worker_spark_degree_2000000_r2.log"
+    },
+    {
+      "rows": 4000000,
+      "nodes": 5862727,
+      "edges": 4000000,
+      "spark_startup_seconds": 8.4205,
+      "load_seconds": 11.6943,
+      "compute_seconds": 22.4804,
+      "seconds": 34.1747,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 4000000.0,
+        "sum_out_degree": 4000000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 4000000,
+      "repeat": 1,
+      "peak_rss_bytes": 4452163584,
+      "min_available_ram_bytes": 3455422464,
+      "wall_seconds": 46.0067,
+      "started_at": "2026-11-18T08:08:18.885289",
+      "finished_at": "2026-11-18T08:09:04.892013",
+      "worker_log": "_worker_spark_degree_4000000_r1.log"
+    },
+    {
+      "rows": 4000000,
+      "nodes": 5862727,
+      "edges": 4000000,
+      "spark_startup_seconds": 7.7472,
+      "load_seconds": 12.1968,
+      "compute_seconds": 24.0245,
+      "seconds": 36.2214,
+      "extra": {
+        "engine": "spark-native",
+        "sum_in_degree": 4000000.0,
+        "sum_out_degree": 4000000.0
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "degree",
+      "target_rows": 4000000,
+      "repeat": 2,
+      "peak_rss_bytes": 4403757056,
+      "min_available_ram_bytes": 3287109632,
+      "wall_seconds": 47.1693,
+      "started_at": "2026-11-18T08:09:06.974733",
+      "finished_at": "2026-11-18T08:09:54.144085",
+      "worker_log": "_worker_spark_degree_4000000_r2.log"
+    },
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 9.7145,
+      "load_seconds": 5.0911,
+      "compute_seconds": 88.1925,
+      "seconds": 93.2836,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 3,
+        "converged": true,
+        "component_count": 92910,
+        "max_component_size": 6
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 100000,
+      "repeat": 1,
+      "peak_rss_bytes": 4506243072,
+      "min_available_ram_bytes": 3574923264,
+      "wall_seconds": 107.6428,
+      "started_at": "2026-11-18T08:09:56.174968",
+      "finished_at": "2026-11-18T08:11:43.817802",
+      "worker_log": "_worker_spark_components_100000_r1.log"
+    },
+    {
+      "rows": 100000,
+      "nodes": 192910,
+      "edges": 100000,
+      "spark_startup_seconds": 8.9541,
+      "load_seconds": 5.4682,
+      "compute_seconds": 89.5514,
+      "seconds": 95.0196,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 3,
+        "converged": true,
+        "component_count": 92910,
+        "max_component_size": 6
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 100000,
+      "repeat": 2,
+      "peak_rss_bytes": 4054192128,
+      "min_available_ram_bytes": 3922415616,
+      "wall_seconds": 108.1561,
+      "started_at": "2026-11-18T08:11:45.861633",
+      "finished_at": "2026-11-18T08:13:34.017724",
+      "worker_log": "_worker_spark_components_100000_r2.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 9.0952,
+      "load_seconds": 5.9889,
+      "compute_seconds": 157.6377,
+      "seconds": 163.6266,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 4,
+        "converged": true,
+        "component_count": 212324,
+        "max_component_size": 12
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 250000,
+      "repeat": 1,
+      "peak_rss_bytes": 3608891392,
+      "min_available_ram_bytes": 4142182400,
+      "wall_seconds": 177.7797,
+      "started_at": "2026-11-18T08:13:36.043665",
+      "finished_at": "2026-11-18T08:16:33.823414",
+      "worker_log": "_worker_spark_components_250000_r1.log"
+    },
+    {
+      "rows": 250000,
+      "nodes": 462324,
+      "edges": 250000,
+      "spark_startup_seconds": 9.175,
+      "load_seconds": 5.8831,
+      "compute_seconds": 156.5378,
+      "seconds": 162.4209,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 4,
+        "converged": true,
+        "component_count": 212324,
+        "max_component_size": 12
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 250000,
+      "repeat": 2,
+      "peak_rss_bytes": 3794558976,
+      "min_available_ram_bytes": 3975884800,
+      "wall_seconds": 177.3918,
+      "started_at": "2026-11-18T08:16:35.851340",
+      "finished_at": "2026-11-18T08:19:33.243185",
+      "worker_log": "_worker_spark_components_250000_r2.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 9.1399,
+      "load_seconds": 6.9021,
+      "compute_seconds": 233.7943,
+      "seconds": 240.6964,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 5,
+        "converged": true,
+        "component_count": 377876,
+        "max_component_size": 16
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 500000,
+      "repeat": 1,
+      "peak_rss_bytes": 4297199616,
+      "min_available_ram_bytes": 3209633792,
+      "wall_seconds": 255.0043,
+      "started_at": "2026-11-18T08:19:35.264998",
+      "finished_at": "2026-11-18T08:23:50.269326",
+      "worker_log": "_worker_spark_components_500000_r1.log"
+    },
+    {
+      "rows": 500000,
+      "nodes": 877876,
+      "edges": 500000,
+      "spark_startup_seconds": 9.578,
+      "load_seconds": 6.2631,
+      "compute_seconds": 232.5401,
+      "seconds": 238.8031,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 5,
+        "converged": true,
+        "component_count": 377876,
+        "max_component_size": 16
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 500000,
+      "repeat": 2,
+      "peak_rss_bytes": 4335497216,
+      "min_available_ram_bytes": 3298779136,
+      "wall_seconds": 253.9728,
+      "started_at": "2026-11-18T08:23:52.344210",
+      "finished_at": "2026-11-18T08:28:06.317065",
+      "worker_log": "_worker_spark_components_500000_r2.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 9.1871,
+      "load_seconds": 8.3055,
+      "compute_seconds": 290.2342,
+      "seconds": 298.5397,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 5,
+        "converged": true,
+        "component_count": 647746,
+        "max_component_size": 22
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 1000000,
+      "repeat": 1,
+      "peak_rss_bytes": 4769587200,
+      "min_available_ram_bytes": 2904358912,
+      "wall_seconds": 313.5125,
+      "started_at": "2026-11-18T08:28:08.358015",
+      "finished_at": "2026-11-18T08:33:21.870523",
+      "worker_log": "_worker_spark_components_1000000_r1.log"
+    },
+    {
+      "rows": 1000000,
+      "nodes": 1647746,
+      "edges": 1000000,
+      "spark_startup_seconds": 9.7723,
+      "load_seconds": 10.2228,
+      "compute_seconds": 297.8636,
+      "seconds": 308.0864,
+      "extra": {
+        "engine": "spark-native",
+        "iterations": 5,
+        "converged": true,
+        "component_count": 647746,
+        "max_component_size": 22
+      },
+      "status": "ok",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 1000000,
+      "repeat": 2,
+      "peak_rss_bytes": 4613967872,
+      "min_available_ram_bytes": 3005104128,
+      "wall_seconds": 323.8535,
+      "started_at": "2026-11-18T08:33:23.895255",
+      "finished_at": "2026-11-18T08:38:47.748798",
+      "worker_log": "_worker_spark_components_1000000_r2.log"
+    },
+    {
+      "status": "timeout",
+      "reason": "Exceeded 600s timeout (elapsed=600.4s).",
+      "tool": "spark",
+      "task": "components",
+      "target_rows": 2000000,
+      "rows": 2000000,
+      "nodes": null,
+      "edges": null,
+      "repeat": 1,
+      "spark_startup_seconds": null,
+      "load_seconds": null,
+      "compute_seconds": null,
+      "seconds": 602.0724,
+      "wall_seconds": 602.0724,
+      "peak_rss_bytes": 6655774720,
+      "min_available_ram_bytes": 1080107008,
+      "started_at": "2026-11-18T08:38:49.770308",
+      "finished_at": "2026-11-18T08:48:51.842716",
+      "worker_log": "_worker_spark_components_2000000_r1.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.9836,
+      "compute_seconds": 35.8767,
+      "seconds": 36.8603,
+      "extra": {
+        "sum_in_degree": 6362620.0,
+        "sum_out_degree": 6362620.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 6362620,
+      "repeat": 1,
+      "peak_rss_bytes": 2747650048,
+      "min_available_ram_bytes": 6031339520,
+      "wall_seconds": 40.5583,
+      "started_at": "2026-11-18T12:28:43.499966",
+      "finished_at": "2026-11-18T12:29:24.058261",
+      "worker_log": "_worker_pandas_networkx_degree_6362620_r1.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1861,
+      "compute_seconds": 34.7863,
+      "seconds": 34.9724,
+      "extra": {
+        "sum_in_degree": 6362620.0,
+        "sum_out_degree": 6362620.0
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "degree",
+      "target_rows": 6362620,
+      "repeat": 2,
+      "peak_rss_bytes": 2750464000,
+      "min_available_ram_bytes": 6007185408,
+      "wall_seconds": 38.5441,
+      "started_at": "2026-11-18T12:29:26.077039",
+      "finished_at": "2026-11-18T12:30:04.621141",
+      "worker_log": "_worker_pandas_networkx_degree_6362620_r2.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.188,
+      "compute_seconds": 50.7347,
+      "seconds": 50.9227,
+      "extra": {
+        "component_count": 2711280,
+        "max_component_size": 121
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 6362620,
+      "repeat": 1,
+      "peak_rss_bytes": 5817982976,
+      "min_available_ram_bytes": 3121250304,
+      "wall_seconds": 57.8226,
+      "started_at": "2026-11-18T12:30:06.641088",
+      "finished_at": "2026-11-18T12:31:04.463690",
+      "worker_log": "_worker_pandas_networkx_components_6362620_r1.log"
+    },
+    {
+      "rows": 6362620,
+      "nodes": 9073900,
+      "edges": 6362620,
+      "spark_startup_seconds": 0.0,
+      "load_seconds": 0.1698,
+      "compute_seconds": 49.1373,
+      "seconds": 49.3071,
+      "extra": {
+        "component_count": 2711280,
+        "max_component_size": 121
+      },
+      "status": "ok",
+      "tool": "pandas_networkx",
+      "task": "components",
+      "target_rows": 6362620,
+      "repeat": 2,
+      "peak_rss_bytes": 5792825344,
+      "min_available_ram_bytes": 3177541632,
+      "wall_seconds": 56.3412,
+      "started_at": "2026-11-18T12:31:06.483540",
+      "finished_at": "2026-11-18T12:32:02.824799",
+      "worker_log": "_worker_pandas_networkx_components_6362620_r2.log"
+    }
+  ],
+  "caveats": [
+    "Single Windows 11 laptop (15.37 GiB shared RAM, Intel Core Ultra 7 155H); Spark runs in local[*] mode with default 6g driver memory and 48 shuffle partitions.",
+    "Load time (reading Parquet into memory) is reported separately from compute time (graph construction + algorithm execution); Spark JVM startup time is also recorded separately.",
+    "Uniform random transaction sampling (seed=42) changes graph density across sizes; nodes and edges are recorded for every completed run.",
+    "Each tool/task/size/repeat runs in a fresh Python subprocess with a 10-minute timeout, a 9 GiB process-tree RSS guard, and a sustained 60-second < 0.5 GiB available-RAM guard.",
+    "Size escalation stops for a (tool, task) once a size records timeout or oom_guard; all non-ok runs are retained."
+  ]
+}

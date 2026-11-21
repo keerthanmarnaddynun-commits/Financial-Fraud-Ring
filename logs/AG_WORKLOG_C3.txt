@@ -1,0 +1,182 @@
+================================================================================
+AG_WORKLOG_C3.txt - Chunk 3 Big-Data Benchmarks Worklog
+================================================================================
+
+[2026-11-18 00:25] STEP 3.0 | ACTION
+Ran Chunk 3 pre-flight check (scratch/preflight_c3.py) against thresholds:
+RAM >= 7 GB available, disk >= 40 GB free, AC power plugged in, branch bdc-final.
+RAW: logs/raw/20261118_3.0_preflight.txt
+
+[2026-11-18 00:25] STEP 3.0 | RESULT
+- Git branch: bdc-final (pass)
+- Power: plugged in, battery 85% (pass)
+- Disk free: 116.07 GiB (pass; threshold 40 GB)
+- Data CSV: data/PS_20174392719_1491204439457_log.csv present (pass)
+- Available RAM: 6.04 GiB / 6.49 GB (6,486,138,880 bytes; second reading 6.14 GiB / 6.59 GB) -> FAIL (threshold 7 GB)
+- Stopped per STEP 3.0 and Appendix D without starting benchmarks.
+
+[2026-11-18 00:29] STEP 3.0 | ACTION
+Re-ran Chunk 3 pre-flight check (scratch/preflight_c3.py) after user resumed.
+RAW: logs/raw/20261118_3.0_preflight.txt
+
+[2026-11-18 00:29] STEP 3.0 | RESULT
+- Git branch: bdc-final (pass)
+- Power: plugged in, battery 88% (pass)
+- Disk free: 115.91 GiB / 124.46 GB (pass; threshold 40 GB)
+- Available RAM: 6.77 GiB / 7.27 GB (7,270,072,320 bytes) (pass; threshold 7 GB)
+- Top host python/java processes: ms-python extension (58.1 MiB) and preflight script (19.7 MiB); no heavy jobs running.
+- STEP 3.0 PASSED. Proceeding to STEP 3.1.
+
+[2026-11-18 00:35] STEP 3.1 | ACTION
+Created to_parquet.py and storage_benchmark.py; added --input-format {csv,parquet} to main.py and data_ingestion.py.
+Ran `python -u to_parquet.py` to create data/parquet/paysim (partitioned by type) and data/parquet/paysim_unpartitioned while keeping the original CSV untouched.
+RAW: logs/raw/20261118_3.1_to_parquet.txt
+
+[2026-11-18 00:38] STEP 3.1 | ACTION
+Ran `python -u storage_benchmark.py` (3 repeats each across CSV, partitioned Parquet, and unpartitioned Parquet).
+Output saved to runs/20261118-0038_c3-storage/storage_benchmark.json (with CARD.md, run_info.json, SHA256SUMS.txt, read-only) and copied to outputs/storage_benchmark.json and results_snapshot/storage_benchmark.json.
+Checked Parquet ingestion path via data_ingestion.load_and_validate_data(..., input_format="parquet").
+RAW: logs/raw/20261118_3.1_storage_benchmark.txt, logs/raw/20261118_3.1_parquet_load_check.txt
+
+[2026-11-18 00:42] STEP 3.1 | RESULT
+All three storage layouts produced matching row counts and filter counts (see outputs/storage_benchmark.json keys formats.<fmt>.row_count, formats.<fmt>.size_mb, formats.<fmt>.operations.<op>.mean_seconds, and speedup_vs_csv). Parquet ingestion load check exited with code 0.
+
+[2026-11-18 00:45] STEP 3.2 | ACTION
+Created graph_pipeline.py exposing run_graph_stages(spark, df, timer, ...) returning per-stage timings (ingest_validate, graph_build, degrees, pagerank, triangles, components, lpa, behaviour_features, feature_join, total), graph counts (rows, nodes, edges), shuffle_bytes, peak_rss_bytes, and min_available_ram_bytes. Updated main.py to use run_graph_stages directly.
+Checked run_graph_stages on tests/data/sample_1000.csv.
+RAW: logs/raw/20261118_3.2_graph_stages_check.txt
+
+[2026-11-18 00:48] STEP 3.2 | RESULT
+Sample check exited with code 0; all stage timings, graph counts, shuffle bytes, peak RSS, and min_available_ram_bytes were populated cleanly.
+
+[2026-11-18 00:53] STEP 3.3 | ACTION
+Created benchmark_scaling.py and aggregate_scaling.py.
+Ran tiny smoke test (`fraction=0.01`, `local[4]`, 1 repeat) in runs/20261118_c3-scaling-smoke; exited 0, resumability and aggregation checks passed.
+RAW: logs/raw/20261118_3.3_smoke.txt
+
+[2026-11-18 00:59] STEP 3.3 | ACTION
+Launched full 18-unit scaling benchmark orchestrator in background (task-3237) into runs/20261118-0057_c3-scaling:
+- Data-size scaling: fractions 0.10, 0.25, 0.50, 1.00 (local[*], 2 repeats)
+- Core scaling: fraction 0.10, local[1,2,4,8,16] (2 repeats)
+- Default Spark settings (6g, 48 partitions), per-run timeout 75 min, memory guard < 0.5 GiB for 60s continuous.
+RAW: logs/raw/20261118_3.3_scaling.txt, runs/20261118-0057_c3-scaling/orchestrator.log
+
+[2026-11-18 01:26] STEP 3.3 | POLL
+2/18 units recorded (both status=ok); unit 3/18 (core_scaling f=0.10 local[1] r=1) in progress; available RAM healthy.
+
+[2026-11-18 01:51] STEP 3.3 | POLL
+4/18 units recorded (all status=ok); unit 5/18 (core_scaling f=0.10 local[2] r=1) in progress.
+
+[2026-11-18 02:17] STEP 3.3 | POLL
+6/18 units recorded (all status=ok); unit 7/18 (core_scaling f=0.10 local[4] r=1) in progress.
+
+[2026-11-18 02:43] STEP 3.3 | POLL
+8/18 units recorded (all status=ok); unit 9/18 (core_scaling f=0.10 local[8] r=1) in progress.
+
+[2026-11-18 03:09] STEP 3.3 | POLL
+10/18 units recorded (all status=ok); unit 11/18 (core_scaling f=0.10 local[16] r=1) in progress.
+
+[2026-11-18 03:35] STEP 3.3 | POLL
+13/18 units recorded (12 ok including all 10 core_scaling units; unit 13 data_scaling f=0.25 r1 recorded status=aborted_low_memory after 60.4s below 0.5 GiB); unit 14/18 (data_scaling f=0.25 r2) in progress.
+
+[2026-11-18 04:01] STEP 3.3 | POLL
+14/18 units recorded (unit 14 data_scaling f=0.25 r2 recorded status=aborted_low_memory after 60.6s below 0.5 GiB); unit 15/18 (data_scaling f=0.50 r1) in progress near memory guard threshold.
+
+[2026-11-18 04:27] STEP 3.3 | POLL
+15/18 units recorded (unit 15 data_scaling f=0.50 r1 recorded status=aborted_low_memory after 60.1s below 0.5 GiB); unit 16/18 (data_scaling f=0.50 r2) in progress.
+
+[2026-11-18 04:54] STEP 3.3 | POLL
+16/18 units recorded (unit 16 data_scaling f=0.50 r2 finished status=ok); unit 17/18 (data_scaling f=1.00 r1) in progress.
+
+[2026-11-18 05:22] STEP 3.3 | POLL
+17/18 units recorded (unit 17 data_scaling f=1.00 r1 finished status=ok); final unit 18/18 (data_scaling f=1.00 r2) in progress.
+
+[2026-11-18 05:49] STEP 3.3 | POLL
+17/18 units recorded; final unit 18/18 (data_scaling f=1.00 r2) still running cleanly (~34 min elapsed).
+
+[2026-11-18 06:02] STEP 3.3 | RESULT
+All 18/18 units completed or recorded in runs/20261118-0057_c3-scaling/scaling_runs.jsonl:
+- 15 status=ok (all 10 core_scaling units at f=0.10, data_scaling f=0.10 r1/r2, f=0.50 r2, f=1.00 r1/r2)
+- 3 status=aborted_low_memory (data_scaling f=0.25 r1/r2, f=0.50 r1) — recorded, not dropped.
+Aggregated via `python aggregate_scaling.py --run-dir runs/20261118-0057_c3-scaling --finalize` writing scaling_runs.json, scaling_runs.csv, CARD.md, SHA256SUMS.txt (marked read-only) and copying JSON/CSV to outputs/ and results_snapshot/.
+Ran `python -m pytest tests/test_app_smoke.py -v`: 5 passed in 11.88s (Scaling tab renders scaling_runs.json without error).
+RAW: runs/20261118-0057_c3-scaling/orchestrator.log, outputs/scaling_runs.json
+
+[2026-11-18 07:53] STEP 3.4 | ACTION
+Created pandas_vs_spark.py and ran 100k-row smoke test in runs/20261118_c3-pvs-smoke (4/4 ok).
+Launched full pandas/NetworkX vs Spark benchmark (task-3363) into runs/20261118-0756_c3-pandas-vs-spark (sizes 100k..4M, 2 repeats, 10-min timeout, 9 GiB RSS + 60s < 0.5 GiB available RAM guard).
+RAW: logs/raw/20261118_3.4_smoke.txt, logs/raw/20261118_3.4_pandas_vs_spark.txt
+
+[2026-11-18 08:22] STEP 3.4 | POLL
+40/48 units recorded (all status=ok: all pandas_networkx degree/components 100k..4M, all spark degree 100k..4M, spark components 100k..250k); spark components 500k r1 in progress.
+
+[2026-11-18 08:48] STEP 3.4 | RESULT
+Completed pandas_vs_spark benchmark in runs/20261118-0756_c3-pandas-vs-spark:
+- 45 runs recorded (44 ok, 1 timeout on spark components 2,000,000 r1 at 600s limit; stopped increasing size to 4,000,000 for spark components per STEP 3.4).
+- Wrote pandas_vs_spark.json, pandas_vs_spark.csv, CARD.md, SHA256SUMS.txt (marked read-only) and copied JSON/CSV to outputs/ and results_snapshot/.
+RAW: runs/20261118-0756_c3-pandas-vs-spark/orchestrator.log, outputs/pandas_vs_spark.json
+
+[2026-11-18 08:49] STEP 3.6 | DECISION
+Skipped STEP 3.6 ([OPTIONAL] Spark settings comparison) with status SKIPPED(time) per user instruction.
+
+[2026-11-18 08:52] STEP 3.5 | ACTION
+Updated generate_visuals.py to render all four Chunk 3 benchmark figures:
+- scaling_data_size.png (and scaling_benchmark.png): log-log time vs sample fraction with individual repeats and non-ok annotations
+- scaling_cores_speedup.png: speedup and wall time vs local[1..16] cores at fraction 0.10
+- pandas_vs_spark.png: compute time (log-log) and peak RSS (GiB) across 100k..4M rows
+- storage_benchmark.png: CSV vs Parquet sizes and 3-repeat query read latencies
+Updated app.py Scaling tab to display all four benchmark sections with stated caveats, individual repeat values, and non-ok run records.
+Copied PNG charts into results_snapshot/visuals/ and regenerated results_snapshot/SHA256SUMS.txt.
+Ran `python -m pytest tests/test_app_smoke.py -v`: 5 passed in 11.08s.
+
+[2026-11-18 08:59] STEP 3.7 | ACTION
+Created demo_run.py running the 2% sample graph pipeline with Spark UI enabled, printing "Spark UI: http://localhost:4040", saving summary to outputs_test/demo_run/demo_run_summary.json, and waiting for Enter unless --no-wait is passed.
+Tested non-interactively via `python -u demo_run.py --no-wait` (exited code 0).
+RAW: logs/raw/20261118_3.7_demo_run_nowait.txt
+
+[2026-11-18 09:10] GATE 3 | ACTION
+Generated logs/GATE_3_SUMMARY.txt programmatically via `python scripts/generate_gate3_summary.py` directly from outputs/storage_benchmark.json, outputs/scaling_runs.json, outputs/pandas_vs_spark.json, PROGRESS.txt, and git log. Stopping at GATE 3 and waiting for user to type "continue" before starting Chunk 4.
+
+[2026-11-18 11:24] STEP 3B | ACTION
+Seeded runs/20261118-1120_c3-scaling-v2/scaling_runs.jsonl with all 18 records from runs/20261118-0057_c3-scaling (15 active ok + 3 aborted_low_memory marked superseded=True).
+Launched background re-run (task-3473) of ONLY the 3 superseded data_scaling units (0.25 r1, 0.25 r2, 0.50 r1) with default 6g / 48 partitions and relaxed memory guard (< 0.2 GiB for 120s).
+RAW: logs/raw/20261118_3B_scaling_rerun.txt, runs/20261118-1120_c3-scaling-v2/orchestrator.log
+
+[2026-11-18 11:51] STEP 3B | POLL
+19/21 records in scaling_runs.jsonl (data_scaling f=0.25 r1 finished status=ok); data_scaling f=0.25 r2 in progress.
+
+[2026-11-18 12:15] STEP 3B | POLL
+20/21 records in scaling_runs.jsonl (data_scaling f=0.25 r2 finished status=ok); final re-run unit data_scaling f=0.50 r1 in progress.
+
+[2026-11-18 12:20] STEP 3B | RESULT
+Completed scaling re-run in runs/20261118-1120_c3-scaling-v2: all 3 re-run units (0.25 r1, 0.25 r2, 0.50 r1) finished status=ok under the < 0.2 GiB / 120s memory guard; all 3 prior aborted_low_memory records retained as superseded=True (21 records total: 18 active ok + 3 superseded).
+Aggregated via aggregate_scaling.py --finalize and promoted to outputs/ and results_snapshot/ (fixed read-only overwrite PermissionError by writing writable copies to outputs/ and results_snapshot/ while keeping runs/ read-only).
+RAW: runs/20261118-1120_c3-scaling-v2/orchestrator.log, outputs/scaling_runs.json
+
+[2026-11-18 12:32] STEP 3B | RESULT
+Completed full-dataset (6,362,620 rows from Parquet) pandas_networkx degree and components runs (2 repeats each) in runs/20261118-1120_c3-pandas-vs-spark-v2: 4/4 finished status=ok; total 49 runs (48 ok, 1 timeout) aggregated into outputs/pandas_vs_spark.json and results_snapshot/.
+Regenerated all visuals via generate_visuals.py, updated app.py Scaling tab to display superseded prior records separately, updated results_snapshot/SHA256SUMS.txt, and ran tests/test_app_smoke.py (5 passed in 14.77s).
+Generated logs/GATE_3B_SUMMARY.txt programmatically via scripts/generate_gate3b_summary.py.
+RAW: runs/20261118-1120_c3-pandas-vs-spark-v2/orchestrator.log, outputs/pandas_vs_spark.json
+
+================================================================================
+DECISIONS
+================================================================================
+- Stopped at STEP 3.0 because available RAM (6.04 GiB / 6.49 GB; re-check 6.14 GiB / 6.59 GB) is below the 7 GB pre-flight threshold.
+- Skipped STEP 3.6 ([OPTIONAL] Spark settings comparison) with status SKIPPED(time) per user instruction.
+
+================================================================================
+FAILURES
+================================================================================
+- [2026-11-18 00:25] STEP 3.0: Pre-flight RAM check failed (6.04 GiB available < 7 GB threshold). RAW: logs/raw/20261118_3.0_preflight.txt
+
+================================================================================
+SURPRISES
+================================================================================
+- Untracked file `to_run.txt` present in workspace root (left untouched).
+- In STEP 3.3, `data_scaling f=0.25` (both repeats) and `f=0.50` (r1) tripped the sustained `<0.5 GiB for 60s` memory guard (`status=aborted_low_memory`), whereas `f=0.50` (r2) and both `f=1.00` repeats completed with `status=ok` (see `outputs/scaling_runs.json` `non_ok_runs` and `data_size_summary`). All non-ok records are retained honestly without re-running or dropping.
+
+================================================================================
+OPEN QUESTIONS
+================================================================================
+- Waiting for user to free RAM to >= 7 GB available (or lower the STEP 3.0 RAM threshold) before starting Chunk 3 benchmarks.

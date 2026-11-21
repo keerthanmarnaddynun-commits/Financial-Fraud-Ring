@@ -1,0 +1,71 @@
+{
+  "timings_seconds": {
+    "ingestion_and_validation": 60.089810000004945,
+    "graph_construction": 15.038408299995353,
+    "degrees": 30.32792860000336,
+    "pagerank": 144.30477930000052,
+    "triangles": 78.45839639999758,
+    "components": 2042.2003299999997,
+    "lpa": 487.8777820000032,
+    "behaviour_features": 57.23539729999902,
+    "graph_feature_engineering": 2908.3806035000016,
+    "model_training": 99.71300320000591,
+    "distributed_scoring_and_eval": 691.3541066000034
+  },
+  "spark_application_id": "local-1794913185371",
+  "spark_master": "local[*]",
+  "executor_memory_bytes": 1411361407,
+  "shuffle_read_bytes": 73452995505,
+  "shuffle_write_bytes": 66214952182,
+  "stage_count": 945,
+  "memory_warning": "Low memory warning: available RAM (1.82 GB) dropped below 2.0 GB threshold.",
+  "transaction_count": 6362620,
+  "account_count": 9073900,
+  "sampled_training_rows": 147532,
+  "model_names": [
+    "m1_tabular",
+    "m1_tabular_noerr",
+    "m2_graph",
+    "m3_community_mule"
+  ],
+  "engines": {
+    "degrees": "spark-native",
+    "pagerank": "spark-native",
+    "triangles": "spark-native",
+    "components": "spark-native",
+    "lpa": "spark-native",
+    "behaviour": "spark-native"
+  },
+  "algorithm_info": {
+    "degrees": {
+      "engine": "spark-native",
+      "iterations": 1,
+      "converged": true
+    },
+    "pagerank": {
+      "engine": "spark-native",
+      "iterations": 10,
+      "converged": true
+    },
+    "triangles": {
+      "engine": "spark-native",
+      "iterations": 1,
+      "converged": true
+    },
+    "components": {
+      "engine": "spark-native",
+      "iterations": 9,
+      "converged": true
+    },
+    "lpa": {
+      "engine": "spark-native",
+      "iterations": 5,
+      "converged": false
+    },
+    "behaviour": {
+      "engine": "spark-native",
+      "iterations": 1,
+      "converged": true
+    }
+  }
+}

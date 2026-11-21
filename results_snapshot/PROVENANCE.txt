@@ -1,0 +1,5 @@
+Run Folder: runs/20261117_162714_c1-full-v2
+Commit Hash: 81c9ad4490bcefa60619177cc21c2f4157eadedf
+Timestamp: 2026-11-17T12:12:03.446659+00:00
+Dataset Path: data/PS_20174392719_1491204439457_log.csv
+Dataset SHA256: 16910f90577b0d981bf8ff289714510bb89bc71bff7d3f220f024e287e4eea6b
