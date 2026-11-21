@@ -153,6 +153,47 @@ def test_scorer_presets_and_distinct_probabilities():
     assert distinct_count == 3, f"Expected 3 distinct probabilities, got {probs}"
 
 
+def test_scorer_preset_selection_state():
+    """Verify preset button selection state stored in session_state and rendered as primary/secondary."""
+    os.environ["FRAUD_OUTPUT_DIR"] = "outputs_test"
+    at = AppTest.from_file("app.py", default_timeout=35)
+    at.run()
+    assert len(at.exception) == 0
+
+    # Initially none selected, all secondary
+    assert "sc_selected_preset" not in at.session_state or at.session_state["sc_selected_preset"] is None
+    assert getattr(at.button[0].proto, "type", None) == "secondary"
+    assert getattr(at.button[1].proto, "type", None) == "secondary"
+    assert getattr(at.button[2].proto, "type", None) == "secondary"
+
+    # Click Normal Payment (button 0)
+    at.button[0].click().run()
+    assert len(at.exception) == 0
+    assert at.session_state["sc_selected_preset"] == "Normal Payment"
+    assert getattr(at.button[0].proto, "type", None) == "primary"
+    assert getattr(at.button[1].proto, "type", None) == "secondary"
+    assert getattr(at.button[2].proto, "type", None) == "secondary"
+    log_assertion("[TEST] Preset Normal Payment selected and rendered primary")
+
+    # Click Suspicious Cash-Out (button 1)
+    at.button[1].click().run()
+    assert len(at.exception) == 0
+    assert at.session_state["sc_selected_preset"] == "Suspicious Cash-Out"
+    assert getattr(at.button[0].proto, "type", None) == "secondary"
+    assert getattr(at.button[1].proto, "type", None) == "primary"
+    assert getattr(at.button[2].proto, "type", None) == "secondary"
+    log_assertion("[TEST] Preset Suspicious Cash-Out selected and rendered primary")
+
+    # Click Borderline Transfer (button 2)
+    at.button[2].click().run()
+    assert len(at.exception) == 0
+    assert at.session_state["sc_selected_preset"] == "Borderline Transfer"
+    assert getattr(at.button[0].proto, "type", None) == "secondary"
+    assert getattr(at.button[1].proto, "type", None) == "secondary"
+    assert getattr(at.button[2].proto, "type", None) == "primary"
+    log_assertion("[TEST] Preset Borderline Transfer selected and rendered primary")
+
+
 def test_missing_data_graceful_handling():
     """Verify app handles completely missing outputs folder with informative banners and 0 exceptions."""
     os.environ["FRAUD_OUTPUT_DIR"] = "outputs_nonexistent_test_dir"

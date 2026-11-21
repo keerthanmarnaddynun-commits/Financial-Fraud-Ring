@@ -59,6 +59,16 @@ Verification:
 - python -m pytest tests/test_app_smoke.py -q: 5 passed in 11.28s.
 - python check_docs.py: PASS (0 byte differences, 0 banned-word hits, 0 broken relative links, 0 total issues).
 
+[2026-11-21 11:25] STEP 4.10 | ACTION
+Implemented Live Scorer preset selection state in app.py (work on bdc-final only; no Spark runs, no full pytest):
+1. Preset Selection State: Stored active preset name in st.session_state["sc_selected_preset"], dynamically rendering the selected button as type="primary" and other two as type="secondary".
+2. Input field fill behavior: Maintained existing behavior where clicking a preset populates corresponding transaction features.
+3. Preset caption: Added caption "Selected preset: <name>" ("None" when unselected) immediately below the preset buttons.
+4. Input edit behavior decision: Kept highlight as is upon manual edits as the simpler, cleaner approach.
+5. Verification & Tests: Added test_scorer_preset_selection_state in tests/test_app_smoke.py.
+   - python -m pytest tests/test_app_smoke.py -q: 6 passed in 22.91s.
+   - python check_docs.py: PASS (0 byte differences, 0 banned-word hits, 0 broken relative links, 0 total issues).
+
 ================================================================================
 DECISIONS
 ================================================================================

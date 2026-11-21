@@ -44,6 +44,8 @@ STEP 4.7 | DONE | S4.7 | Strict read-only check_docs.py passed (0 mismatches, 0 
 STEP 4.8 | DONE | S4.8 | Full pytest passed (37 passed, 0 failed), check_docs PASS, logs/AG_FINAL_SUMMARY.txt generated
 GATE 4 | DONE | S4.8 | Final gate complete (all 37 tests passed; 4.3/4.4/4.5 deferred by user)
 STEP 4.9 | DONE | S4.9 | Dashboard polish (metric cards HTML, dynamic captions, validation threshold slider default, simulated currency units)
+STEP 4.10 | DONE | S4.10 | Live Scorer preset selection state (primary/secondary styling, session_state tracking, caption label)
+
 
 
 

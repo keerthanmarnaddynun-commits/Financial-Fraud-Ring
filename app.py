@@ -1765,40 +1765,68 @@ with tab_scorer:
 
         # 3 Presets
         st.markdown("**Load Preset Scenario:**")
+
+        def apply_scorer_preset(name: str) -> None:
+            st.session_state["sc_selected_preset"] = name
+            if name == "Normal Payment":
+                st.session_state["sc_type"] = "PAYMENT"
+                st.session_state["sc_step"] = 14
+                st.session_state["sc_amt"] = 85.0
+                st.session_state["sc_old_orig"] = 1200.0
+                st.session_state["sc_new_orig"] = 1115.0
+                st.session_state["sc_old_dest"] = 350.0
+                st.session_state["sc_new_dest"] = 435.0
+            elif name == "Suspicious Cash-Out":
+                st.session_state["sc_type"] = "CASH_OUT"
+                st.session_state["sc_step"] = 48
+                st.session_state["sc_amt"] = 320000.0
+                st.session_state["sc_old_orig"] = 320000.0
+                st.session_state["sc_new_orig"] = 0.0
+                st.session_state["sc_old_dest"] = 0.0
+                st.session_state["sc_new_dest"] = 320000.0
+            elif name == "Borderline Transfer":
+                st.session_state["sc_type"] = "TRANSFER"
+                st.session_state["sc_step"] = 92
+                st.session_state["sc_amt"] = 18500.0
+                st.session_state["sc_old_orig"] = 25000.0
+                st.session_state["sc_new_orig"] = 6500.0
+                st.session_state["sc_old_dest"] = 5000.0
+                st.session_state["sc_new_dest"] = 23500.0
+
+        selected_preset = st.session_state.get("sc_selected_preset", None)
+
         p_col1, p_col2, p_col3 = st.columns(3)
+        b_normal = p_col1.button(
+            "🟢 Normal Payment",
+            type="primary" if selected_preset == "Normal Payment" else "secondary",
+            use_container_width=True,
+            on_click=apply_scorer_preset,
+            args=("Normal Payment",),
+        )
+        b_suspicious = p_col2.button(
+            "🔴 Suspicious Cash-Out",
+            type="primary" if selected_preset == "Suspicious Cash-Out" else "secondary",
+            use_container_width=True,
+            on_click=apply_scorer_preset,
+            args=("Suspicious Cash-Out",),
+        )
+        b_borderline = p_col3.button(
+            "🟡 Borderline Transfer",
+            type="primary" if selected_preset == "Borderline Transfer" else "secondary",
+            use_container_width=True,
+            on_click=apply_scorer_preset,
+            args=("Borderline Transfer",),
+        )
 
-        preset_choice = None
-        if p_col1.button("🟢 Normal Payment", use_container_width=True):
-            preset_choice = "normal"
-        if p_col2.button("🔴 Suspicious Cash-Out", use_container_width=True):
-            preset_choice = "suspicious"
-        if p_col3.button("🟡 Borderline Transfer", use_container_width=True):
-            preset_choice = "borderline"
+        if b_normal:
+            apply_scorer_preset("Normal Payment")
+        elif b_suspicious:
+            apply_scorer_preset("Suspicious Cash-Out")
+        elif b_borderline:
+            apply_scorer_preset("Borderline Transfer")
 
-        if preset_choice == "normal":
-            st.session_state["sc_type"] = "PAYMENT"
-            st.session_state["sc_step"] = 14
-            st.session_state["sc_amt"] = 85.0
-            st.session_state["sc_old_orig"] = 1200.0
-            st.session_state["sc_new_orig"] = 1115.0
-            st.session_state["sc_old_dest"] = 350.0
-            st.session_state["sc_new_dest"] = 435.0
-        elif preset_choice == "suspicious":
-            st.session_state["sc_type"] = "CASH_OUT"
-            st.session_state["sc_step"] = 48
-            st.session_state["sc_amt"] = 320000.0
-            st.session_state["sc_old_orig"] = 320000.0
-            st.session_state["sc_new_orig"] = 0.0
-            st.session_state["sc_old_dest"] = 0.0
-            st.session_state["sc_new_dest"] = 320000.0
-        elif preset_choice == "borderline":
-            st.session_state["sc_type"] = "TRANSFER"
-            st.session_state["sc_step"] = 92
-            st.session_state["sc_amt"] = 18500.0
-            st.session_state["sc_old_orig"] = 25000.0
-            st.session_state["sc_new_orig"] = 6500.0
-            st.session_state["sc_old_dest"] = 5000.0
-            st.session_state["sc_new_dest"] = 23500.0
+        selected_preset = st.session_state.get("sc_selected_preset", None)
+        st.caption(f"Selected preset: {selected_preset or 'None'}")
 
         with st.form("live_scoring_form"):
             col_f1, col_f2 = st.columns(2)
